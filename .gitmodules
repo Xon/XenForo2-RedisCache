@@ -1,0 +1,4 @@
+[submodule "upload/src/addons/SV/RedisCache/Credis"]
+	path = upload/src/addons/SV/RedisCache/Credis
+	url = https://github.com/colinmollenhour/credis.git
+	branch = master
