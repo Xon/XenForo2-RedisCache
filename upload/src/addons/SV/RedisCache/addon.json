@@ -1,5 +1,9 @@
 {
     "title": "Redis Cache",
     "version_string": "1.0.0a",
-    "version_id": 1
+    "version_id": 1,
+    "dev" : "Xon",
+    "require" : {
+        "php": ["5.4.0", "PHP 5.4.0+"]
+    }
 }

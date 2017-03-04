@@ -1,5 +1,5 @@
 {
-    "src/addons/SV/RedisCache/addon.json": "d543c02ba7cad8780b4082fc5f59fc0d2517681c7eca2f0d036b89aa7628364a",
+    "src/addons/SV/RedisCache/addon.json": "e242574bc4f6475581c0fe5e471faa9f0cb8af93fa251be056f9f78af34dda7f",
     "src/addons/SV/RedisCache/Cm_Cache_Backend_Redis.php": "0f731a18cd5534fb0a1dd5a231f6caf2323cb99d35267a6dccd1867a1035f392",
     "src/addons/SV/RedisCache/Credis/Client.php": "279c572f85b9c5ae532c38f60f5c209e4468c77fd850e4832572293522fbd26a",
     "src/addons/SV/RedisCache/Credis/Cluster.php": "f81f9f548c75b5ae0b55c64480eb77f28a781daaa9921c4d9a6f54d2a9f3dde5",
