@@ -1,9 +1,16 @@
 {
+    "legacy_addon_id": "sv_rediscache",
     "title": "Redis Cache",
+    "description": "",
     "version_string": "1.0.0a",
     "version_id": 1,
     "dev" : "Xon",
+    "dev_url": "https://atelieraphelion.com/",
+    "faq_url": "",
+    "support_url": "",
+    "extra_urls": [],
     "require" : {
-        "php": ["5.4.0", "PHP 5.4.0+"]
-    }
+        "php": ["5.6.0", "PHP 5.6.0+"]
+    },
+    "icon": ""
 }
