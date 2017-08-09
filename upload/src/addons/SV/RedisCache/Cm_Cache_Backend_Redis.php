@@ -118,7 +118,7 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
     public function __construct($options = array())
     {
         if ( empty($options['server']) ) {
-            throw new CredisException('Redis \'server\' not specified.');
+            throw new \CredisException('Redis \'server\' not specified.');
         }
 
         $port = isset($options['port']) ? $options['port'] : 6379;
@@ -146,7 +146,7 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
                     }
                     // Sentinel currently doesn't support AUTH
                     //if ($password) {
-                    //    $sentinelClient->auth($password) or throw new CredisException('Unable to authenticate with the redis sentinel.');
+                    //    $sentinelClient->auth($password) or $this->throwException('Unable to authenticate with the redis sentinel.');
                     //}
                     $sentinel = new Credis_Sentinel($sentinelClient);
                     $sentinel
@@ -164,7 +164,7 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
                             $this->_applyClientOptions($redisMaster);
                             $roleData = $redisMaster->role();
                             if ( ! $roleData || $roleData[0] != 'master') {
-                                throw new CredisException('Unable to determine master redis server.');
+                                throw new \CredisException('Unable to determine master redis server.');
                             }
                         }
                     }
@@ -176,7 +176,7 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
                 }
             }
             if ( ! $this->_redis) {
-                throw new CredisException('Unable to connect to a redis sentinel: '.$exception->getMessage(), $exception);
+                throw new \CredisException('Unable to connect to a redis sentinel: '.$exception->getMessage(), $exception);
             }
 
             // Optionally use read slaves - will only be used for 'load' operation
@@ -288,6 +288,10 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
         }
     }
 
+    protected function throwException($msg)
+    {
+        throw new \CredisException($msg);
+    }
     /**
      * Apply common configuration to client instances.
      *
@@ -310,12 +314,12 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
         }
 
         if ($clientOptions->password) {
-            $client->auth($clientOptions->password) or throw new CredisException('Unable to authenticate with the redis server.');
+            $client->auth($clientOptions->password) or $this->throwException('Unable to authenticate with the redis server.');
         }
 
         // Always select database when persistent is used in case connection is re-used by other clients
         if ($forceSelect || $clientOptions->database || $client->getPersistence()) {
-            $client->select($clientOptions->database) or throw new CredisException('The redis database could not be selected.');
+            $client->select($clientOptions->database) or $this->throwException('The redis database could not be selected.');
         }
     }
 
@@ -371,7 +375,7 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
     /**
      * @param string $data
      * @param int $level
-     * @throws CredisException
+     * @throws \CredisException
      * @return string
      */
     protected function _encodeData($data, $level)
@@ -383,10 +387,10 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
                 case 'lzf':    $data = lzf_compress($data); break;
                 case 'l4z':    $data = lz4_compress($data,($level > 1 ? true : false)); break;
                 case 'gzip':   $data = gzcompress($data, $level); break;
-                default:       throw new CredisException("Unrecognized 'compression_lib'.");
+                default:       throw new \CredisException("Unrecognized 'compression_lib'.");
             }
             if( ! $data) {
-                throw new CredisException("Could not compress cache data.");
+                throw new \CredisException("Could not compress cache data.");
             }
             return $this->_compressPrefix.$data;
         }
