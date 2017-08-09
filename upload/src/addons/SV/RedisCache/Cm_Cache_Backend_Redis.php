@@ -121,28 +121,26 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
             Zend_Cache::throwException('Redis \'server\' not specified.');
         }
 
-        if ( empty($options['port']) && substr($options['server'],0,1) != '/' ) {
-            Zend_Cache::throwException('Redis \'port\' not specified.');
-        }
-
-        $port = isset($options['port']) ? $options['port'] : NULL;
-        $slaveSelect = isset($options['slave-select']) && is_callable($options['slave-select']) ? $options['slave-select'] : null;
+        $port = isset($options['port']) ? $options['port'] : 6379;
+        $slaveSelect = isset($options['slave_select_callable']) && is_callable($options['slave_select_callable']) ? $options['slave_select_callable'] : null;
+        $sentinelMaster =  empty($options['sentinel_master']) ? NULL : $options['sentinel_master'];
 
         $this->_clientOptions = $this->getClientOptions($options);
 
         // If 'sentinel_master' is specified then server is actually sentinel and master address should be fetched from server.
-        if ( ! empty($options['sentinel_master_set'])) {
+        if ($sentinelMaster) {
             $sentinelClientOptions = isset($options['sentinel']) && is_array($options['sentinel'])
                                      ? $this->getClientOptions($options['sentinel'] + $options)
                                      : $this->_clientOptions;
             $servers = preg_split('/\s*,\s*/', trim($options['server']), NULL, PREG_SPLIT_NO_EMPTY);
             $sentinel = NULL;
             $exception = NULL;
+            for ($i = 0; $i <= $sentinelClientOptions->connectRetries; $i++) // Try each sentinel in round-robin fashion
             foreach ($servers as $server) {
                 try {
                     $sentinelClient = new \Credis_Client($server, NULL, $sentinelClientOptions->timeout, $sentinelClientOptions->persistent);
                     $sentinelClient->forceStandalone();
-                    $sentinelClient->setMaxConnectRetries($sentinelClientOptions->connectRetries);
+                    $sentinelClient->setMaxConnectRetries(0);
                     if ($sentinelClientOptions->readTimeout) {
                         $sentinelClient->setReadTimeout($sentinelClientOptions->readTimeout);
                     }
@@ -154,21 +152,26 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
                     $sentinel
                         ->setClientTimeout($this->_clientOptions->timeout)
                         ->setClientPersistent($this->_clientOptions->persistent);
-                    $redisMaster = $sentinel->getMasterClient($options['sentinel_master_set']);
+                    $redisMaster = $sentinel->getMasterClient($sentinelMaster);
                     $this->_applyClientOptions($redisMaster);
-                    $roleData = $redisMaster->role();
-                    if ( ! $roleData || $roleData[0] != 'master') {
-                        usleep(100000); // Sleep 100ms and try again
-                        $redisMaster = $sentinel->getMasterClient($options['sentinel_master_set']);
-                        $this->_applyClientOptions($redisMaster);
+
+                    // Verify connected server is actually master as per Sentinel client spec
+                    if ( ! empty($options['sentinel_master_verify'])) {
                         $roleData = $redisMaster->role();
                         if ( ! $roleData || $roleData[0] != 'master') {
-                            Zend_Cache::throwException('Unable to determine master redis server.');
+                            usleep(100000); // Sleep 100ms and try again
+                            $redisMaster = $sentinel->getMasterClient($sentinelMaster);
+                            $this->_applyClientOptions($redisMaster);
+                            $roleData = $redisMaster->role();
+                            if ( ! $roleData || $roleData[0] != 'master') {
+                                Zend_Cache::throwException('Unable to determine master redis server.');
+                            }
                         }
                     }
                     $this->_redis = $redisMaster;
-                    break;
+                    break 2;
                 } catch (Exception $e) {
+                    unset($sentinelClient);
                     $exception = $e;
                 }
             }
@@ -177,16 +180,19 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
             }
 
             // Optionally use read slaves - will only be used for 'load' operation
-            if (isset($options['load_from_slaves']) && $options['load_from_slaves']) {
-                $slaves = $sentinel->getSlaveClients($options['sentinel_master_set']);
+            if ( ! empty($options['load_from_slaves'])) {
+                $slaves = $sentinel->getSlaveClients($sentinelMaster);
                 if ($slaves) {
+                    if ($options['load_from_slaves'] == 2) {
+                        array_push($slaves, $this->_redis); // Also send reads to the master
+                    }
                     if ($slaveSelect) {
                         $slave = $slaveSelect($slaves, $this->_redis);
                     } else {
                         $slaveKey = array_rand($slaves, 1);
-                        $slave = $slaves[$slaveKey]; /* @var $slave \Credis_Client */
+                        $slave = $slaves[$slaveKey]; /* @var $slave Credis_Client */
                     }
-                    if ($slave instanceof \Credis_Client) {
+                    if ($slave instanceof \Credis_Client && $slave != $this->_redis) {
                         try {
                             $this->_applyClientOptions($slave, TRUE);
                             $this->_slave = $slave;
@@ -304,7 +310,7 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
         }
 
         if ($clientOptions->password) {
-            $client->auth($clientOptions>password) or Zend_Cache::throwException('Unable to authenticate with the redis server.');
+            $client->auth($clientOptions->password) or Zend_Cache::throwException('Unable to authenticate with the redis server.');
         }
 
         // Always select database when persistent is used in case connection is re-used by other clients
