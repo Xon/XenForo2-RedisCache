@@ -214,6 +214,16 @@ class Redis  extends Cm_Cache_Backend_Redis
         return $this->_redis->exists($id);
     }
 
+    protected function _encodeData($data, $level)
+    {
+        return parent::_encodeData(json_encode($data), $level);
+    }
+
+    protected function _decodeData($data, $level)
+    {
+        return json_decode(parent::_decodeData($data, $level), true);
+    }
+
     /**
      * {@inheritdoc}
      */

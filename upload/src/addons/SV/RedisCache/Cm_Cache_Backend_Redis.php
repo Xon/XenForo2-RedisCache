@@ -380,7 +380,6 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
      */
     protected function _encodeData($data, $level)
     {
-        $data = serialize($data);
         if ($this->_compressionLib && $level && strlen($data) >= $this->_compressThreshold) {
             switch($this->_compressionLib) {
                 case 'snappy': $data = snappy_compress($data); break;
@@ -411,7 +410,7 @@ abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvid
                 case 'gz': case 'zc': $data = gzuncompress(substr($data,5)); break;
             }
         }
-        return unserialize($data);
+        return $data;
     }
 
     /**
