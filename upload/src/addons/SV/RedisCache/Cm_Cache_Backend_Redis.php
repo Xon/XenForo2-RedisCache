@@ -39,7 +39,7 @@ namespace SV\RedisCache;
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @author     Colin Mollenhour (http://colin.mollenhour.com)
  */
-abstract class Cm_Cache_Backend_Redis extends \Doctrine\Common\Cache\CacheProvider
+abstract class Cm_Cache_Backend_Redis extends CacheProvider
 {
     const PREFIX_KEY      = '';
 
