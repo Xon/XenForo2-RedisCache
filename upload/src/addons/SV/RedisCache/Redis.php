@@ -219,9 +219,9 @@ class Redis  extends Cm_Cache_Backend_Redis
         return parent::_encodeData(json_encode($data), $level);
     }
 
-    protected function _decodeData($data, $level)
+    protected function _decodeData($data)
     {
-        return json_decode(parent::_decodeData($data, $level), true);
+        return json_decode(parent::_decodeData($data), true);
     }
 
     /**
