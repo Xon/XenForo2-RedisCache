@@ -157,12 +157,12 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function doFetch($id)
     {
         if ($this->_slave) {
-            $data = $this->_slave->get(self::PREFIX_KEY.$id);
+            $data = $this->_slave->get($id);
         } else {
-            $data = $this->_redis->get(self::PREFIX_KEY.$id);
+            $data = $this->_redis->get($id);
         }
-        if ($data === NULL) {
-            return FALSE;
+        if ($data === null || $data === false) {
+            return false;
         }
 
         $decoded = $this->_decodeData($data);
@@ -177,14 +177,6 @@ class Redis  extends Cm_Cache_Backend_Redis
         return $decoded;
     }
 
-    protected function _applyAutoExpire($id)
-    {
-        $matches = $this->_matchesAutoExpiringPattern($id);
-        if ($matches) {
-            $this->_redis->expire(self::PREFIX_KEY.$id, min($this->_autoExpireLifetime, $this->_lifetimelimit));
-        }
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -192,12 +184,11 @@ class Redis  extends Cm_Cache_Backend_Redis
     {
         $redis = $this->_slave ? $this->_slave : $this->_redis;
 
-        $fetchedItems = $redis->mget(array_map(function ($id) {
-            return self::PREFIX_KEY.$id;
-        }, $keys));
+        $fetchedItems = $redis->mget($keys);
 
-        $decoded = array_map([$this, '_decodeData'], array_combine($keys, $fetchedItems));
-
+        $decoded = array_map([$this, '_decodeData'], array_filter(array_combine($keys, $fetchedItems), function ($data){
+            return $data !== null && $data !== false;
+        }));
         if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad) {
             array_map([$this, '_applyAutoExpire'], $keys);
         }
