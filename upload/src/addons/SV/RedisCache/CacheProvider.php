@@ -39,6 +39,63 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function fetch($id)
+    {
+        return $this->doFetch($this->getNamespacedId($id));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fetchMultiple(array $keys)
+    {
+        if (empty($keys)) {
+            return array();
+        }
+        
+        // note: the array_combine() is in place to keep an association between our $keys and the $namespacedKeys
+        $namespacedKeys = array_combine($keys, array_map(array($this, 'getNamespacedId'), $keys));
+        $items          = $this->doFetchMultiple($namespacedKeys);
+        $foundItems     = array();
+
+        // no internal array function supports this sort of mapping: needs to be iterative
+        // this filters and combines keys in one pass
+        foreach ($namespacedKeys as $requestedKey => $namespacedKey) {
+            if (isset($items[$namespacedKey]) || array_key_exists($namespacedKey, $items)) {
+                $foundItems[$requestedKey] = $items[$namespacedKey];
+            }
+        }
+
+        return $foundItems;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function contains($id)
+    {
+        return $this->doContains($this->getNamespacedId($id));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function save($id, $data, $lifeTime = 0)
+    {
+        return $this->doSave($this->getNamespacedId($id), $data, $lifeTime);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function delete($id)
+    {
+        return $this->doDelete($this->getNamespacedId($id));
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function deleteAll()

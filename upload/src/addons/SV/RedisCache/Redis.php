@@ -196,7 +196,7 @@ class Redis  extends Cm_Cache_Backend_Redis
             return self::PREFIX_KEY.$id;
         }, $keys));
 
-        $decoded = array_map([$this, '_decodeData'], array_filter(array_combine($keys, $fetchedItems)));
+        $decoded = array_map([$this, '_decodeData'], array_combine($keys, $fetchedItems));
 
         if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad) {
             array_map([$this, '_applyAutoExpire'], $keys);
