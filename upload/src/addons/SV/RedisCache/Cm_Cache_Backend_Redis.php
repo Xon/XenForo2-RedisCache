@@ -75,6 +75,15 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     /** @var boolean */
     protected $_autoExpireRefreshOnLoad = false;
 
+    /** @var string */
+    protected $_compressPrefix = '';
+
+    /** @var bool */
+    protected $_notMatchingTags = false;
+
+    /** @var int */
+    protected $_compressTags = 0;
+
     /**
      * Lua's unpack() has a limit on the size of the table imposed by
      * the number of Lua stack slots that a C function can use.
@@ -86,7 +95,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     protected $_luaMaxCStack = 5000;
 
     /**
-     * @var stdClass
+     * @var \stdClass
      */
     protected $_clientOptions;
 
@@ -97,6 +106,10 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
      */
     protected $_slave;
 
+    /**
+     * @param array $options
+     * @return \stdClass
+     */
     protected function getClientOptions($options = array())
     {
         $clientOptions = new \stdClass();
@@ -111,9 +124,9 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     }
 
     /**
-     * Construct Zend_Cache Redis backend
+     * Cm_Cache_Backend_Redis constructor.
      * @param array $options
-     * @return \Cm_Cache_Backend_Redis
+     * @throws \CredisException
      */
     public function __construct($options = array())
     {
@@ -148,7 +161,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     //if ($password) {
                     //    $sentinelClient->auth($password) or $this->throwException('Unable to authenticate with the redis sentinel.');
                     //}
-                    $sentinel = new Credis_Sentinel($sentinelClient);
+                    $sentinel = new \Credis_Sentinel($sentinelClient);
                     $sentinel
                         ->setClientTimeout($this->_clientOptions->timeout)
                         ->setClientPersistent($this->_clientOptions->persistent);
@@ -170,7 +183,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     }
                     $this->_redis = $redisMaster;
                     break 2;
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     unset($sentinelClient);
                     $exception = $e;
                 }
@@ -190,13 +203,13 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                         $slave = $slaveSelect($slaves, $this->_redis);
                     } else {
                         $slaveKey = array_rand($slaves, 1);
-                        $slave = $slaves[$slaveKey]; /* @var $slave Credis_Client */
+                        $slave = $slaves[$slaveKey]; /* @var $slave \Credis_Client */
                     }
-                    if ($slave instanceof \Credis_Client && $slave != $this->_redis) {
+                    if ($slave instanceof \Credis_Client && $slave !== $this->_redis) {
                         try {
                             $this->_applyClientOptions($slave, TRUE);
                             $this->_slave = $slave;
-                        } catch (Exception $e) {
+                        } catch (\Exception $e) {
                             // If there is a problem with first slave then skip 'load_from_slaves' option
                         }
                     }
@@ -227,7 +240,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                         $slave = new \Credis_Client($server, $port, $clientOptions->timeout, $clientOptions->persistent);
                         $this->_applyClientOptions($slave, TRUE, $clientOptions);
                         $this->_slave = $slave;
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         // Slave will not be used
                     }
                 }
@@ -337,7 +350,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
      * Mainly a workaround for the issues that arise due to the fact that
      * Magento's Enterprise_PageCache module doesn't set any expiry.
      *
-     * @param  int $specificLifetime
+     * @param  int $lifetime
      * @param  string $id
      * @return int Cache life time
      */
@@ -380,11 +393,12 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
      */
     protected function _encodeData($data, $level)
     {
+
         if ($this->_compressionLib && $level && strlen($data) >= $this->_compressThreshold) {
             switch($this->_compressionLib) {
-                case 'snappy': $data = snappy_compress($data); break;
-                case 'lzf':    $data = lzf_compress($data); break;
-                case 'l4z':    $data = lz4_compress($data,($level > 1 ? true : false)); break;
+                case 'snappy': /** @noinspection PhpUndefinedFunctionInspection */ $data = snappy_compress($data); break;
+                case 'lzf':    /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_compress($data); break;
+                case 'l4z':    /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_compress($data,($level > 1 ? true : false)); break;
                 case 'gzip':   $data = gzcompress($data, $level); break;
                 default:       throw new \CredisException("Unrecognized 'compression_lib'.");
             }
@@ -404,9 +418,9 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     {
         if (substr($data,2,3) == self::COMPRESS_PREFIX) {
             switch(substr($data,0,2)) {
-                case 'sn': $data = snappy_uncompress(substr($data,5)); break;
-                case 'lz': $data = lzf_decompress(substr($data,5)); break;
-                case 'l4': $data = lz4_uncompress(substr($data,5)); break;
+                case 'sn': /** @noinspection PhpUndefinedFunctionInspection */ $data = snappy_uncompress(substr($data,5)); break;
+                case 'lz': /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_decompress(substr($data,5)); break;
+                case 'l4': /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_uncompress(substr($data,5)); break;
                 case 'gz': case 'zc': $data = gzuncompress(substr($data,5)); break;
             }
         }

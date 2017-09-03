@@ -7,10 +7,16 @@ namespace SV\RedisCache;
  *
  */
  
+use Doctrine\Common\Cache\Cache;
+
 require_once('Credis/Client.php');
 require_once('Credis/Sentinel.php');
 class Redis  extends Cm_Cache_Backend_Redis
 {
+    /**
+     * Redis constructor.
+     * @param array $options
+     */
     public function __construct($options = array())
     {
         if (!isset($options['slave_select_callable']))
@@ -25,6 +31,10 @@ class Redis  extends Cm_Cache_Backend_Redis
         parent::__construct($options);
     }
 
+    /**
+     * @param array|null $ips
+     * @return array
+     */
     protected function getLocalIps(array $ips = null)
     {
         if (!is_array($ips))
@@ -34,7 +44,7 @@ class Redis  extends Cm_Cache_Backend_Redis
             {
                 $output = shell_exec("hostname --all-ip-addresses");
             }
-            catch(Exception $e) { $output = ''; }
+            catch(\Exception $e) { $output = ''; }
             if ($output)
             {
                 $ips = array_fill_keys(array_filter(array_map('trim', (explode(' ', $output)))), true);
@@ -43,11 +53,17 @@ class Redis  extends Cm_Cache_Backend_Redis
         return $ips;
     }
 
+    /**
+     * @param array|null $ips
+     * @param \Credis_Client[] $slaves
+     * @param $master
+     * @return \Credis_Client|null
+     */
     protected function selectLocalRedis(array $ips = null, array $slaves, $master)
     {
         if ($ips)
         {
-            /* @var $slave Credis_Client */
+            /* @var $slave \Credis_Client */
             foreach($slaves as $slave)
             {
                 // slave host is just an ip
@@ -63,12 +79,22 @@ class Redis  extends Cm_Cache_Backend_Redis
         return $slaves[$slaveKey];
     }
 
+    /**
+     * @param \Credis_Client[] $slaves
+     * @param $master
+     * @return \Credis_Client|null
+     */
     public function preferLocalSlave(array $slaves, $master)
     {
         $ips = $this->getLocalIps();
         return $this->selectLocalRedis($ips, $slaves, $master);
     }
 
+    /**
+     * @param \Credis_Client[] $slaves
+     * @param $master
+     * @return \Credis_Client|null
+     */
     protected function preferLocalSlaveLocalDisk(array $slaves, $master)
     {
         $output = @file_get_contents('/tmp/local_ips');
@@ -78,7 +104,7 @@ class Redis  extends Cm_Cache_Backend_Redis
             {
                 $output = shell_exec("hostname --all-ip-addresses");
             }
-            catch(Exception $e) { $output = ''; }
+            catch(\Exception $e) { $output = ''; }
             if ($output !== false)
             {
                 file_put_contents('/tmp/local_ips', $output);
@@ -93,6 +119,11 @@ class Redis  extends Cm_Cache_Backend_Redis
         return $this->selectLocalRedis($ips, $slaves, $master);
     }
 
+    /**
+     * @param \Credis_Client[] $slaves
+     * @param $master
+     * @return \Credis_Client|null
+     */
     public function preferLocalSlaveAPCu(array $slaves, $master)
     {
         $ips = null;
@@ -112,21 +143,35 @@ class Redis  extends Cm_Cache_Backend_Redis
         return $this->selectLocalRedis($ips, $slaves, $master);
     }
 
+    /**
+     * @return int
+     */
     public function getCompressThreshold()
     {
         return $this->_compressThreshold;
     }
 
+    /**
+     * @param int $value
+     */
     public function setCompressThreshold($value)
     {
         $this->_compressThreshold = $value;
     }
 
+    /**
+     * @param string $data
+     * @return string
+     */
     public function DecodeData($data)
     {
         return $this->_decodeData($data);
     }
 
+    /**
+     * @param bool $allowSlave
+     * @return \Credis_Client
+     */
     public function getCredis($allowSlave = false)
     {
         if ($allowSlave && $this->_slave)
@@ -136,16 +181,25 @@ class Redis  extends Cm_Cache_Backend_Redis
         return $this->_redis;
     }
 
+    /**
+     * @return \Credis_Client
+     */
     public function getSlaveCredis()
     {
         return $this->_slave;
     }
 
+    /**
+     * @param \Credis_Client $slave
+     */
     public function setSlaveCredis($slave)
     {
         $this->_slave = $slave;
     }
 
+    /**
+     * @return bool
+     */
     public function useLua()
     {
         return $this->_useLua;
@@ -205,11 +259,20 @@ class Redis  extends Cm_Cache_Backend_Redis
         return $this->_redis->exists($id);
     }
 
+    /**
+     * @param string $data
+     * @param int $level
+     * @return string
+     */
     protected function _encodeData($data, $level)
     {
         return parent::_encodeData(json_encode($data), $level);
     }
 
+    /**
+     * @param string $data
+     * @return mixed
+     */
     protected function _decodeData($data)
     {
         return json_decode(parent::_decodeData($data), true);
