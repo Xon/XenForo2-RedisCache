@@ -16,10 +16,13 @@ class Thread extends XFCP_Thread
         {
             $cacheThreadListFinder = Globals::$cacheThreadListFinder;
             Globals::$cacheThreadListFinder = null;
+
             /** @var Thread $newFinder */
             $newFinder = $cacheThreadListFinder();
 
-            $key = 'forum_' . Globals::$cacheForumId . '_threadcount_' . md5(serialize($newFinder->conditions));
+            $conditions = $newFinder->conditions;
+            sort($conditions);
+            $key = 'forum_' . Globals::$cacheForumId . '_threadcount_' . md5(serialize($conditions));
 
             /** @var int|bool $total */
             $total = $cache->fetch($key);
