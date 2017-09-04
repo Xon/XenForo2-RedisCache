@@ -288,7 +288,7 @@ class Redis  extends Cm_Cache_Backend_Redis
         $lifeTime = min($lifetime, self::MAX_LIFETIME);
 
         if ($lifeTime > 0) {
-            $response = $this->_redis->setex($id, $lifeTime, $data);
+            $response = $this->_redis->set($id, $data, $lifeTime);
         } else {
             $response = $this->_redis->set($id, $data);
         }
