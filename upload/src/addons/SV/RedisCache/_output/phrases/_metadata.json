@@ -1,0 +1,74 @@
+{
+    "option.sv_threadcount_caching.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "a682c055ebf3cf813b7cd6eaf115cbbd"
+    },
+    "option.sv_threadcount_moderated.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "c39d454911d344162cb3cad5acd0a638"
+    },
+    "option.sv_threadcount_short.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "4d257a1b0e12d7b5647240290a947eb3"
+    },
+    "option.sv_threadcountcache_long.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "5c9068b2052828740944b7798cb88669"
+    },
+    "option.sv_threadcountcache_short.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "2665838eb1acb6f89eacf24fa6a8992c"
+    },
+    "option_explain.sv_threadcount_caching.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "d1a2f1ce5adfc38853412247f1e7bce3"
+    },
+    "option_explain.sv_threadcount_moderated.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "62545a51cc242f40004c034fc033962b"
+    },
+    "option_explain.sv_threadcount_short.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "cb64b0c3647c0324cfaa2d42e097d93b"
+    },
+    "option_explain.sv_threadcountcache_long.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "ff844ef6e6bf015771d16ddefe838623"
+    },
+    "option_explain.sv_threadcountcache_short.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "ba03a28f9e78762ae9754bcdf82334e9"
+    },
+    "option_group.RedisCache.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "712867d52fd7c7d5d081b4ae50bf3533"
+    },
+    "option_group_description.RedisCache.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "1b3f3108f205c1269771333850cbbfd4"
+    }
+}

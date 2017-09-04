@@ -1,0 +1,1 @@
+Caches per forum thread counts to reduce forum view page times.

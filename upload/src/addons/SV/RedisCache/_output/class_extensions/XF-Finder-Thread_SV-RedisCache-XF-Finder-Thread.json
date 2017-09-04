@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Finder\\Thread",
+    "to_class": "SV\\RedisCache\\XF\\Finder\\Thread",
+    "execute_order": 3965,
+    "active": true
+}

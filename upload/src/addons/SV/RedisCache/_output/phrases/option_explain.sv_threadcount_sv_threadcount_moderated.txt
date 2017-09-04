@@ -1,0 +1,1 @@
+If the user can see all other threads, do not count moderated threads. Disabling this option will cause per-user caching of forum counts rather than being shared.
