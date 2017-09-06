@@ -17,6 +17,12 @@
         "version_string": "1.1.1",
         "hash": "4d257a1b0e12d7b5647240290a947eb3"
     },
+    "option.sv_threadcount_sv_threadcount_moderated.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "c39d454911d344162cb3cad5acd0a638"
+    },
     "option.sv_threadcountcache_long.txt": {
         "global_cache": false,
         "version_id": 1010100,
@@ -46,6 +52,12 @@
         "version_id": 1010100,
         "version_string": "1.1.1",
         "hash": "cb64b0c3647c0324cfaa2d42e097d93b"
+    },
+    "option_explain.sv_threadcount_sv_threadcount_moderated.txt": {
+        "global_cache": false,
+        "version_id": 1010100,
+        "version_string": "1.1.1",
+        "hash": "62545a51cc242f40004c034fc033962b"
     },
     "option_explain.sv_threadcountcache_long.txt": {
         "global_cache": false,

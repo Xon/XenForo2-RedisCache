@@ -266,7 +266,9 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function _encodeData($data, $level)
     {
-        return parent::_encodeData(json_encode($data), $level);
+        // XF stores binary data as strings which causes issues using json for serialization
+        return parent::_encodeData(serialize($data), $level);
+        //return parent::_encodeData(json_encode($data), $level);
     }
 
     /**
@@ -275,7 +277,8 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function _decodeData($data)
     {
-        return json_decode(parent::_decodeData($data), true);
+        return @unserialize(parent::_decodeData($data));
+        //return json_decode(parent::_decodeData($data), true);
     }
 
     /**
