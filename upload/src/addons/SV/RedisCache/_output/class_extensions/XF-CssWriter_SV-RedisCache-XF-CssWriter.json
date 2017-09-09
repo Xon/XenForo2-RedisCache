@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\CssWriter",
+    "to_class": "SV\\RedisCache\\XF\\CssWriter",
+    "execute_order": 10,
+    "active": true
+}

@@ -1,4 +1,10 @@
 {
+    "XF-CssRenderer_SV-RedisCache-XF-CssRenderer.json": {
+        "hash": "d4fd4c1867676b1de43751bcc5572ae5"
+    },
+    "XF-CssWriter_SV-RedisCache-XF-CssWriter.json": {
+        "hash": "df973e42e4db5ff35c026b730de1335e"
+    },
     "XF-Finder-Thread_SV-RedisCache-XF-Finder-Thread.json": {
         "hash": "6c4209e18a26612739392e5765950767"
     },
