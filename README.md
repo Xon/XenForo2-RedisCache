@@ -3,7 +3,14 @@ XenForo + Redis + Glue code
 
 This add-on is based off [Cm_Cache_Backend_Redis](https://github.com/colinmollenhour/Cm_Cache_Backend_Redis) to provide a Doctrine Cache target for [Redis](http://redis.io/).
 
+## Igbinary Support
 
+If igbinary is usable, this add-on defaults to using it as a serialize. To supress this;
+```
+$config['cache']['config']['serializer'] = 'php';
+```
+
+# Performance
 For best performance use: [phpredis PECL extension](http://pecl.php.net/package/redis)
 
 Sample Redis configuration for XenForo:
@@ -21,6 +28,7 @@ $config['cache']['config'] = array(
     );
 ```
 
+# Master/Slave
 Loding Data from a single slave is possible, or alternatively Redis Sentinel support can be used  high-availability. See http://redis.io/topics/sentinel for more information.
 
 Single Slave:

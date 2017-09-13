@@ -6,13 +6,15 @@ namespace SV\RedisCache;
  * Redis adapter for XenForo2 & Doctrine
  *
  */
- 
+
 use Doctrine\Common\Cache\Cache;
 
 require_once('Credis/Client.php');
 require_once('Credis/Sentinel.php');
 class Redis  extends Cm_Cache_Backend_Redis
 {
+    protected $useIgbinary = false;
+
     /**
      * Redis constructor.
      * @param array $options
@@ -28,6 +30,10 @@ class Redis  extends Cm_Cache_Backend_Redis
         {
             $options['slave_select_callable'] = array($this, $options['slave_select_callable']);
         }
+
+        $igbinaryPresent = is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
+        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \utf8_strtolower($options['serializer']) == 'igbinary');
+
         parent::__construct($options);
     }
 
@@ -267,8 +273,8 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function _encodeData($data, $level)
     {
         // XF stores binary data as strings which causes issues using json for serialization
-        return parent::_encodeData(serialize($data), $level);
-        //return parent::_encodeData(json_encode($data), $level);
+        $data = $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
+        return parent::_encodeData($data, $level);
     }
 
     /**
@@ -277,8 +283,9 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function _decodeData($data)
     {
-        return @unserialize(parent::_decodeData($data));
-        //return json_decode(parent::_decodeData($data), true);
+        $data = parent::_decodeData($data);
+        $data = $this->useIgbinary ? @igbinary_unserialize($data) : @unserialize($data);
+        return $data;
     }
 
     /**

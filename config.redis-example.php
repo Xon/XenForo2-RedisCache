@@ -18,16 +18,12 @@ $config['cache']['config'] = array(
         'compress_threshold' => 20480,
         'compression_lib' => null, // dynamically select first of; snappy,lzf,l4z,gzip IF EMPTY/null
         'use_lua' => false,
+        'serializer' => 'igbinary', // to disable set ot 'php'
         );
 // single slave (has most of the details of config):
 $config['cache']['config']['load_from_slave'] = array(
         'server' => '127.0.0.1',
         'port' => 6378,
-        'connect_retries' => 2,
-        'use_lua' => true,
-        'compress_data' => 2,
-        'read_timeout' => 1,
-        'timeout' => 1,
         );
 
 // minimal case for sentinel support (aka HA)
@@ -40,9 +36,4 @@ $config['cache']['config']['sentinel_persistent'] = null; // persistent connecti
 $config['cache']['config'] = array(
         'server' => '127.0.0.1',
         'port' => 6379,
-        'connect_retries' => 2,
-        'use_lua' => true,
-        'compress_data' => 2,
-        'read_timeout' => 1,
-        'timeout' => 1,
         );
