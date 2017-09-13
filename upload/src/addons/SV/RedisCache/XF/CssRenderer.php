@@ -4,6 +4,7 @@
 namespace SV\RedisCache\XF;
 
 
+use SV\RedisCache\RawResponseText;
 use SV\RedisCache\Redis;
 use XF\App;
 use XF\Template\Templater;
@@ -40,7 +41,7 @@ class CssRenderer extends XFCP_CssRenderer
      */
     protected function wrapOutput($output, $length)
     {
-        return new ResponseStream($output, $length);
+        return new RawResponseText($output, $length);
     }
 
     protected function getFinalCachedOutput(array $templates)

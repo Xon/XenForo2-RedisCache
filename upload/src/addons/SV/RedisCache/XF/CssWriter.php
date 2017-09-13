@@ -12,7 +12,7 @@ class CssWriter extends XFCP_CssWriter
     {
         $request = \XF::app()->request();
         $showDebugOutput = (\XF::$debugMode && $request->get('_debug'));
-        if (!$showDebugOutput && strpos($request->getServer('HTTP_ACCEPT_ENCODING', ''), 'gzip') === false)
+        if (!$showDebugOutput && strpos($request->getServer('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== false)
         {
             /** @var \SV\RedisCache\XF\CssRenderer $renderer */
             $renderer = $this->renderer;
