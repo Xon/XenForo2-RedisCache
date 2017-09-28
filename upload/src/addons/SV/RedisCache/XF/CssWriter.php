@@ -11,11 +11,13 @@ class CssWriter extends XFCP_CssWriter
     public function run(array $templates, $styleId, $languageId)
     {
         $request = \XF::app()->request();
+        /** @var \SV\RedisCache\XF\CssRenderer $renderer */
+        $renderer = $this->renderer;
+        $renderer->setIncludeCharsetInOutput(true);
+
         $showDebugOutput = (\XF::$debugMode && $request->get('_debug'));
         if (!$showDebugOutput && strpos($request->getServer('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== false)
         {
-            /** @var \SV\RedisCache\XF\CssRenderer $renderer */
-            $renderer = $this->renderer;
             $renderer->setForceRawCache(true);
         }
         return parent::run($templates, $styleId, $languageId);

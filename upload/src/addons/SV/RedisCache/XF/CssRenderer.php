@@ -29,9 +29,22 @@ class CssRenderer extends XFCP_CssRenderer
 
     protected $echoUncompressedData = false;
 
+    /**
+     * @param bool $value
+     */
     public function setForceRawCache($value)
     {
         $this->echoUncompressedData = $value;
+    }
+
+    protected $includeCharsetInOutput = false;
+
+    /**
+     * @param bool $value
+     */
+    public function setIncludeCharsetInOutput($value)
+    {
+        $this->includeCharsetInOutput = $value;
     }
 
     /**
@@ -63,14 +76,29 @@ class CssRenderer extends XFCP_CssRenderer
         $output = $data['o']; // gzencoded
         $length = $data['l'];
 
+        if (!$this->includeCharsetInOutput)
+        {
+            $this->echoUncompressedData = false;
+        }
+
         if ($this->echoUncompressedData)
         {
             return $this->wrapOutput($output, $length);
         }
 
         // client doesn't support compression, so decompress before sending it
-        return @\gzdecode($output);
+        $css =  @\gzdecode($output);
+
+        if (!$this->includeCharsetInOutput && strpos($css, static::$charsetBits) === 0)
+        {
+            // strip out the css header bits
+            $css = substr($css, \strlen(static::$charsetBits));
+        }
+
+        return $css;
     }
+
+    static $charsetBits = '@CHARSET "UTF-8";' . "\n\n";
 
     protected function cacheFinalOutput(array $templates, $output)
     {
@@ -81,7 +109,7 @@ class CssRenderer extends XFCP_CssRenderer
             return;
         }
 
-        $output = '@CHARSET "UTF-8";' . "\n\n" . strval($output);
+        $output = static::$charsetBits . strval($output);
 
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $credis = $cache->getCredis(false);
