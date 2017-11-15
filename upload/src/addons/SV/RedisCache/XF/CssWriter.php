@@ -8,7 +8,7 @@ use XF\Http\ResponseStream;
 
 class CssWriter extends XFCP_CssWriter
 {
-    public function run(array $templates, $styleId, $languageId)
+    public function run(array $templates, $styleId, $languageId, $validation = null)
     {
         $request = \XF::app()->request();
         /** @var \SV\RedisCache\XF\CssRenderer $renderer */
@@ -20,7 +20,7 @@ class CssWriter extends XFCP_CssWriter
         {
             $renderer->setForceRawCache(true);
         }
-        return parent::run($templates, $styleId, $languageId);
+        return parent::run($templates, $styleId, $languageId, $validation);
     }
 
     public function finalizeOutput($output)

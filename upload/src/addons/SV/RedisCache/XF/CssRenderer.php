@@ -54,7 +54,7 @@ class CssRenderer extends XFCP_CssRenderer
     protected function getFinalCachedOutput(array $templates)
     {
         $cache = $this->cache;
-        if (!$this->allowCached || !($cache instanceof Redis) || !($credis = $cache->getCredis(false)))
+        if (!$this->allowCached || !$this->getAllowFinalCacheUpdate() || !($cache instanceof Redis) || !($credis = $cache->getCredis(false)))
         {
             return parent::getFinalCachedOutput($templates);
         }
