@@ -19,12 +19,6 @@ class CssRenderer extends XFCP_CssRenderer
             $cache = \XF::app()->cache(); // work-around for XF2.0 Beta 1 bug
         }
         parent::__construct($app, $templater, $cache);
-        // enable caching in debug-mode because why not
-        $config = $app->config();
-        if ($config['development']['enabled'])
-        {
-            $this->allowCached = true;
-        }
     }
 
     protected $echoUncompressedData = false;
