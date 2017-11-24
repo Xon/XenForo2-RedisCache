@@ -25,6 +25,7 @@ class Forum extends XFCP_Forum
 
     protected function applyForumFilters(\XF\Entity\Forum $forum, \XF\Finder\Thread $threadFinder, array $filters)
     {
+        parent::applyForumFilters($forum, $threadFinder, $filters);
         if (Globals::$cacheThreadListFinder)
         {
             $this->_cacheForum = $forum;
