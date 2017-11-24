@@ -5,9 +5,9 @@
     "sub_options": [],
     "validation_class": "",
     "validation_method": "",
-    "default_value": "1",
+    "default_value": "",
     "relations": {
-        "RedisCache": 10,
-        "performance": 10010
+        "RedisCache": 20,
+        "performance": 10020
     }
 }

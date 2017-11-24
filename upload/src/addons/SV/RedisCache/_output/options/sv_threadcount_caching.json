@@ -8,6 +8,6 @@
     "default_value": "1",
     "relations": {
         "RedisCache": 10,
-        "performance": 10000
+        "performance": 10010
     }
 }

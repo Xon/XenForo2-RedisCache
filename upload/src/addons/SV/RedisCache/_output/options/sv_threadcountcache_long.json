@@ -7,7 +7,7 @@
     "validation_method": "",
     "default_value": "3600",
     "relations": {
-        "RedisCache": 40,
-        "performance": 10040
+        "RedisCache": 50,
+        "performance": 10050
     }
 }

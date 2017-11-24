@@ -1,5 +1,8 @@
 {
     "RedisCache.json": {
         "hash": "65c8cd52899477edde38b50d836db16e"
+    },
+    "RedisCacheOptions.json": {
+        "hash": "2d2d7ae8f06551731035ff619da404e1"
     }
 }

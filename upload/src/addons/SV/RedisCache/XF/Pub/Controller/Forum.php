@@ -58,7 +58,7 @@ class Forum extends XFCP_Forum
         $options = \XF::options();
         $visitor = \XF::visitor();
         $user = $visitor;
-        if ($options->sv_threadcount_moderated)
+        if ($options->sv_threadcount_sv_threadcount_moderated)
         {
             $permCache = \XF::app()->PermissionCache();
             // detach & clone to ensure this visitor copy doesn't persist the changes we need to make
