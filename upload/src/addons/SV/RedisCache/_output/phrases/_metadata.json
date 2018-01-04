@@ -65,22 +65,10 @@
         "version_string": "1.1.1",
         "hash": "712867d52fd7c7d5d081b4ae50bf3533"
     },
-    "option_group.RedisCacheOptions.txt": {
-        "global_cache": false,
-        "version_id": 2000700,
-        "version_string": "2.0.7",
-        "hash": "6a9586265b30484ca8ceec8ba0acebaa"
-    },
     "option_group_description.RedisCache.txt": {
         "global_cache": false,
         "version_id": 1010100,
         "version_string": "1.1.1",
         "hash": "1b3f3108f205c1269771333850cbbfd4"
-    },
-    "option_group_description.RedisCacheOptions.txt": {
-        "global_cache": false,
-        "version_id": 2000700,
-        "version_string": "2.0.7",
-        "hash": "d41d8cd98f00b204e9800998ecf8427e"
     }
 }
