@@ -23,7 +23,7 @@ class Index extends AbstractController  {
 			{
 				$useLua = $cache->useLua();
 
-				self::addRedisInfo($view, $credis->info(), $useLua);
+                $this->addRedisInfo($view, $credis->info(), $useLua);
 				$redisInfo = $view->getParam('redis');
 				$slaves = $redisInfo['slaves'];
 
@@ -43,7 +43,7 @@ class Index extends AbstractController  {
 					{
 						$slaveClient->forceStandalone();
 					}
-					self::addRedisInfo($view, $slaveClient->info(), $useLua);
+					$this->addRedisInfo($view, $slaveClient->info(), $useLua);
 
 					$paramItem = ['redis'=>['slaveId'=>$slaveId]];
 					$view->setParams($paramItem, true);
@@ -56,7 +56,7 @@ class Index extends AbstractController  {
 		return $view;
 	}
 
-	private static function addRedisInfo(View $response, array $data, $useLua = true)
+	private function addRedisInfo(View $response, array $data, $useLua = true)
 	{
 		$database = 0;
 		$slaves = array();
