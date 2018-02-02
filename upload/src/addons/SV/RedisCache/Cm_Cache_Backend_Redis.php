@@ -189,7 +189,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 }
             }
             if ( ! $this->_redis) {
-                throw new \CredisException('Unable to connect to a redis sentinel: '.$exception->getMessage(), $exception);
+                throw new \CredisException('Unable to connect to a redis sentinel: '.$exception->getMessage(), 0, $exception);
             }
 
             // Optionally use read slaves - will only be used for 'load' operation
