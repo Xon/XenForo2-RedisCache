@@ -1,0 +1,11 @@
+{
+    "route_type": "admin",
+    "route_prefix": "redis-info",
+    "sub_name": "",
+    "format": ":int<slave_id>/",
+    "build_class": "",
+    "build_method": "",
+    "controller": "SV\\RedisCache:Index",
+    "context": "redisInfo",
+    "action_prefix": ""
+}

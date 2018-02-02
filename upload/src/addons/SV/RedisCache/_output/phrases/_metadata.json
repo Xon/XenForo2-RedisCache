@@ -1,4 +1,10 @@
 {
+    "admin_navigation.redisInfo.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "e8a9509d6c246088fa5f3d908e840df7"
+    },
     "option.sv_threadcount_caching.txt": {
         "global_cache": false,
         "version_id": 1010100,
@@ -70,5 +76,11 @@
         "version_id": 1010100,
         "version_string": "1.1.1",
         "hash": "1b3f3108f205c1269771333850cbbfd4"
+    },
+    "redis_version.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "34b6cd75171affba6957e308dcbd92be"
     }
 }

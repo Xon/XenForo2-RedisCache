@@ -1,0 +1,9 @@
+{
+    "parent_navigation_id": "checksAndTests",
+    "display_order": 300,
+    "link": "redis-info",
+    "icon": "",
+    "admin_permission_id": "",
+    "debug_only": false,
+    "hide_no_children": false
+}

@@ -1,0 +1,89 @@
+<div class="section" id="RedisInfo">
+    <div class="secondaryContent statsList">
+        <h3 class="textHeading">
+            {{ phrase('redis_info') }}
+            {{ $redis.slaveId !== null ? phrase('redis_slave_x', {'i': $redis.slaveId} ) : '' }}</h3>
+        <div class="statsBlock">
+            <xf:if is="!{$redis}">
+                <a>
+                    <span class="label">{{ phrase('redis_disabled') }}</span>
+                </a>
+            <xf:else/>
+                <a>
+                    <span class="label">{{ phrase('redis_version') }}:</span>
+                    <strong>{$redis.redis_version}</strong>
+                </a>
+                <a>
+                    <span class="label">{{ phrase('redis_phpredis') }}:</span>
+                    <strong>{{ $redis.phpredis ? $redis.phpredis : phrase('n_a') }}</strong>
+                </a>
+                <a>
+                    <span class="label">{{ phrase('redis_lua') }}:</span>
+                    <strong>{{ $redis.lua ? phrase('yes') : phrase('no') }}</strong>
+                </a>
+
+                <xf:if is="$redis.loading">
+                    <a>
+                        <span class="label">{{ phrase('redis_loading') }}</span>
+                    </a>
+                    <xf:else/>
+
+                    <xf:if is="$redis.HasIOStats">
+                        <a>
+                            <span class="label">{{ phrase('redis_input_kbps') }}:</span>
+                            <strong>{$redis.instantaneous_input_kbps|number}</strong>
+                        </a>
+                        <a>
+                            <span class="label">{{ phrase('redis_output_kbps') }}:</span>
+                            <strong>{$redis.instantaneous_output_kbps|number}</strong>
+                        </a>
+                    </xf:if>
+
+                    <a>
+                        <span class="label">{{ phrase('redis_ops') }}:</span>
+                        <strong>{$redis.instantaneous_ops_per_sec|number}</strong>
+                    </a>
+
+                    <xf:if is="{$redis.db.{$redis.db_default}}">
+                        <a>
+                            <span class="label">{{ phrase('redis_db_x_keys', {'database': $redis.db_default} ) }}:</span>
+                            <strong>{$redis.db.{$redis.db_default}.keys|number}</strong>
+                        </a>
+                        <a>
+                            <span class="label">{{ phrase('redis_db_x_avg_ttl', {'database': $redis.db_default} ) }}:</span>
+                            <strong>{$redis.db.{$redis.db_default}.avg_ttl|number}</strong>
+                        </a>
+                    </xf:if>
+
+                    <a>
+                        <span class="label">{{ phrase('redis_clients') }}:</span>
+                        <strong>{$redis.connected_clients|number}</strong>
+                    </a>
+
+                    <xf:if is="$redis.slaves">
+                        <a>
+                            <span class="label">{{ phrase('redis_slaves') }}:</span>
+                            <strong>{{ count($redis.slaves) }}</strong>
+                        </a>
+                        <xf:foreach loop="$redis.slaves" key="$index" value="$slave">
+                            <h3 class="textHeading">{{ phrase('redis_slave_x', {'i': $index} ) }}</h3>
+                            <a href="{{ link('redis-info', {'slave_id': $index} ) }}" class="OverlayTrigger" data-cacheoverlay="false">
+                                <span class="label">{{ phrase('redis_slave_address') }}:</span>
+                                <strong>{$slave.ip}:{$slave.port}</strong>
+                            </a>
+                            <a href="{{ link('redis-info', {'slave_id': $index} ) }}" class="OverlayTrigger" data-cacheoverlay="false">
+                                <span class="label">{{ phrase('redis_slave_lag') }}:</span>
+                                <strong>{$slave.lag}</strong>
+                            </a>
+                            <a href="{{ link('redis-info', {'slave_id': $index} ) }}" class="OverlayTrigger" data-cacheoverlay="false">
+                                <span class="label">{{ phrase('redis_slave_state') }}:</span>
+                                <strong>{$slave.state}</strong>
+                            </a>
+                        </xf:foreach>
+                    </xf:if>
+
+                </xf:if>
+            </xf:if>
+        </div>
+    </div>
+</div>

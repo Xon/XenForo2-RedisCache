@@ -2,7 +2,7 @@
 // setup redis caching
 $config['cache']['enabled'] = true;
 $config['cache']['provider'] = 'SV\RedisCache\Redis';
-// all keys and thier defaults
+// all keys and their defaults
 $config['cache']['config'] = array(
         'server' => '127.0.0.1',
         'port' => 6379,
