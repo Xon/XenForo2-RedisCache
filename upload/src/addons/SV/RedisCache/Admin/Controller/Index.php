@@ -3,6 +3,7 @@
 namespace SV\RedisCache\Admin\Controller;
 
 use Credis_Client;
+use SV\RedisCache\Redis;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\Reply\View;
 use XF\Mvc\ParameterBag;
@@ -17,10 +18,10 @@ class Index extends AbstractController  {
 
 		if ($cache = \XF::app()->cache())
 		{
-			if ($credis = $cache->getCredis(false))
+			if ($cache instanceof Redis &&
+                $credis = $cache->getCredis(false))
 			{
-				/** @var Credis_Client $credis */
-				$useLua = $cache->useLua(false);
+				$useLua = $cache->useLua();
 
 				self::addRedisInfo($view, $credis->info(), $useLua);
 				$redisInfo = $view->getParam('redis');
