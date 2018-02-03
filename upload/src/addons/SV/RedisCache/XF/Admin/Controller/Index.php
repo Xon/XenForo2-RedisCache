@@ -2,13 +2,16 @@
 
 namespace SV\RedisCache\XF\Admin\Controller;
 
-class Index extends XFCP_Index {
-	public function actionIndex()
-	{
-		$reply = parent::actionIndex();
+use SV\RedisCache\Repository\Redis;
 
-		\SV\RedisCache\Repository\Redis::instance()->insertRedisInfoParams($reply, null);
+class Index extends XFCP_Index
+{
+    public function actionIndex()
+    {
+        $reply = parent::actionIndex();
 
-		return $reply;
-	}
+        Redis::instance()->insertRedisInfoParams($reply, null);
+
+        return $reply;
+    }
 }
