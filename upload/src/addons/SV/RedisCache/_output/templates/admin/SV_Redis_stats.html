@@ -1,79 +1,98 @@
-<dl class="pairs pairs--columns pairs--fixedSmall">
-    <dt>{{ phrase('redis_version') }}</dt>
-    <dd>{$redis.redis_version}</dd>
-</dl>
-<dl class="pairs pairs--columns pairs--fixedSmall">
-    <dt>{{ phrase('redis_phpredis') }}</dt>
-    <dd>{{ $redis.phpredis ? $redis.phpredis : phrase('n_a') }}</dd>
-</dl>
-<dl class="pairs pairs--columns pairs--fixedSmall">
-    <dt>{{ phrase('redis_lua') }}</dt>
-    <dd>{{ $redis.lua ? phrase('yes') : phrase('no') }}</dd>
-</dl>
+<style>
+.redis-slaves {
+	display: flex;
+	flex-direction: row;
+	flex-wrap:wrap;
+	justify-content: flex-start;
+}
+.redis-slaves .redis-info-item {
+	flex-basis: 350px;
+}
+</style>
+<div class="redis-info">
+<div class="redis-info-item redis-server">
+	<dl class="pairs pairs--columns pairs--fixedSmall">
+		<dt>{{ phrase('redis_version') }}</dt>
+		<dd>{$redis.redis_version}</dd>
+	</dl>
+	<dl class="pairs pairs--columns pairs--fixedSmall">
+		<dt>{{ phrase('redis_phpredis') }}</dt>
+		<dd>{{ $redis.phpredis ? $redis.phpredis : phrase('n_a') }}</dd>
+	</dl>
+	<dl class="pairs pairs--columns pairs--fixedSmall">
+		<dt>{{ phrase('redis_lua') }}</dt>
+		<dd>{{ $redis.lua ? phrase('yes') : phrase('no') }}</dd>
+	</dl>
 
-<xf:if is="$redis.loading">
-    {{ phrase('redis_loading') }}
+	<xf:if is="$redis.loading">
+		{{ phrase('redis_loading') }}
 
-    <xf:else/>
+	<xf:else/>
+		<xf:if is="$redis.HasIOStats">
+			<dl class="pairs pairs--columns pairs--fixedSmall">
+				<dt>{{ phrase('redis_input_kbps') }}</dt>
+				<dd>{$redis.instantaneous_input_kbps|number}</dd>
+			</dl>
+			<dl class="pairs pairs--columns pairs--fixedSmall">
+				<dt>{{ phrase('redis_output_kbps') }}</dt>
+				<dd>{$redis.instantaneous_output_kbps|number}</dd>
+			</dl>
+		</xf:if>
 
-    <xf:if is="$redis.HasIOStats">
-        <dl class="pairs pairs--columns pairs--fixedSmall">
-            <dt>{{ phrase('redis_input_kbps') }}</dt>
-            <dd>{$redis.instantaneous_input_kbps|number}</dd>
-        </dl>
-        <dl class="pairs pairs--columns pairs--fixedSmall">
-            <dt>{{ phrase('redis_output_kbps') }}</dt>
-            <dd>{$redis.instantaneous_output_kbps|number}</dd>
-        </dl>
-    </xf:if>
+		<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dt>{{ phrase('redis_ops') }}</dt>
+			<dd>{$redis.instantaneous_ops_per_sec|number}</dd>
+		</dl>
 
-    <dl class="pairs pairs--columns pairs--fixedSmall">
-        <dt>{{ phrase('redis_ops') }}</dt>
-        <dd>{$redis.instantaneous_ops_per_sec|number}</dd>
-    </dl>
+		<xf:if is="{$redis.db.{$redis.db_default}}">
+			<dl class="pairs pairs--columns pairs--fixedSmall">
+				<dt>{{ phrase('redis_db_x_keys', {'database': $redis.db_default} ) }}</dt>
+				<dd>{$redis.db.{$redis.db_default}.keys|number}</dd>
+			</dl>
+			<dl class="pairs pairs--columns pairs--fixedSmall">
+				<dt>{{ phrase('redis_db_x_avg_ttl', {'database': $redis.db_default} ) }}</dt>
+				<dd>{$redis.db.{$redis.db_default}.avg_ttl|number}</dd>
+			</dl>
+		</xf:if>
 
-    <xf:if is="{$redis.db.{$redis.db_default}}">
-        <dl class="pairs pairs--columns pairs--fixedSmall">
-            <dt>{{ phrase('redis_db_x_keys', {'database': $redis.db_default} ) }}</dt>
-            <dd>{$redis.db.{$redis.db_default}.keys|number}</dd>
-        </dl>
-        <dl class="pairs pairs--columns pairs--fixedSmall">
-            <dt>{{ phrase('redis_db_x_avg_ttl', {'database': $redis.db_default} ) }}</dt>
-            <dd>{$redis.db.{$redis.db_default}.avg_ttl|number}</dd>
-        </dl>
-    </xf:if>
+		<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dt>{{ phrase('redis_clients') }}</dt>
+			<dd>{$redis.connected_clients|number}</dd>
+		</dl>
 
-    <dl class="pairs pairs--columns pairs--fixedSmall">
-        <dt>{{ phrase('redis_clients') }}</dt>
-        <dd>{$redis.connected_clients|number}</dd>
-    </dl>
+		<xf:if is="$redis.slaves">	
+			<dl class="pairs pairs--columns pairs--fixedSmall">
+				<dt>{{ phrase('redis_slaves') }}</dt>
+				<dd>{{ count($redis.slaves) }}</dd>
+			</dl>
+		</xf:if>
+	</xf:if>
+</div>
 
-    <xf:if is="$redis.slaves">
-        <dl class="pairs pairs--columns pairs--fixedSmall">
-            <dt>{{ phrase('redis_slaves') }}</dt>
-            <dd>{{ count($redis.slaves) }}</dd>
-        </dl>
-        <xf:foreach loop="$redis.slaves" key="$index" value="$slave">
-            <h3>
-                <a href="{{ link('redis-info', {'slave_id': $index} ) }}" data-xf-click="overlay" data-cache="0">
-                    {{ phrase('redis_slave_x', {'i': $index} ) }}
-                </a>
-            </h3>
+<xf:if is="!$redis.loading && $redis.slaves">
+	<div class="redis-info-item redis-slaves">
+		<xf:foreach loop="$redis.slaves" key="$index" value="$slave">
+			<div class="redis-info-item redis-slave redis-slave{$index}" data-slave="{$index}">
+				<h3>
+					<a href="{{ link('redis-info', {'slave_id': $index} ) }}" data-xf-click="overlay" data-cache="0">
+						{{ phrase('redis_slave_x', {'i': $index} ) }}
+					</a>
+				</h3>
 
-            <dl class="pairs pairs--columns pairs--fixedSmall">
-                <dt>{{ phrase('redis_slave_address') }}</dt>
-                <dd>{$slave.ip}:{$slave.port}</dd>
-            </dl>
-            <dl class="pairs pairs--columns pairs--fixedSmall">
-                <dt>{{ phrase('redis_slave_lag') }}</dt>
-                <dd>{$slave.lag}</dd>
-            </dl>
-            <dl class="pairs pairs--columns pairs--fixedSmall">
-                <dt>{{ phrase('redis_slave_state') }}</dt>
-                <dd>{$slave.state}</dd>
-            </dl>
-
-        </xf:foreach>
-    </xf:if>
-
+				<dl class="pairs pairs--columns pairs--fixedSmall">
+					<dt>{{ phrase('redis_slave_address') }}</dt>
+					<dd>{$slave.ip}:{$slave.port}</dd>
+				</dl>
+				<dl class="pairs pairs--columns pairs--fixedSmall">
+					<dt>{{ phrase('redis_slave_lag') }}</dt>
+					<dd>{$slave.lag}</dd>
+				</dl>
+				<dl class="pairs pairs--columns pairs--fixedSmall">
+					<dt>{{ phrase('redis_slave_state') }}</dt>
+					<dd>{$slave.state}</dd>
+				</dl>
+			</div>
+		</xf:foreach>	
+	</div>
 </xf:if>
+</div>
