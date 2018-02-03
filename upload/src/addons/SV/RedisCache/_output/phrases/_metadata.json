@@ -77,6 +77,102 @@
         "version_string": "1.1.1",
         "hash": "1b3f3108f205c1269771333850cbbfd4"
     },
+    "redis_clients.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "6132b7f6cebbb1e58ba2ab7fdd2c68b8"
+    },
+    "redis_db_x_avg_ttl.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "29b2efbc6eceaed51a6d01481e9d4b03"
+    },
+    "redis_db_x_keys.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "2ef8c3dfd2f765ff78adaf3dcc2a9919"
+    },
+    "redis_disabled.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "7f18df2eed987b5201842bfce41688e1"
+    },
+    "redis_info.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "ed0e158ba8a428027f574c1dc348871b"
+    },
+    "redis_input_kbps.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "0808bff1e39d43862a492069ff6f811a"
+    },
+    "redis_loading.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "147eafacc0104f2991e55547d5d8dcdf"
+    },
+    "redis_lua.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "724375347ca608e9f27b8f165e6477db"
+    },
+    "redis_ops.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "49ca4c48d6deb48df2b3f2aff1060d08"
+    },
+    "redis_output_kbps.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "dbd64e077fb898bcfa3a60116e3dc481"
+    },
+    "redis_phpredis.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "0669e652fd7a376038fb8e68d4be8070"
+    },
+    "redis_slave_address.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "dd7bf230fde8d4836917806aff6a6b27"
+    },
+    "redis_slave_lag.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "7dc35be25d3ae34c1d0512eea91cf20a"
+    },
+    "redis_slave_state.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "46a2a41cc6e552044816a2d04634545d"
+    },
+    "redis_slave_x.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "529e45a94500e8eb7af85fcf518a1f47"
+    },
+    "redis_slaves.txt": {
+        "global_cache": false,
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "9acbc40bb0e0a9537397f80912d21de8"
+    },
     "redis_version.txt": {
         "global_cache": false,
         "version_id": 2000900,
