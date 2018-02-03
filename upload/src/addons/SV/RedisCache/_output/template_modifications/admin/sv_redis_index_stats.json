@@ -1,0 +1,9 @@
+{
+    "template": "index",
+    "description": "",
+    "execution_order": 10,
+    "enabled": true,
+    "action": "str_replace",
+    "find": "<xf:if is=\"$logCounts",
+    "replace": "<xf:include template=\"SV_Redis_index\"/>\n\n$0"
+}

@@ -1,12 +1,22 @@
 {
+    "admin/SV_Redis_index.html": {
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "c10368d7beeb2ea19cdeac3fe6053469"
+    },
     "admin/SV_Redis_info.html": {
         "version_id": 2000900,
         "version_string": "2.0.9",
-        "hash": "a59941579d2d44e427dd6d135344acfc"
+        "hash": "586c7977aadece5d8e2dfaae167c7804"
     },
     "admin/SV_Redis_info_Wrapper.html": {
         "version_id": 2000900,
         "version_string": "2.0.9",
-        "hash": "a307e631a7d182430c92767098dd378b"
+        "hash": "99598ba3216620386d911bb7f11c89da"
+    },
+    "admin/SV_Redis_stats.html": {
+        "version_id": 2000900,
+        "version_string": "2.0.9",
+        "hash": "f32d7ebcd345a856b2907251c5c7e591"
     }
 }

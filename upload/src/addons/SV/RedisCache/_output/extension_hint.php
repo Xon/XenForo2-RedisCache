@@ -3,6 +3,11 @@
 // ################## THIS IS A GENERATED FILE ##################
 // DO NOT EDIT DIRECTLY. EDIT THE CLASS EXTENSIONS IN THE CONTROL PANEL.
 
+namespace SV\RedisCache\XF\Admin\Controller
+{
+	class XFCP_Index extends \XF\Admin\Controller\Index {}
+}
+
 namespace SV\RedisCache\XF
 {
 	class XFCP_CssRenderer extends \XF\CssRenderer {}

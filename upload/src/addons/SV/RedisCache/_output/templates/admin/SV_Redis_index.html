@@ -1,0 +1,12 @@
+<xf:if is="{$redis}">
+    <div class="block">
+        <div class="block-container">
+            <h2 class="block-header">{{ phrase('redis_info') }}</h2>
+            <div class="block-body">
+                <div class="block-row">
+                    <xf:include template="SV_Redis_stats"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</xf:if>
