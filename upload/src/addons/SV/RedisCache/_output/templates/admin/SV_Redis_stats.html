@@ -23,6 +23,10 @@
 		<dt>{{ phrase('redis_lua') }}</dt>
 		<dd>{{ $redis.lua ? phrase('yes') : phrase('no') }}</dd>
 	</dl>
+	<dl class="pairs pairs--columns pairs--fixedSmall">
+		<dt>{{ phrase('redis_serializer') }}</dt>
+		<dd>{{ $redis.serializer }}</dd>
+	</dl>
 
 	<xf:if is="$redis.loading">
 		{{ phrase('redis_loading') }}

@@ -37,11 +37,11 @@ class Redis extends Repository
                 $slaves = $redisInfo['slaves'];
 
                 $config = \XF::app()->config();
-                $database = empty($config['cache']['backendOptions']['database']) ? 0 : (int)$config['cache']['backendOptions']['database'];
-                $password = empty($config['cache']['backendOptions']['password']) ? null : $config['cache']['backendOptions']['password'];
-                $timeout = empty($config['cache']['backendOptions']['timeout']) ? null : $config['cache']['backendOptions']['timeout'];
-                $persistent = empty($config['cache']['backendOptions']['persistent']) ? null : $config['cache']['backendOptions']['persistent'];
-                $forceStandalone = empty($config['cache']['backendOptions']['force_standalone']) ? null : $config['cache']['backendOptions']['force_standalone'];
+                $database = empty($config['cache']['config']['database']) ? 0 : (int)$config['cache']['config']['database'];
+                $password = empty($config['cache']['config']['password']) ? null : $config['cache']['config']['password'];
+                $timeout = empty($config['cache']['config']['timeout']) ? null : $config['cache']['config']['timeout'];
+                $persistent = empty($config['cache']['config']['persistent']) ? null : $config['cache']['config']['persistent'];
+                $forceStandalone = empty($config['cache']['config']['force_standalone']) ? null : $config['cache']['config']['force_standalone'];
 
                 if (isset($slaves[$slaveId]))
                 {
@@ -77,9 +77,9 @@ class Redis extends Repository
         if (!empty($data))
         {
             $config = \XF::app()->config();
-            if (!empty($config['cache']['backendOptions']['database']))
+            if (!empty($config['cache']['config']['database']))
             {
-                $database = (int)$config['cache']['backendOptions']['database'];
+                $database = (int)$config['cache']['config']['database'];
             }
 
             foreach ($data as $key => &$value)
@@ -122,6 +122,8 @@ class Redis extends Repository
             }
         }
 
+        $config = \XF::app()->config();
+        $data['serializer'] = empty($config['cache']['config']['serializer']) ? 'php' : $config['cache']['config']['serializer'];
         $data['slaves'] = $slaves;
         $data['db'] = $db;
         $data['db_default'] = $database;

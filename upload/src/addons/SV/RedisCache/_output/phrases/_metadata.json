@@ -143,6 +143,12 @@
         "version_string": "2.0.9",
         "hash": "0669e652fd7a376038fb8e68d4be8070"
     },
+    "redis_serializer.txt": {
+        "global_cache": false,
+        "version_id": 2010100,
+        "version_string": "2.1.1",
+        "hash": "a6503f935101663a5fc196e528a78907"
+    },
     "redis_slave_address.txt": {
         "global_cache": false,
         "version_id": 2000900,

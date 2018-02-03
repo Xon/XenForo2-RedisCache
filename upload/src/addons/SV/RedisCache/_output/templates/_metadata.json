@@ -10,8 +10,8 @@
         "hash": "586c7977aadece5d8e2dfaae167c7804"
     },
     "admin/SV_Redis_stats.html": {
-        "version_id": 2010000,
-        "version_string": "2.1.0",
-        "hash": "736c61a9699fd5c46dfd180ab33af038"
+        "version_id": 2010100,
+        "version_string": "2.1.1",
+        "hash": "126d0edc8ec23b8d5c964c180d587d8b"
     }
 }
