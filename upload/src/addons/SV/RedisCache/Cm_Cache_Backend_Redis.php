@@ -422,13 +422,21 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
      */
     protected function _decodeData($data)
     {
-        if (substr($data,2,3) == self::COMPRESS_PREFIX) {
-            switch(substr($data,0,2)) {
-                case 'sn': /** @noinspection PhpUndefinedFunctionInspection */ $data = snappy_uncompress(substr($data,5)); break;
-                case 'lz': /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_decompress(substr($data,5)); break;
-                case 'l4': /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_uncompress(substr($data,5)); break;
-                case 'gz': case 'zc': $data = gzuncompress(substr($data,5)); break;
+        try
+        {
+            if (substr($data,2,3) == self::COMPRESS_PREFIX) {
+                switch(substr($data,0,2)) {
+                    case 'sn': /** @noinspection PhpUndefinedFunctionInspection */ $data = snappy_uncompress(substr($data,5)); break;
+                    case 'lz': /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_decompress(substr($data,5)); break;
+                    case 'l4': /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_uncompress(substr($data,5)); break;
+                    case 'gz': case 'zc': return gzuncompress(substr($data,5)); break;
+                }
             }
+        }
+        catch(\Exception $e)
+        {
+            // Some applications will capture the php error that these functions can sometimes generate and throw it as an Exception
+            $data = false;
         }
         return $data;
     }
