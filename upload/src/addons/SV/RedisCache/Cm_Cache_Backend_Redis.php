@@ -311,10 +311,13 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     {
         throw new \CredisException($msg);
     }
+
     /**
      * Apply common configuration to client instances.
      *
      * @param \Credis_Client $client
+     * @param bool           $forceSelect
+     * @param null           $clientOptions
      */
     protected function _applyClientOptions(\Credis_Client $client, $forceSelect = FALSE, $clientOptions = null)
     {
