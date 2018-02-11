@@ -1,7 +1,7 @@
 {
     "template": "index",
     "description": "",
-    "execution_order": 10,
+    "execution_order": 5562,
     "enabled": true,
     "action": "str_replace",
     "find": "<xf:if is=\"$logCounts",

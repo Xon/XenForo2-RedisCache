@@ -1,6 +1,6 @@
 {
     "from_class": "XF\\Admin\\Controller\\Index",
     "to_class": "SV\\RedisCache\\XF\\Admin\\Controller\\Index",
-    "execute_order": 10,
+    "execute_order": 5562,
     "active": true
 }
