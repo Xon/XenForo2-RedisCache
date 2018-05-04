@@ -111,5 +111,6 @@ class CssRenderer extends XFCP_CssRenderer
             'o' => \gzencode($output),
             'l' => strlen($output),
         ]);
+        $credis->expire($key, 3600);
     }
 }
