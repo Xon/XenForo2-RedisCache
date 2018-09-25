@@ -19,6 +19,7 @@ $config['cache']['config'] = array(
         'compression_lib' => null, // dynamically select first of; snappy,lzf,l4z,gzip IF EMPTY/null
         'use_lua' => false,
         'serializer' => 'igbinary', // to disable set ot 'php'
+        'retry_reads_on_master' => false,
         );
 // single slave (has most of the details of config):
 $config['cache']['config']['load_from_slave'] = array(
