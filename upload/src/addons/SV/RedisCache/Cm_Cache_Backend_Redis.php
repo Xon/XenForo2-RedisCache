@@ -95,6 +95,13 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     protected $_luaMaxCStack = 5000;
 
     /**
+     * If 'retry_reads_on_master' is truthy then reads will be retried against master when slave returns "(nil)" value
+     *
+     * @var boolean
+     */
+    protected $_retryReadsOnMaster = false;
+
+    /**
      * @var \stdClass
      */
     protected $_clientOptions;
@@ -301,6 +308,10 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
 
         if (isset($options['use_lua'])) {
             $this->_useLua = (bool) $options['use_lua'];
+        }
+
+        if (isset($options['retry_reads_on_master'])) {
+            $this->_retryReadsOnMaster = (bool) $options['retry_reads_on_master'];
         }
 
         if (isset($options['auto_expire_lifetime'])) {

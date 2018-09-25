@@ -222,6 +222,11 @@ class Redis  extends Cm_Cache_Backend_Redis
     {
         if ($this->_slave) {
             $data = $this->_slave->get($id);
+
+            // Prevent compounded effect of cache flood on asynchronously replicating master/slave setup
+            if ($this->_retryReadsOnMaster && $data === false) {
+                $data = $this->_redis->get($id);
+            }
         } else {
             $data = $this->_redis->get($id);
         }
