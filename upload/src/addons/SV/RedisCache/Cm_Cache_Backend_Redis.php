@@ -282,6 +282,15 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             }
             $this->_compressionLib = 'l4z';
         }
+        else if ( function_exists('zstd_compress')) {
+            $version = phpversion("zstd");
+            if (version_compare($version, "0.4.13") < 0)
+            {
+                $this->_compressTags = $this->_compressTags > 1 ? true : false;
+                $this->_compressData = $this->_compressData > 1 ? true : false;
+            }
+            $this->_compressionLib = 'zstd';
+        }
         else if ( function_exists('lzf_compress') ) {
             $this->_compressionLib = 'lzf';
         }
@@ -408,6 +417,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 case 'snappy': /** @noinspection PhpUndefinedFunctionInspection */ $data = snappy_compress($data); break;
                 case 'lzf':    /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_compress($data); break;
                 case 'l4z':    /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_compress($data, $level); break;
+                case 'zstd':    /** @noinspection PhpUndefinedFunctionInspection */ $data = zstd_compress($data, $level); break;
                 case 'gzip':   $data = gzcompress($data, $level); break;
                 default:       throw new \CredisException("Unrecognized 'compression_lib'.");
             }
@@ -432,6 +442,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     case 'sn': /** @noinspection PhpUndefinedFunctionInspection */ $data = snappy_uncompress(substr($data,5)); break;
                     case 'lz': /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_decompress(substr($data,5)); break;
                     case 'l4': /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_uncompress(substr($data,5)); break;
+                    case 'zs': /** @noinspection PhpUndefinedFunctionInspection */ $data = zstd_uncompress(substr($data,5)); break;
                     case 'gz': case 'zc': return gzuncompress(substr($data,5)); break;
                 }
             }
