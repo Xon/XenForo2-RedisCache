@@ -1,8 +1,12 @@
 <xf:if is="{$redis}">
     <div class="block">
         <div class="block-container">
-            <h2 class="block-header">{{ phrase('redis_info') }}</h2>
-            <div class="block-body">
+            <h2 class="block-header">
+                <span class="collapseTrigger collapseTrigger--block {{ !is_toggled('collapse_env_redis_info') ? 'is-active' : '' }}" data-xf-click="toggle" data-xf-init="toggle-storage" data-storage-type="cookie" data-storage-key="collapse_env_redis_info" data-target="#js-collapse-env-redis-info">
+                    {{ phrase('redis_info') }}
+                </span>
+            </h2>
+            <div class="block-body block-body--collapsible block-row {{ !is_toggled('collapse_env_redis_info') ? 'is-active' : '' }}" id="js-collapse-env-redis-info">
                 <div class="block-row">
                     <xf:include template="SV_Redis_stats"/>
                 </div>
