@@ -52,5 +52,15 @@ class Setup extends AbstractSetup
             while ($loopGuard > 0 && !empty($cursor));
         }
     }
+
+    public function postInstall(array &$stateChanges)
+    {
+        $this->db()->emptyTable('xf_css_cache');
+    }
+
+    public function postUpgrade($previousVersion, array &$stateChanges)
+    {
+        $this->db()->emptyTable('xf_css_cache');
+    }
 }
 

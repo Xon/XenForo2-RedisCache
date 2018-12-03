@@ -12,8 +12,11 @@ use XF\Http\ResponseStream;
 
 class CssRenderer extends XFCP_CssRenderer
 {
+    protected $svDisableIndividualCssCache = true;
+
     public function __construct(App $app, Templater $templater, \Doctrine\Common\Cache\CacheProvider $cache = null)
     {
+        $this->svDisableIndividualCssCache = \XF::options()->svDisableIndividualCssCache;
         if ($cache === null)
         {
             $cache = \XF::app()->cache(); // work-around for XF2.0 Beta 1 bug
@@ -112,5 +115,34 @@ class CssRenderer extends XFCP_CssRenderer
             'l' => strlen($output),
         ]);
         $credis->expire($key, 3600);
+    }
+
+    /**
+     * @param array $templates
+     * @return array
+     */
+    protected function getIndividualCachedTemplates(array $templates)
+    {
+        // individual css template cache causes a thundering herd of writes, and is cached outside the application stack
+        if ($this->svDisableIndividualCssCache)
+        {
+            return [];
+        }
+
+        return parent::getIndividualCachedTemplates($templates);
+    }
+
+    /**
+     * @param string $title
+     * @param string $output
+     */
+    public function cacheTemplate($title, $output)
+    {
+        if ($this->svDisableIndividualCssCache)
+        {
+            return;
+        }
+
+        parent::cacheTemplate($title, $output);
     }
 }
