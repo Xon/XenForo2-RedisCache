@@ -9,21 +9,21 @@
 	flex-basis: 350px;
 }
 </style>
-<div class="redis-info">
-<div class="redis-info-item redis-server">
-	<dl class="pairs pairs--columns pairs--fixedSmall">
+
+<div class="pairWrapper pairWrapper--spaced">
+	<dl class="pairs pairs--columns">
 		<dt>{{ phrase('redis_version') }}</dt>
 		<dd>{$redis.redis_version}</dd>
 	</dl>
-	<dl class="pairs pairs--columns pairs--fixedSmall">
+	<dl class="pairs pairs--columns">
 		<dt>{{ phrase('redis_phpredis') }}</dt>
 		<dd>{{ $redis.phpredis ? $redis.phpredis : phrase('n_a') }}</dd>
 	</dl>
-	<dl class="pairs pairs--columns pairs--fixedSmall">
+	<dl class="pairs pairs--columns">
 		<dt>{{ phrase('redis_lua') }}</dt>
 		<dd>{{ $redis.lua ? phrase('yes') : phrase('no') }}</dd>
 	</dl>
-	<dl class="pairs pairs--columns pairs--fixedSmall">
+	<dl class="pairs pairs--columns">
 		<dt>{{ phrase('redis_serializer') }}</dt>
 		<dd>{{ $redis.serializer }}</dd>
 	</dl>
@@ -33,39 +33,39 @@
 
 	<xf:else/>
 		<xf:if is="$redis.HasIOStats">
-			<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dl class="pairs pairs--columns">
 				<dt>{{ phrase('redis_input_kbps') }}</dt>
 				<dd>{$redis.instantaneous_input_kbps|number}</dd>
 			</dl>
-			<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dl class="pairs pairs--columns">
 				<dt>{{ phrase('redis_output_kbps') }}</dt>
 				<dd>{$redis.instantaneous_output_kbps|number}</dd>
 			</dl>
 		</xf:if>
 
-		<dl class="pairs pairs--columns pairs--fixedSmall">
+		<dl class="pairs pairs--columns">
 			<dt>{{ phrase('redis_ops') }}</dt>
 			<dd>{$redis.instantaneous_ops_per_sec|number}</dd>
 		</dl>
 
 		<xf:if is="{$redis.db.{$redis.db_default}}">
-			<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dl class="pairs pairs--columns">
 				<dt>{{ phrase('redis_db_x_keys', {'database': $redis.db_default} ) }}</dt>
 				<dd>{$redis.db.{$redis.db_default}.keys|number}</dd>
 			</dl>
-			<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dl class="pairs pairs--columns">
 				<dt>{{ phrase('redis_db_x_avg_ttl', {'database': $redis.db_default} ) }}</dt>
 				<dd>{$redis.db.{$redis.db_default}.avg_ttl|number}</dd>
 			</dl>
 		</xf:if>
 
-		<dl class="pairs pairs--columns pairs--fixedSmall">
+		<dl class="pairs pairs--columns">
 			<dt>{{ phrase('redis_clients') }}</dt>
 			<dd>{$redis.connected_clients|number}</dd>
 		</dl>
 
 		<xf:if is="$redis.slaves">	
-			<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dl class="pairs pairs--columns">
 				<dt>{{ phrase('redis_slaves') }}</dt>
 				<dd>{{ count($redis.slaves) }}</dd>
 			</dl>
@@ -74,6 +74,7 @@
 </div>
 
 <xf:if is="!$redis.loading && $redis.slaves">
+	<div class="redis-info">
 	<div class="redis-info-item redis-slaves">
 		<xf:foreach loop="$redis.slaves" key="$index" value="$slave">
 			<div class="redis-info-item redis-slave redis-slave{$index}" data-slave="{$index}">
@@ -98,5 +99,5 @@
 			</div>
 		</xf:foreach>	
 	</div>
+	</div>
 </xf:if>
-</div>
