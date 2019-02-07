@@ -1,0 +1,1 @@
+XenForo2 provides per-template css caching which is vulnerable to "<a href="https://en.wikipedia.org/wiki/Thundering_herd_problem">thundering herd</a>" cache slamming by introducing unexpected write load which is vulnerable to MySQL locking.
