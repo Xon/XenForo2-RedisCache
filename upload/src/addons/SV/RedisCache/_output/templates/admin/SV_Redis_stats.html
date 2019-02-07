@@ -32,6 +32,22 @@
 		{{ phrase('redis_loading') }}
 
 	<xf:else/>
+		
+		<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dt>{{ phrase('redis_free_memory') }}</dt>
+			<dd>{{ $redis.maxmemory ? (($redis.maxmemory - $redis.used_memory)|file_size) : phrase('unlimited') }}</dd>
+		</dl>
+
+		<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dt>{{ phrase('redis_used_memory') }}</dt>
+			<dd>{$redis.used_memory|file_size}</dd>
+		</dl>
+
+		<dl class="pairs pairs--columns pairs--fixedSmall">
+			<dt>{{ phrase('redis_peak_memory') }}</dt>
+			<dd>{$redis.used_memory_peak|file_size}</dd>
+		</dl>
+		
 		<xf:if is="$redis.HasIOStats">
 			<dl class="pairs pairs--columns pairs--fixedSmall">
 				<dt>{{ phrase('redis_input_kbps') }}</dt>
