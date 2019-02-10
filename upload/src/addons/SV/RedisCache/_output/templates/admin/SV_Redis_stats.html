@@ -64,16 +64,16 @@
 			<dd>{$redis.instantaneous_ops_per_sec|number}</dd>
 		</dl>
 
-		<xf:if is="{$redis.db.{$redis.db_default}}">
+		<xf:foreach loop="$redis.db" key="$i" value="$db">
 			<dl class="pairs pairs--columns">
-				<dt>{{ phrase('redis_db_x_keys', {'database': $redis.db_default} ) }}</dt>
-				<dd>{$redis.db.{$redis.db_default}.keys|number}</dd>
+				<dt>{{ phrase('redis_db_x_keys', {'database': $i} ) }}</dt>
+				<dd>{$db.keys|number}</dd>
 			</dl>
 			<dl class="pairs pairs--columns">
-				<dt>{{ phrase('redis_db_x_avg_ttl', {'database': $redis.db_default} ) }}</dt>
-				<dd>{$redis.db.{$redis.db_default}.avg_ttl|number}</dd>
+				<dt>{{ phrase('redis_db_x_avg_ttl', {'database': $i} ) }}</dt>
+				<dd>{$db.avg_ttl|number}</dd>
 			</dl>
-		</xf:if>
+		</xf:foreach>
 
 		<dl class="pairs pairs--columns">
 			<dt>{{ phrase('redis_clients') }}</dt>
