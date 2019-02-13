@@ -64,7 +64,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     protected $_compressionLib;
 
     /** @var bool */
-    protected $_useLua = false;
+    protected $_useLua = true;
 
     /** @var integer */
     protected $_autoExpireLifetime = 0;

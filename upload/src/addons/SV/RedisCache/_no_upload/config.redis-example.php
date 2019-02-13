@@ -17,7 +17,7 @@ $config['cache']['config'] = array(
         'lifetimelimit' => 2592000,
         'compress_threshold' => 20480,
         'compression_lib' => null, // dynamically select first of; snappy,lzf,l4z,gzip IF EMPTY/null
-        'use_lua' => false,
+        'use_lua' => true,
         'serializer' => 'igbinary', // to disable set ot 'php'
         'retry_reads_on_master' => false,
         );
