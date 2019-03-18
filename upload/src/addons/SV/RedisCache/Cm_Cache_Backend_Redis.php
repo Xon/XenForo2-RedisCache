@@ -125,7 +125,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $clientOptions->readTimeout = isset($options['read_timeout']) ? (float) $options['read_timeout'] : NULL;
         $clientOptions->password = isset($options['password']) ? $options['password'] : NULL;
         $clientOptions->database = isset($options['database']) ? (int) $options['database'] : 0;
-        $clientOptions->persistent = isset($options['persistent']) ? $options['persistent'] : '';
+        $clientOptions->persistent = isset($options['persistent']) ? strval($options['persistent']) . '_'. strval($clientOptions->database) : '';
         $clientOptions->timeout = isset($options['timeout']) ? $options['timeout'] : self::DEFAULT_CONNECT_TIMEOUT;
         return $clientOptions;
     }
