@@ -72,7 +72,9 @@ class Redis  extends Cm_Cache_Backend_Redis
      * @param $master
      * @return \Credis_Client|null
      */
-    protected function selectLocalRedis(array $ips = null, array $slaves, $master)
+    protected function selectLocalRedis(
+        /** @noinspection PhpOptionalBeforeRequiredParametersInspection */
+        array $ips = null, array $slaves, /** @noinspection PhpUnusedParameterInspection */ $master)
     {
         if ($ips)
         {

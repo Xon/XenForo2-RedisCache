@@ -2,10 +2,7 @@
 
 namespace SV\RedisCache\Admin\Controller;
 
-use Credis_Client;
-use SV\RedisCache\Redis;
 use XF\Admin\Controller\AbstractController;
-use XF\Mvc\Reply\View;
 use XF\Mvc\ParameterBag;
 
 class Index extends AbstractController  {

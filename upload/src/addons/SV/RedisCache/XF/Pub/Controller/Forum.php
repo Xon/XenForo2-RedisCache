@@ -4,7 +4,6 @@ namespace SV\RedisCache\XF\Pub\Controller;
 
 use SV\RedisCache\Globals;
 use XF\Mvc\ParameterBag;
-use XF\PermissionCache;
 
 class Forum extends XFCP_Forum
 {
@@ -71,6 +70,7 @@ class Forum extends XFCP_Forum
 
             // required to wipe the PermissionSet cache which can be populated by getPermissionCombinationId
             $permissions = $permCache->getContentPerms($user->getPermissionCombinationId(), 'node', $forumId);
+            $permissions = $permissions ?: [];
             $user->reset();
 
             // rewrite the permission entry, and ensure the user is forced to use it
