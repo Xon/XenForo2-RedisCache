@@ -20,6 +20,11 @@ $config['cache']['config'] = array(
         'use_lua' => true,
         'serializer' => 'igbinary', // to disable set ot 'php'
         'retry_reads_on_master' => false,
+        // HA support
+        'load_from_slave' => null, // config entry similar to $config['cache']['config'], except without HA options
+        'load_from_slaves' => null, // config entry similar to $config['cache']['config'], except without HA options
+        'sentinel_master_set' => null,
+        'sentinel_persistent' => null,
         );
 // single slave (has most of the details of config):
 $config['cache']['config']['load_from_slave'] = array(
