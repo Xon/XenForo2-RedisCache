@@ -11,7 +11,7 @@ class CssWriter extends XFCP_CssWriter
     public function run(array $templates, $styleId, $languageId, $validation = null)
     {
         $request = \XF::app()->request();
-        /** @var \SV\RedisCache\XF\CssRenderer $renderer */
+        /** @var CssRenderer $renderer */
         $renderer = $this->renderer;
         $renderer->setIncludeCharsetInOutput(true);
 
