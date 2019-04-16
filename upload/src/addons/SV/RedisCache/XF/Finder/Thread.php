@@ -14,8 +14,10 @@ class Thread extends XFCP_Thread
     {
         if (Globals::$threadFinder && Globals::$cacheForum && $cache = \XF::app()->cache())
         {
+            $forum = Globals::$cacheForum;
             $finder = Globals::$threadFinder;
             Globals::$threadFinder = null;
+            Globals::$cacheForum = null;
 
             $conditions = $finder->conditions;
             sort($conditions);
@@ -29,7 +31,7 @@ class Thread extends XFCP_Thread
                 $join = \array_filter($join);
             }
             ksort($joins);
-            $key = 'forum_' . Globals::$cacheForum ->node_id . '_threadcount_' . md5(serialize($conditions) . serialize($joins) . serialize($finder->order));
+            $key = 'forum_' . $forum->node_id . '_threadcount_' . md5(serialize($conditions) . serialize($joins) . serialize($finder->order));
 
             /** @var int|bool $total */
             $total = $cache->fetch($key);

@@ -3,12 +3,10 @@
 namespace SV\RedisCache\XF\Pub\Controller;
 
 use SV\RedisCache\Globals;
+use XF\Mvc\ParameterBag;
 
 class Forum extends XFCP_Forum
 {
-    /** @var \XF\Entity\Forum */
-    protected $_cacheForum;
-
     protected function applyDateLimitFilters(\XF\Entity\Forum $forum, \XF\Finder\Thread $threadFinder, array $filters)
     {
         parent::applyDateLimitFilters($forum, $threadFinder, $filters);
