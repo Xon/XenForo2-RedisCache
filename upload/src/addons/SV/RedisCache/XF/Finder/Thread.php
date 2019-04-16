@@ -12,17 +12,24 @@ class Thread extends XFCP_Thread
      */
     public function total()
     {
-        if (Globals::$cacheThreadListFinder && Globals::$cacheForumId && $cache = \XF::app()->cache())
+        if (Globals::$threadFinder && Globals::$cacheForum && $cache = \XF::app()->cache())
         {
-            $cacheThreadListFinder = Globals::$cacheThreadListFinder;
-            Globals::$cacheThreadListFinder = null;
+            $finder = Globals::$threadFinder;
+            Globals::$threadFinder = null;
 
-            /** @var Thread $newFinder */
-            $newFinder = $cacheThreadListFinder();
-
-            $conditions = $newFinder->conditions;
+            $conditions = $finder->conditions;
             sort($conditions);
-            $key = 'forum_' . Globals::$cacheForumId . '_threadcount_' . md5(serialize($conditions));
+            $joins = $finder->joins;
+            foreach($joins as $key => &$join)
+            {
+                if (!$join['fundamental'] || !$join['exists'])
+                {
+                    unset($joins[$key]);
+                }
+                $join = \array_filter($join);
+            }
+            ksort($joins);
+            $key = 'forum_' . Globals::$cacheForum ->node_id . '_threadcount_' . md5(serialize($conditions) . serialize($joins) . serialize($finder->order));
 
             /** @var int|bool $total */
             $total = $cache->fetch($key);
@@ -30,7 +37,7 @@ class Thread extends XFCP_Thread
             {
                 return $total;
             }
-            $total = $newFinder->total();
+            $total = $finder->total();
 
             $options = \XF::options();
             $longExpiry = intval($options->sv_threadcountcache_short);

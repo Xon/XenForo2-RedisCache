@@ -1,6 +1,6 @@
 {
     "from_class": "XF\\Pub\\Controller\\Forum",
     "to_class": "SV\\RedisCache\\XF\\Pub\\Controller\\Forum",
-    "execute_order": 5562,
+    "execute_order": 2147483640,
     "active": true
 }
