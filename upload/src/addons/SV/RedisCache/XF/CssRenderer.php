@@ -3,7 +3,6 @@
 
 namespace SV\RedisCache\XF;
 
-
 use SV\RedisCache\RawResponseText;
 use SV\RedisCache\Redis;
 use XF\App;
@@ -13,13 +12,14 @@ use XF\Http\ResponseStream;
 class CssRenderer extends XFCP_CssRenderer
 {
     protected $svDisableIndividualCssCache = true;
+    protected $svMemoryCache = [];
 
     public function __construct(App $app, Templater $templater, \Doctrine\Common\Cache\CacheProvider $cache = null)
     {
         $this->svDisableIndividualCssCache = \XF::options()->svDisableIndividualCssCache;
         if ($cache === null)
         {
-            $cache = \XF::app()->cache(); // work-around for XF2.0 Beta 1 bug
+            $cache = \XF::app()->cache('css');
         }
         parent::__construct($app, $templater, $cache);
     }
@@ -111,7 +111,7 @@ class CssRenderer extends XFCP_CssRenderer
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $credis = $cache->getCredis(false);
         $credis->hMSet($key, [
-            'o' => \gzencode($output),
+            'o' => \gzencode($output, 9),
             'l' => strlen($output),
         ]);
         $credis->expire($key, 3600);
@@ -126,7 +126,16 @@ class CssRenderer extends XFCP_CssRenderer
         // individual css template cache causes a thundering herd of writes, and is cached outside the application stack
         if ($this->svDisableIndividualCssCache)
         {
-            return [];
+            $kvp = [];
+            foreach($templates as $title)
+            {
+                if (isset($this->svMemoryCache[$title]))
+                {
+                    $kvp[$title] = $this->svMemoryCache[$title];
+                }
+            }
+
+            return $kvp;
         }
 
         return parent::getIndividualCachedTemplates($templates);
@@ -140,6 +149,8 @@ class CssRenderer extends XFCP_CssRenderer
     {
         if ($this->svDisableIndividualCssCache)
         {
+            $this->svMemoryCache[$title] = $output;
+
             return;
         }
 
