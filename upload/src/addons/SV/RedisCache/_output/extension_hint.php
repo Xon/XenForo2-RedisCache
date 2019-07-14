@@ -23,3 +23,8 @@ namespace SV\RedisCache\XF\Pub\Controller
 {
 	class XFCP_Forum extends \XF\Pub\Controller\Forum {}
 }
+
+namespace SV\RedisCache\XF\Repository
+{
+	class XFCP_Style extends \XF\Repository\Style {}
+}
