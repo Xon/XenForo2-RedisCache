@@ -113,6 +113,31 @@ class CssRenderer extends XFCP_CssRenderer
         $credis->expire($key, 3600);
     }
 
+    /** @var null|array */
+    protected $cacheElements = null;
+
+    protected function getCacheKeyElements()
+    {
+        if ($this->cacheElements === null)
+        {
+            $this->cacheElements = parent::getCacheKeyElements();
+        }
+        return $this->cacheElements;
+    }
+
+    protected function getComponentCacheKey($prefix, $value)
+    {
+        $elements = $this->getCacheKeyElements();
+
+        return $prefix . 'Cache_' . md5(
+                'text=' . $value
+                . 'style=' . $elements['style_id']
+                . 'modified=' . $elements['style_last_modified']
+                . 'language=' . $elements['language_id']
+                . $elements['modifier']
+            );
+    }
+
     public function parseLessColorFuncValue($value, $forceDebug = false)
     {
         $cache = $this->cache;
@@ -122,7 +147,7 @@ class CssRenderer extends XFCP_CssRenderer
             return parent::parseLessColorFuncValue($value, $forceDebug);
         }
 
-        $key = $this->getFinalCacheKey(['lessFunc-'.$value]);
+        $key = $this->getComponentCacheKey('xfLessFunc', $value);
         $output = $cache->fetch($key);
         if ($output !== false)
         {
@@ -145,7 +170,7 @@ class CssRenderer extends XFCP_CssRenderer
             return parent::parseLessColorValue($value);
         }
 
-        $key = $this->getFinalCacheKey(['lessFunc-' . $value]);
+        $key = $this->getComponentCacheKey('xfLessValue', $value);
         $output = $cache->fetch($key);
         if ($output !== false)
         {
