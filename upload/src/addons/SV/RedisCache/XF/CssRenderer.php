@@ -11,6 +11,9 @@ use XF\Http\ResponseStream;
 
 class CssRenderer extends XFCP_CssRenderer
 {
+    const LESS_SHORT_CACHE_TIME     = 5 * 60;
+    const TEMPLATE_SHORT_CACHE_TIME = 5 * 60;
+
     public function __construct(App $app, Templater $templater, \Doctrine\Common\Cache\CacheProvider $cache = null)
     {
         if ($cache === null)
@@ -80,7 +83,7 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         // client doesn't support compression, so decompress before sending it
-        $css =  @\gzdecode($output);
+        $css = @\gzdecode($output);
 
         if (!$this->includeCharsetInOutput && strpos($css, static::$charsetBits) === 0)
         {
@@ -99,6 +102,7 @@ class CssRenderer extends XFCP_CssRenderer
         if (!$this->allowCached || !$this->allowFinalCacheUpdate || !($cache instanceof Redis) || !($credis = $cache->getCredis(false)))
         {
             parent::cacheFinalOutput($templates, $output);
+
             return;
         }
 
@@ -122,6 +126,7 @@ class CssRenderer extends XFCP_CssRenderer
         {
             $this->cacheElements = parent::getCacheKeyElements();
         }
+
         return $this->cacheElements;
     }
 
@@ -157,7 +162,7 @@ class CssRenderer extends XFCP_CssRenderer
         /** @noinspection PhpUndefinedMethodInspection */
         $output = parent::parseLessColorFuncValue($value, $forceDebug);
 
-        $cache->save($key, $output, 5*60);
+        $cache->save($key, $output, self::LESS_SHORT_CACHE_TIME);
 
         return $output;
     }
@@ -179,7 +184,7 @@ class CssRenderer extends XFCP_CssRenderer
 
         $output = parent::parseLessColorValue($value);
 
-        $cache->save($key, $output, 5 * 60);
+        $cache->save($key, $output, self::LESS_SHORT_CACHE_TIME);
 
         return $output;
     }
@@ -190,9 +195,36 @@ class CssRenderer extends XFCP_CssRenderer
      */
     protected function getIndividualCachedTemplates(array $templates)
     {
-        // individual css template cache causes a thundering herd of writes, and is cached outside the application stack
+        $cache = $this->cache;
+        if (!$cache)
+        {
+            return parent::getIndividualCachedTemplates($templates);
+        }
 
-        return parent::getIndividualCachedTemplates($templates);
+        // individual css template cache causes a thundering herd of writes to xf_css_cache table
+
+        $keys = [];
+        foreach ($templates as $template)
+        {
+            $keys[] = $this->getComponentCacheKey('xfCssTemplate', $template);
+        }
+
+        $results = [];
+        $rawResults = $cache->fetchMultiple($keys);
+        foreach($templates as $i => $template)
+        {
+            $key = $keys[$i];
+            if (isset($rawResults[$key]))
+            {
+                $output = $rawResults[$key];
+                if ($output !== false)
+                {
+                    $results[$template] = $rawResults[$key];
+                }
+            }
+        }
+
+        return $results;
     }
 
     /**
@@ -201,8 +233,13 @@ class CssRenderer extends XFCP_CssRenderer
      */
     public function cacheTemplate($title, $output)
     {
+        $cache = $this->cache;
+        if (!$cache)
+        {
+            parent::cacheTemplate($title, $output);
+        }
 
-
-        parent::cacheTemplate($title, $output);
+        $key = $this->getComponentCacheKey('xfCssTemplate', $title);
+        $cache->save($key, $output, self::TEMPLATE_SHORT_CACHE_TIME);
     }
 }
