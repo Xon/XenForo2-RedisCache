@@ -11,11 +11,8 @@ use XF\Http\ResponseStream;
 
 class CssRenderer extends XFCP_CssRenderer
 {
-    protected $svDisableIndividualCssCache = true;
-
     public function __construct(App $app, Templater $templater, \Doctrine\Common\Cache\CacheProvider $cache = null)
     {
-        $this->svDisableIndividualCssCache = \XF::options()->svDisableIndividualCssCache;
         if ($cache === null)
         {
             $cache = \XF::app()->cache('css');
@@ -123,10 +120,6 @@ class CssRenderer extends XFCP_CssRenderer
     protected function getIndividualCachedTemplates(array $templates)
     {
         // individual css template cache causes a thundering herd of writes, and is cached outside the application stack
-        if ($this->svDisableIndividualCssCache)
-        {
-            return [];
-        }
 
         return parent::getIndividualCachedTemplates($templates);
     }
@@ -137,10 +130,7 @@ class CssRenderer extends XFCP_CssRenderer
      */
     public function cacheTemplate($title, $output)
     {
-        if ($this->svDisableIndividualCssCache)
-        {
-            return;
-        }
+
 
         parent::cacheTemplate($title, $output);
     }
