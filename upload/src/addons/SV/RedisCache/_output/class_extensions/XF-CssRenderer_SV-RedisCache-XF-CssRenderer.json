@@ -1,6 +1,6 @@
 {
     "from_class": "XF\\CssRenderer",
     "to_class": "SV\\RedisCache\\XF\\CssRenderer",
-    "execute_order": 5562,
+    "execute_order": 556200,
     "active": true
 }

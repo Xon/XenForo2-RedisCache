@@ -113,6 +113,52 @@ class CssRenderer extends XFCP_CssRenderer
         $credis->expire($key, 3600);
     }
 
+    public function parseLessColorFuncValue($value, $forceDebug = false)
+    {
+        $cache = $this->cache;
+        if (!$cache)
+        {
+            /** @noinspection PhpUndefinedMethodInspection */
+            return parent::parseLessColorFuncValue($value, $forceDebug);
+        }
+
+        $key = $this->getFinalCacheKey(['lessFunc-'.$value]);
+        $output = $cache->fetch($key);
+        if ($output !== false)
+        {
+            return $output;
+        }
+
+        /** @noinspection PhpUndefinedMethodInspection */
+        $output = parent::parseLessColorFuncValue($value, $forceDebug);
+
+        $cache->save($key, $output, 5*60);
+
+        return $output;
+    }
+
+    public function parseLessColorValue($value)
+    {
+        $cache = $this->cache;
+        if (!$cache)
+        {
+            return parent::parseLessColorValue($value);
+        }
+
+        $key = $this->getFinalCacheKey(['lessFunc-' . $value]);
+        $output = $cache->fetch($key);
+        if ($output !== false)
+        {
+            return $output;
+        }
+
+        $output = parent::parseLessColorValue($value);
+
+        $cache->save($key, $output, 5 * 60);
+
+        return $output;
+    }
+
     /**
      * @param array $templates
      * @return array
