@@ -204,13 +204,13 @@ class CssRenderer extends XFCP_CssRenderer
         // individual css template cache causes a thundering herd of writes to xf_css_cache table
 
         $keys = [];
-        foreach ($templates as $template)
+        foreach ($templates as $i => $template)
         {
-            $keys[] = $this->getComponentCacheKey('xfCssTemplate', $template);
+            $keys[$i] = $this->getComponentCacheKey('xfCssTemplate', $template);
         }
 
         $results = [];
-        $rawResults = $cache->fetchMultiple($keys);
+        $rawResults = $cache->fetchMultiple(array_values($keys));
         foreach($templates as $i => $template)
         {
             $key = $keys[$i];
