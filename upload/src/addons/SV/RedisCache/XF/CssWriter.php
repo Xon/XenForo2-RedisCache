@@ -11,6 +11,20 @@ class CssWriter extends XFCP_CssWriter
     public function run(array $templates, $styleId, $languageId, $validation = null)
     {
         $request = \XF::app()->request();
+        if (!$styleId && !$languageId && $validation === '')
+        {
+            // work-around for buggy-bots
+            $input = $request->filter([
+                'amp;s'   => 'uint',
+                'amp;l'   => 'uint',
+                'amp;k'   => 'str'
+            ]);
+            $styleId = $input['amp;s'];
+            $languageId = $input['amp;l'];
+            $validation = $input['amp;k'];
+        }
+
+
         /** @var CssRenderer $renderer */
         $renderer = $this->renderer;
         $renderer->setIncludeCharsetInOutput(true);
