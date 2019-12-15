@@ -23,7 +23,12 @@ class Style extends XFCP_Style
         $this->_clearCache("xfSvgCache_");
     }
 
-    protected function _clearCache($pattern, $style_id = null)
+    /**
+     * @param string   $pattern
+     * @param int|null $styleId
+     * @noinspection PhpUnusedParameterInspection
+     */
+    protected function _clearCache($pattern, $styleId = null)
     {
         $cache = \XF::app()->cache();
         if (($cache instanceof Redis) && ($credis = $cache->getCredis(false)))

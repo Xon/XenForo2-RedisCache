@@ -3,7 +3,6 @@
 namespace SV\RedisCache\XF\Pub\Controller;
 
 use SV\RedisCache\Globals;
-use XF\Mvc\ParameterBag;
 
 class Forum extends XFCP_Forum
 {
