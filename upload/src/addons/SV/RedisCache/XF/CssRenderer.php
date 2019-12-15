@@ -237,6 +237,8 @@ class CssRenderer extends XFCP_CssRenderer
         if (!$cache)
         {
             parent::cacheTemplate($title, $output);
+
+            return;
         }
 
         $key = $this->getComponentCacheKey('xfCssTemplate', $title);
