@@ -1,1 +1,2 @@
-The default time in seconds to cache the thread counts per forum.
+The default time in seconds to cache the thread counts per forum.<br/>
+0 to disable

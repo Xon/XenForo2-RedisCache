@@ -1,6 +1,6 @@
 {
     "edit_format": "spinbox",
-    "edit_format_params": "",
+    "edit_format_params": "units={{ phrase('seconds') }}\nmin=0",
     "data_type": "integer",
     "sub_options": [],
     "validation_class": "",

@@ -1,1 +1,2 @@
-The time in seconds to cache the thread counts per forum for a forum a small number of pages.
+The time in seconds to cache the thread counts per forum for a forum a small number of pages.<br/>
+0 to disable
