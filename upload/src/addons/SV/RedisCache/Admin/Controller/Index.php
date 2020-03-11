@@ -2,21 +2,21 @@
 
 namespace SV\RedisCache\Admin\Controller;
 
+use SV\RedisCache\Repository\Redis as Redis;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
 
-class Index extends AbstractController  {
+class Index extends AbstractController
+{
+    public function actionIndex(ParameterBag $params)
+    {
+        $context = $params->get('context') ?: '';
+        $slaveId = $params->get('slave_id');
 
-	public function actionIndex(ParameterBag $params)
-	{
-		$slaveId = $params->get('slave_id');
+        $view = $this->view('SV\RedisCache:Index\Index', 'svRedisInfo', []);
 
-		$view = $this->view('SV\RedisCache:Index\Index', 'SV_Redis_info', []);
+        Redis::instance()->insertRedisInfoParams($view, $context, $slaveId);
 
-		\SV\RedisCache\Repository\Redis::instance()->insertRedisInfoParams($view, $slaveId);
-
-		return $view;
-	}
-
-
+        return $view;
+    }
 }

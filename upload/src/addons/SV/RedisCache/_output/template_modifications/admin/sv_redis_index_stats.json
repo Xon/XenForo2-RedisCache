@@ -5,5 +5,5 @@
     "enabled": true,
     "action": "str_replace",
     "find": "<xf:if is=\"$logCounts",
-    "replace": "<xf:include template=\"SV_Redis_index\"/>\n\n$0"
+    "replace": "<xf:include template=\"svRedisIndex\"/>\n\n$0"
 }

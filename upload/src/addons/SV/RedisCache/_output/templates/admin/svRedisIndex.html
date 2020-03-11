@@ -1,0 +1,26 @@
+<xf:if is="$redis is not empty">
+	<xf:foreach loop="$redis" key="$context" value="$redisInstance">
+		<xf:set var="$jsKey" value="js-collapse-env-redis-{$context}"/>
+		<xf:set var="$cookieKey" value="collapse_env_redis_{$context}"/>
+		<div class="block">
+			<div class="block-container">
+				<h2 class="block-header">
+					<span class="collapseTrigger collapseTrigger--block {{ !is_toggled($cookieKey) ? 'is-active' : '' }}" 
+						  data-xf-click="toggle" 
+						  data-xf-init="toggle-storage" 
+						  data-storage-type="cookie" 
+						  data-storage-key="{$cookieKey}" 
+						  data-target="#{$jsKey}">
+						{{ phrase('redis_info') }}<xf:if is="$context"> - {$context}</xf:if>
+					</span>
+				</h2>
+				<div class="block-body block-body--collapsible block-row {{ !is_toggled($cookieKey) ? 'is-active' : '' }}" 
+					 id="{$jsKey}">
+					<xf:include template="svRedisStats">
+						<xf:map from="$redisInstance" to="$redis" />
+					</xf:include>
+				</div>
+			</div>
+		</div>
+	</xf:foreach>
+</xf:if>

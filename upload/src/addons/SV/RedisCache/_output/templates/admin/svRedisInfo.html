@@ -1,0 +1,26 @@
+<xf:title>
+    {{ phrase('redis_info') }}<xf:if is="$cacheContext"> - {$cacheContext}</xf:if>
+    {{ $redisSlaveId !== null ? ($cacheContext ? ' - ' : '' ) . phrase('redis_slave_x', {'i': $redisSlaveId} ) : '' }}
+</xf:title>
+
+
+<div class="block">
+    <div class="block-container">
+        <div class="block-body">
+            <div class="block-row">
+
+				<xf:set var="$redisInstance" value="{{ $redis.{$cacheContext} }}" />
+                <xf:if is="!{$redisInstance}">
+                    {{ phrase('redis_disabled') }}
+                <xf:else/>
+
+                    <xf:include template="svRedisStats">
+						<xf:map from="$redisInstance" to="$redis" />
+						<xf:map from="$cacheContext" to="$context" />
+					</xf:include>
+
+                </xf:if>
+            </div>
+        </div>
+    </div>
+</div>
