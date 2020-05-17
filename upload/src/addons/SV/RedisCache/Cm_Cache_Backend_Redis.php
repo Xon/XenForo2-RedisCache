@@ -201,8 +201,9 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     if ($slaveSelect) {
                         $slave = $slaveSelect($slaves, $this->_redis);
                     } else {
+                        /** @var string $slaveKey */
                         $slaveKey = array_rand($slaves, 1);
-                        $slave = $slaves[$slaveKey]; /* @var $slave \Credis_Client */
+                        $slave = $slaves[$slaveKey];
                     }
                     if ($slave instanceof \Credis_Client && $slave !== $this->_redis) {
                         try {
@@ -247,6 +248,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     // If multiple addresses are given, split and choose a random one
                     if (strpos($server, ',') !== FALSE) {
                         $slaves = preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
+                        /** @var string $slaveKey */
                         $slaveKey = array_rand($slaves, 1);
                         $server = $slaves[$slaveKey];
                         $port = NULL;
