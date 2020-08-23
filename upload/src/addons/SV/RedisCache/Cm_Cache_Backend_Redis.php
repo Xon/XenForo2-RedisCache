@@ -463,7 +463,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     case 'lz': /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_decompress(substr($data,5)); break;
                     case 'l4': /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_uncompress(substr($data,5)); break;
                     case 'zs': /** @noinspection PhpUndefinedFunctionInspection */ $data = zstd_uncompress(substr($data,5)); break;
-                    case 'gz': case 'zc': return gzuncompress(substr($data,5)); break;
+                    case 'gz': case 'zc': $data = gzuncompress(substr($data,5)); break;
                 }
             }
         }

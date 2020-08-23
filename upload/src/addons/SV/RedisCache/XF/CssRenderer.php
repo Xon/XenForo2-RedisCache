@@ -148,7 +148,7 @@ class CssRenderer extends XFCP_CssRenderer
         $cache = $this->cache;
         if (!$cache)
         {
-            /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+            /** @noinspection PhpUndefinedMethodInspection */
             return parent::parseLessColorFuncValue($value, $forceDebug);
         }
 
@@ -158,8 +158,7 @@ class CssRenderer extends XFCP_CssRenderer
         {
             return $output;
         }
-
-        /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+        /** @noinspection PhpUndefinedMethodInspection */
         $output = parent::parseLessColorFuncValue($value, $forceDebug);
 
         $cache->save($key, $output, self::LESS_SHORT_CACHE_TIME);
