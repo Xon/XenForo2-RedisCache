@@ -22,19 +22,18 @@ class CssWriter extends XFCP_CssWriter
             $styleId = $input['amp;s'];
             $languageId = $input['amp;l'];
             $validation = $input['amp;k'];
-
-            if (!$styleId || !$languageId)
+        }
+        else if (!$styleId || !$languageId)
+        {
+            $tmp = $request->filter([
+                's' => 'str',
+                'l' => 'str',
+            ]);
+            if (!$styleId && !\is_numeric($tmp['s']) || !$languageId && !\is_numeric($tmp['l']))
             {
-                $tmp = $request->filter([
-                    's' => 'str',
-                    'l' => 'str',
-                ]);
-                if (!$styleId && !\is_numeric($tmp['s']) || !$languageId && !\is_numeric($tmp['l']))
-                {
-                    $response = $this->getResponse('');
-                    $response->httpCode(404);
-                    return $response;
-                }
+                $response = $this->getResponse('');
+                $response->httpCode(404);
+                return $response;
             }
         }
 
