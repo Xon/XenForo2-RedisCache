@@ -45,7 +45,7 @@ class Redis  extends Cm_Cache_Backend_Redis
     }
 
     /**
-     * @param array|null $ips
+     * @param array $ips
      * @return array
      */
     protected function getLocalIps(array $ips = null)
@@ -63,18 +63,17 @@ class Redis  extends Cm_Cache_Backend_Redis
                 $ips = array_fill_keys(array_filter(array_map('trim', (explode(' ', $output)))), true);
             }
         }
-        return $ips;
+        return $ips ?: [];
     }
 
     /**
-     * @param array|null $ips
+     * @param array $ips
      * @param \Credis_Client[] $slaves
      * @param $master
      * @return \Credis_Client|null
+     * @noinspection PhpUnusedParameterInspection
      */
-    protected function selectLocalRedis(
-        /** @noinspection PhpOptionalBeforeRequiredParametersInspection */
-        array $ips = null, array $slaves, /** @noinspection PhpUnusedParameterInspection */ $master)
+    protected function selectLocalRedis(array $ips, array $slaves, $master)
     {
         if ($ips)
         {
@@ -131,7 +130,7 @@ class Redis  extends Cm_Cache_Backend_Redis
         {
             $ips = array_fill_keys(array_filter(array_map('trim', (explode(' ', $output)))), true);
         }
-        return $this->selectLocalRedis($ips, $slaves, $master);
+        return $this->selectLocalRedis($ips ?: [], $slaves, $master);
     }
 
     /**
@@ -155,7 +154,7 @@ class Redis  extends Cm_Cache_Backend_Redis
                 apcu_store('localips', $ips);
             }
         }
-        return $this->selectLocalRedis($ips, $slaves, $master);
+        return $this->selectLocalRedis($ips ?: [], $slaves, $master);
     }
 
     /**
