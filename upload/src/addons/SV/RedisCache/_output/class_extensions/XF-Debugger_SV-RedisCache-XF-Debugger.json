@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Debugger",
+    "to_class": "SV\\RedisCache\\XF\\Debugger",
+    "execute_order": 5562,
+    "active": true
+}

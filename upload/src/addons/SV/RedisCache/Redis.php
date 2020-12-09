@@ -15,12 +15,149 @@ class Redis  extends Cm_Cache_Backend_Redis
 {
     protected $useIgbinary = false;
 
+    protected $stats = [
+        'gets' => 0,
+        'gets.time' => 0,
+        'sets' => 0,
+        'sets.time' => 0,
+        'deletes' => 0,
+        'deletes.time' => 0,
+        'flushes' => 0,
+        'flushes.time' => 0,
+        'bytes_sent' => 0,
+        'bytes_received' => 0,
+        'time_compression' => 0,
+        'time_decompression' => 0,
+    ];
+
+    /**
+     * @var bool
+     */
+    protected $debug = false;
+
+    /** @var \Closure|null  */
+    protected $redisQueryForStat = null;
+    /** @var \Closure|null  */
+    protected $timerForStat = null;
+
+    protected function redisQueryForStat($stat, \Closure $callback)
+    {
+        $this->stats[$stat]++;
+        return $callback();
+    }
+
+    protected function redisQueryForStatDebugPhp7($stat, \Closure $callback)
+    {
+        $this->stats[$stat]++;
+        /** @var float $startTime */
+        $startTime = \microtime(true);
+        try
+        {
+            return $callback();
+        }
+        finally
+        {
+            /** @var float $endTime */
+            $endTime = \microtime(true);
+
+            $this->stats[$stat . '.time'] += ($endTime - $startTime);
+        }
+    }
+
+    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
+    protected function redisQueryForStatDebugPhp73($stat, \Closure $callback)
+    {
+        $this->stats[$stat]++;
+
+        /** @var float $startTime */
+        $startTime = \hrtime(true);
+        try
+        {
+            return $callback();
+        }
+        finally
+        {
+            /** @var float $endTime */
+            $endTime = \hrtime(true);
+
+            $this->stats[$stat . '.time'] += ($endTime - $startTime) / 1000000000;
+        }
+    }
+
+    protected function timerForStat($stat, \Closure $callback)
+    {
+        return $callback();
+    }
+
+    protected function timerForStatDebugPhp7($stat, \Closure $callback)
+    {
+        /** @var float $startTime */
+        $startTime = \microtime(true);
+        try
+        {
+            return $callback();
+        }
+        finally
+        {
+            /** @var float $endTime */
+            $endTime = \microtime(true);
+
+            $this->stats[$stat] += ($endTime - $startTime);
+        }
+    }
+
+    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
+    protected function timerForStatDebugPhp73($stat, \Closure $callback)
+    {
+        /** @var float $startTime */
+        $startTime = \hrtime(true);
+        try
+        {
+            return $callback();
+        }
+        finally
+        {
+            /** @var float $endTime */
+            $endTime = \hrtime(true);
+
+            $this->stats[$stat] += ($endTime - $startTime) / 1000000000;
+        }
+    }
+
     /**
      * Redis constructor.
      * @param array $options
      */
     public function __construct($options = array())
     {
+        $this->debug = \XF::$debugMode;
+
+        if ($this->debug)
+        {
+            if (\function_exists('\hrtime'))
+            {
+                $this->timerForStat = [$this,'timerForStatDebugPhp73'];
+                $this->redisQueryForStat = [$this,'redisQueryForStatDebugPhp73'];
+            }
+            else
+            {
+                $this->timerForStat = [$this,'timerForStatDebug'];
+                $this->redisQueryForStat = [$this, 'redisQueryForStatDebug'];
+            }
+        }
+        else
+        {
+            $this->timerForStat = [$this,'timerForStat'];
+            $this->redisQueryForStat = [$this,'redisQueryForStat'];
+        }
+        if (is_callable('\Closure::fromCallable'))
+        {
+            /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
+            $this->redisQueryForStat = \Closure::fromCallable($this->redisQueryForStat);
+            /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
+            $this->timerForStat = \Closure::fromCallable($this->timerForStat);
+        }
+
         if (!isset($options['slave_select_callable']))
         {
             $options['slave_select_callable'] = array($this, 'preferLocalSlave');
@@ -77,7 +214,6 @@ class Redis  extends Cm_Cache_Backend_Redis
     {
         if ($ips)
         {
-            /* @var $slave \Credis_Client */
             foreach($slaves as $slave)
             {
                 // slave host is just an ip
@@ -224,30 +360,34 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function doFetch($id)
     {
-        if ($this->_slave) {
-            $data = $this->_slave->get($id);
+        $redisQueryForStat = $this->redisQueryForStat;
+        return $redisQueryForStat('gets', function() use ($id) {
+            if ($this->_slave) {
+                $data = $this->_slave->get($id);
 
-            // Prevent compounded effect of cache flood on asynchronously replicating master/slave setup
-            if ($this->_retryReadsOnMaster && $data === false) {
+                // Prevent compounded effect of cache flood on asynchronously replicating master/slave setup
+                if ($this->_retryReadsOnMaster && $data === false) {
+                    $data = $this->_redis->get($id);
+                }
+            } else {
                 $data = $this->_redis->get($id);
             }
-        } else {
-            $data = $this->_redis->get($id);
-        }
-        if ($data === null || $data === false) {
-            return false;
-        }
 
-        $decoded = $this->_decodeData($data);
+            if ($data === null || $data === false) {
+                return false;
+            }
 
-        if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad) {
+            $this->stats['bytes_received'] += strlen($data);
+            $decoded = $this->_decodeData($data);
+
+            if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad) {
+                return $decoded;
+            }
+
+            $this->_applyAutoExpire($id);
+
             return $decoded;
-        }
-
-        $this->_applyAutoExpire($id);
-
-
-        return $decoded;
+        });
     }
 
     /**
@@ -255,18 +395,33 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function doFetchMultiple(array $keys)
     {
-        $redis = $this->_slave ? $this->_slave : $this->_redis;
+        $redisQueryForStat = $this->redisQueryForStat;
+        return $redisQueryForStat('gets', function() use ($keys) {
+            $redis = $this->_slave ? $this->_slave : $this->_redis;
 
-        $fetchedItems = $redis->mget($keys);
+            $fetchedItems = $redis->mget($keys);
 
-        $decoded = array_map([$this, '_decodeData'], array_filter(array_combine($keys, $fetchedItems), function ($data){
-            return $data !== null && $data !== false;
-        }));
-        if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad) {
-            array_map([$this, '_applyAutoExpire'], $keys);
-        }
+            $autoExpire = $this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad;
+            $decoded = [];
+            $mgetResults = array_combine($keys, $fetchedItems);
+            foreach($mgetResults as $key => $data)
+            {
+                if ($data === null || $data === false)
+                {
+                    continue;
+                }
 
-        return $decoded;
+                $this->stats['bytes_received'] += strlen($data);
+                $decoded[$key] = $this->_decodeData($data);
+
+                if ($autoExpire)
+                {
+                    $this->_applyAutoExpire($key);
+                }
+            }
+
+            return $decoded;
+        });
     }
 
     /**
@@ -274,8 +429,11 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function doContains($id)
     {
-        // Don't use slave for this since `doContains`/`test` is usually used for locking
-        return $this->_redis->exists($id);
+        $redisQueryForStat = $this->redisQueryForStat;
+        return $redisQueryForStat('gets', function() use ($id) {
+            // Don't use slave for this since `doContains`/`test` is usually used for locking
+            return $this->_redis->exists($id);
+        });
     }
 
     /**
@@ -285,9 +443,14 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function _encodeData($data, $level)
     {
-        // XF stores binary data as strings which causes issues using json for serialization
-        $data = $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
-        return parent::_encodeData($data, $level);
+        $timerForStat = $this->timerForStat;
+
+        return $timerForStat('time_compression', function () use ($data, $level) {
+            // XF stores binary data as strings which causes issues using json for serialization
+            $data = $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
+
+            return parent::_encodeData($data, $level);
+        });
     }
 
     /**
@@ -296,9 +459,14 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function _decodeData($data)
     {
-        $data = parent::_decodeData($data);
-        $data = $this->useIgbinary ? @igbinary_unserialize($data) : @unserialize($data);
-        return $data;
+        $timerForStat = $this->timerForStat;
+
+        return $timerForStat('time_decompression', function () use ($data) {
+            $data = parent::_decodeData($data);
+            $data = $this->useIgbinary ? @igbinary_unserialize($data) : @unserialize($data);
+
+            return $data;
+        });
     }
 
     /**
@@ -306,17 +474,25 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function doSave($id, $data, $lifeTime = 0)
     {
-        $data = $this->_encodeData($data, $this->_compressData);
-        $lifetime = $this->_getAutoExpiringLifetime($lifeTime, $id);
-        $lifeTime = min($lifetime, self::MAX_LIFETIME);
+        $redisQueryForStat = $this->redisQueryForStat;
+        return $redisQueryForStat('sets', function() use ($id, $data, $lifeTime) {
+            $data = $this->_encodeData($data, $this->_compressData);
+            $lifetime = $this->_getAutoExpiringLifetime($lifeTime, $id);
+            $lifeTime = min($lifetime, self::MAX_LIFETIME);
 
-        if ($lifeTime > 0) {
-            $response = $this->_redis->set($id, $data, $lifeTime);
-        } else {
-            $response = $this->_redis->set($id, $data);
-        }
+            $this->stats['bytes_sent'] += strlen($data);
 
-        return $response === true;
+            if ($lifeTime > 0)
+            {
+                $response = $this->_redis->set($id, $data, $lifeTime);
+            }
+            else
+            {
+                $response = $this->_redis->set($id, $data);
+            }
+
+            return $response === true;
+        });
     }
 
     /**
@@ -324,7 +500,10 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function doDelete($id)
     {
-        return $this->_redis->del($id) >= 0;
+        $redisQueryForStat = $this->redisQueryForStat;
+        return $redisQueryForStat('deletes', function() use ($id) {
+            return $this->_redis->del($id) >= 0;
+        });
     }
 
     /**
@@ -332,9 +511,17 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function doFlush()
     {
-        $response = $this->_redis->flushdb();
+        $redisQueryForStat = $this->redisQueryForStat;
+        return $redisQueryForStat('flushes', function() {
+            $response = $this->_redis->flushdb();
 
-        return $response === true || $response == 'OK';
+            return $response === true || $response == 'OK';
+        });
+    }
+
+    public function getRedisStats()
+    {
+        return $this->stats;
     }
 
     /**
@@ -342,15 +529,18 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected function doGetStats()
     {
-        //$redis = $this->_slave ? $this->_slave : $this->_redis;
-        $info = $this->_redis->info();
+        $redisQueryForStat = $this->redisQueryForStat;
+        return $redisQueryForStat('gets', function() {
+            //$redis = $this->_slave ? $this->_slave : $this->_redis;
+            $info = $this->_redis->info();
 
-        return array(
-            Cache::STATS_HITS              => $info['Stats']['keyspace_hits'],
-            Cache::STATS_MISSES            => $info['Stats']['keyspace_misses'],
-            Cache::STATS_UPTIME            => $info['Server']['uptime_in_seconds'],
-            Cache::STATS_MEMORY_USAGE      => $info['Memory']['used_memory'],
-            Cache::STATS_MEMORY_AVAILABLE  => false
-        );
+            return [
+                Cache::STATS_HITS             => $info['Stats']['keyspace_hits'],
+                Cache::STATS_MISSES           => $info['Stats']['keyspace_misses'],
+                Cache::STATS_UPTIME           => $info['Server']['uptime_in_seconds'],
+                Cache::STATS_MEMORY_USAGE     => $info['Memory']['used_memory'],
+                Cache::STATS_MEMORY_AVAILABLE => false
+            ];
+        });
     }
 }

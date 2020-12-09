@@ -12,6 +12,7 @@ namespace SV\RedisCache\XF
 {
 	class XFCP_CssRenderer extends \XF\CssRenderer {}
 	class XFCP_CssWriter extends \XF\CssWriter {}
+	class XFCP_Debugger extends \XF\Debugger {}
 }
 
 namespace SV\RedisCache\XF\Finder
