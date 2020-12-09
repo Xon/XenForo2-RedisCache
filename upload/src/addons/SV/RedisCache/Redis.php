@@ -28,6 +28,8 @@ class Redis  extends Cm_Cache_Backend_Redis
         'bytes_received' => 0,
         'time_compression' => 0,
         'time_decompression' => 0,
+        'time_encoding' => 0,
+        'time_decoding' => 0,
     ];
 
     /**
@@ -445,11 +447,14 @@ class Redis  extends Cm_Cache_Backend_Redis
     {
         $timerForStat = $this->timerForStat;
 
-        return $timerForStat('time_compression', function () use ($data, $level) {
+        $encodedData = $timerForStat('time_encoding', function () use ($data) {
             // XF stores binary data as strings which causes issues using json for serialization
-            $data = $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
+            return $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
+        });
+        unset($data);
 
-            return parent::_encodeData($data, $level);
+        return $timerForStat('time_compression', function () use ($encodedData, $level) {
+            return parent::_encodeData($encodedData, $level);
         });
     }
 
@@ -461,12 +466,15 @@ class Redis  extends Cm_Cache_Backend_Redis
     {
         $timerForStat = $this->timerForStat;
 
-        return $timerForStat('time_decompression', function () use ($data) {
-            $data = parent::_decodeData($data);
-            $data = $this->useIgbinary ? @igbinary_unserialize($data) : @unserialize($data);
-
-            return $data;
+        $decompressedData = $timerForStat('time_decompression', function () use ($data) {
+            return parent::_decodeData($data);
         });
+        unset($data);
+        $data = $timerForStat('time_decoding', function () use ($decompressedData) {
+            return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
+        });
+
+        return $data;
     }
 
     /**
