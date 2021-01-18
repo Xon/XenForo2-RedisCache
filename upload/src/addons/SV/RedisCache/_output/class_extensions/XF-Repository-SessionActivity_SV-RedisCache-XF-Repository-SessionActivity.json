@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Repository\\SessionActivity",
+    "to_class": "SV\\RedisCache\\XF\\Repository\\SessionActivity",
+    "execute_order": 5562,
+    "active": true
+}

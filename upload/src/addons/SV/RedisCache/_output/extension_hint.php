@@ -27,5 +27,6 @@ namespace SV\RedisCache\XF\Pub\Controller
 
 namespace SV\RedisCache\XF\Repository
 {
+	class XFCP_SessionActivity extends \XF\Repository\SessionActivity {}
 	class XFCP_Style extends \XF\Repository\Style {}
 }
