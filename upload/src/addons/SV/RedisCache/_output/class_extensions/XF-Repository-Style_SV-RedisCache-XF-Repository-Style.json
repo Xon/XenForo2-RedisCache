@@ -1,6 +1,6 @@
 {
     "from_class": "XF\\Repository\\Style",
     "to_class": "SV\\RedisCache\\XF\\Repository\\Style",
-    "execute_order": 10,
+    "execute_order": 5562,
     "active": true
 }
