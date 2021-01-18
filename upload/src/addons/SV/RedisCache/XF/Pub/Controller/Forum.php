@@ -10,7 +10,8 @@ class Forum extends XFCP_Forum
     {
         parent::applyDateLimitFilters($forum, $threadFinder, $filters);
 
-        if (\XF::options()->sv_threadcount_caching && $this->app()->cache())
+        $threadCountCaching = \XF::options()->sv_threadcount_caching ?? false;
+        if ($threadCountCaching && $this->app()->cache())
         {
             Globals::$cacheForum = $forum;
             Globals::$threadFinder = clone $threadFinder;
