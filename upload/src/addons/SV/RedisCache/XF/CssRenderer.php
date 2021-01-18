@@ -10,7 +10,6 @@ use SV\RedisCache\RawResponseText;
 use SV\RedisCache\Redis;
 use XF\App;
 use XF\Template\Templater;
-use XF\Http\ResponseStream;
 
 class CssRenderer extends XFCP_CssRenderer
 {
@@ -28,30 +27,19 @@ class CssRenderer extends XFCP_CssRenderer
 
     protected $echoUncompressedData = false;
 
-    /**
-     * @param bool $value
-     */
-    public function setForceRawCache($value)
+    public function setForceRawCache(bool $value)
     {
         $this->echoUncompressedData = $value;
     }
 
     protected $includeCharsetInOutput = false;
 
-    /**
-     * @param bool $value
-     */
-    public function setIncludeCharsetInOutput($value)
+    public function setIncludeCharsetInOutput(bool $value)
     {
         $this->includeCharsetInOutput = $value;
     }
 
-    /**
-     * @param $output
-     * @param $length
-     * @return ResponseStream
-     */
-    protected function wrapOutput($output, $length)
+    protected function svWrapOutput(string $output, bool $length): RawResponseText
     {
         return new RawResponseText($output, $length);
     }
@@ -72,21 +60,21 @@ class CssRenderer extends XFCP_CssRenderer
             return false;
         }
 
-        $output = $data['o']; // gzencoded
-        $length = $data['l'];
+        $output = $data['o'] ?? ''; // gzencoded
+        $length = $data['l'] ?? 0;
 
-        if (!$this->includeCharsetInOutput)
+        if (!$length || !$this->includeCharsetInOutput)
         {
             $this->echoUncompressedData = false;
         }
 
         if ($this->echoUncompressedData)
         {
-            return $this->wrapOutput($output, $length);
+            return $this->svWrapOutput($output, $length);
         }
 
         // client doesn't support compression, so decompress before sending it
-        $css = @\gzdecode($output);
+        $css = strlen($output) > 0 ? @\gzdecode($output) : '';
 
         if (!$this->includeCharsetInOutput && strpos($css, static::$charsetBits) === 0)
         {
@@ -110,12 +98,13 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         $output = static::$charsetBits . strval($output);
+        $len = strlen($output);
 
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $credis = $cache->getCredis(false);
         $credis->hMSet($key, [
-            'o' => \gzencode($output, 9),
-            'l' => strlen($output),
+            'o' => $len > 0 ? \gzencode($output, 9) : '',
+            'l' => $len,
         ]);
         $credis->expire($key, 3600);
     }
@@ -213,7 +202,7 @@ class CssRenderer extends XFCP_CssRenderer
 
         $results = [];
         $rawResults = $cache->fetchMultiple(array_values($keys));
-        foreach($templates as $i => $template)
+        foreach ($templates as $i => $template)
         {
             $key = $keys[$i];
             if (isset($rawResults[$key]))
