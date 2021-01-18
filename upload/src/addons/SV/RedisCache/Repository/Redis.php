@@ -1,4 +1,9 @@
 <?php
+/**
+ * @noinspection DuplicatedCode
+ * @noinspection PhpMissingParamTypeInspection
+ * @noinspection PhpMissingReturnTypeInspection
+ */
 
 namespace SV\RedisCache\Repository;
 

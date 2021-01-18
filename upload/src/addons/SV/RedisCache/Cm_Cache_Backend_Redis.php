@@ -1,4 +1,8 @@
 <?php
+/**
+ * @noinspection PhpMissingParamTypeInspection
+ * @noinspection PhpMissingReturnTypeInspection
+ */
 /*
 ==New BSD License==
 
@@ -297,7 +301,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             $version = phpversion("lz4");
             if (version_compare($version, "0.3.0") < 0)
             {
-                $this->_compressData = $this->_compressData > 1 ? true : false;
+                $this->_compressData = $this->_compressData > 1;
             }
             $this->_compressionLib = 'l4z';
         }
@@ -305,7 +309,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             $version = phpversion("zstd");
             if (version_compare($version, "0.4.13") < 0)
             {
-                $this->_compressData = $this->_compressData > 1 ? true : false;
+                $this->_compressData = $this->_compressData > 1;
             }
             $this->_compressionLib = 'zstd';
         }

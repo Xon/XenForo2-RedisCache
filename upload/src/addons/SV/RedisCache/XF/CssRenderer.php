@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * @noinspection PhpMissingParamTypeInspection
+ * @noinspection PhpMissingReturnTypeInspection
+ */
 
 namespace SV\RedisCache\XF;
 

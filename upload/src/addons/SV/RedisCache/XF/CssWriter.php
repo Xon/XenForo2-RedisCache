@@ -1,8 +1,9 @@
 <?php
-
+/**
+ * @noinspection PhpMissingReturnTypeInspection
+ */
 
 namespace SV\RedisCache\XF;
-
 
 use XF\Http\ResponseStream;
 

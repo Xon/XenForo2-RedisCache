@@ -1,4 +1,8 @@
 <?php
+/**
+ * @noinspection PhpMissingParamTypeInspection
+ * @noinspection PhpMissingReturnTypeInspection
+ */
 
 namespace SV\RedisCache;
 
@@ -86,6 +90,7 @@ class Redis  extends Cm_Cache_Backend_Redis
         }
     }
 
+    /** @noinspection PhpUnusedParameterInspection */
     protected function timerForStat($stat, \Closure $callback)
     {
         return $callback();

@@ -1,8 +1,9 @@
 <?php
+/**
+ * @noinspection PhpMissingReturnTypeInspection
+ */
 
 namespace SV\RedisCache\XF;
-
-use XF\App;
 
 /**
  * Extends \XF\Debugger
