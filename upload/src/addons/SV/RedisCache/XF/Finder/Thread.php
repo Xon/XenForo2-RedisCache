@@ -22,7 +22,7 @@ class Thread extends XFCP_Thread
             $conditions = $finder->conditions;
             sort($conditions);
             $joins = $finder->joins;
-            foreach($joins as $key => &$join)
+            foreach ($joins as $key => &$join)
             {
                 if (!$join['fundamental'] || !$join['exists'])
                 {

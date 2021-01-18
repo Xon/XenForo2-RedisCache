@@ -13,5 +13,5 @@ class Globals
     /** @var \XF\Finder\Thread */
     public static $threadFinder = null;
 
-    private function __construct() {}
+    private function __construct() { }
 }

@@ -13,7 +13,7 @@ class Index extends XFCP_Index
     {
         $reply = parent::actionIndex();
 
-        Redis::instance()->insertRedisInfoParams($reply, null, null);
+        Redis::instance()->insertRedisInfoParams($reply);
 
         return $reply;
     }

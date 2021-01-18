@@ -1,6 +1,5 @@
 <?php
 /**
- * @noinspection PhpMissingParamTypeInspection
  * @noinspection PhpMissingReturnTypeInspection
  */
 
@@ -8,32 +7,32 @@ namespace SV\RedisCache;
 
 /**
  * Redis adapter for XenForo2 & Doctrine
- *
  */
 
 use Doctrine\Common\Cache\Cache;
 
 require_once('Credis/Client.php');
 require_once('Credis/Sentinel.php');
-class Redis  extends Cm_Cache_Backend_Redis
+
+class Redis extends Cm_Cache_Backend_Redis
 {
     protected $useIgbinary = false;
 
     protected $stats = [
-        'gets' => 0,
-        'gets.time' => 0,
-        'sets' => 0,
-        'sets.time' => 0,
-        'deletes' => 0,
-        'deletes.time' => 0,
-        'flushes' => 0,
-        'flushes.time' => 0,
-        'bytes_sent' => 0,
-        'bytes_received' => 0,
-        'time_compression' => 0,
+        'gets'               => 0,
+        'gets.time'          => 0,
+        'sets'               => 0,
+        'sets.time'          => 0,
+        'deletes'            => 0,
+        'deletes.time'       => 0,
+        'flushes'            => 0,
+        'flushes.time'       => 0,
+        'bytes_sent'         => 0,
+        'bytes_received'     => 0,
+        'time_compression'   => 0,
         'time_decompression' => 0,
-        'time_encoding' => 0,
-        'time_decoding' => 0,
+        'time_encoding'      => 0,
+        'time_decoding'      => 0,
     ];
 
     /**
@@ -41,14 +40,15 @@ class Redis  extends Cm_Cache_Backend_Redis
      */
     protected $debug = false;
 
-    /** @var \Closure|null  */
+    /** @var \Closure|null */
     protected $redisQueryForStat = null;
-    /** @var \Closure|null  */
+    /** @var \Closure|null */
     protected $timerForStat = null;
 
     protected function redisQueryForStat($stat, \Closure $callback)
     {
         $this->stats[$stat]++;
+
         return $callback();
     }
 
@@ -131,11 +131,7 @@ class Redis  extends Cm_Cache_Backend_Redis
         }
     }
 
-    /**
-     * Redis constructor.
-     * @param array $options
-     */
-    public function __construct($options = array())
+    public function __construct(array $options = [])
     {
         $this->debug = \XF::$debugMode;
 
@@ -143,19 +139,19 @@ class Redis  extends Cm_Cache_Backend_Redis
         {
             if (\function_exists('\hrtime'))
             {
-                $this->timerForStat = [$this,'timerForStatDebugPhp73'];
-                $this->redisQueryForStat = [$this,'redisQueryForStatDebugPhp73'];
+                $this->timerForStat = [$this, 'timerForStatDebugPhp73'];
+                $this->redisQueryForStat = [$this, 'redisQueryForStatDebugPhp73'];
             }
             else
             {
-                $this->timerForStat = [$this,'timerForStatDebug'];
+                $this->timerForStat = [$this, 'timerForStatDebug'];
                 $this->redisQueryForStat = [$this, 'redisQueryForStatDebug'];
             }
         }
         else
         {
-            $this->timerForStat = [$this,'timerForStat'];
-            $this->redisQueryForStat = [$this,'redisQueryForStat'];
+            $this->timerForStat = [$this, 'timerForStat'];
+            $this->redisQueryForStat = [$this, 'redisQueryForStat'];
         }
         if (is_callable('\Closure::fromCallable'))
         {
@@ -167,32 +163,30 @@ class Redis  extends Cm_Cache_Backend_Redis
 
         if (!isset($options['slave_select_callable']))
         {
-            $options['slave_select_callable'] = array($this, 'preferLocalSlave');
+            $options['slave_select_callable'] = [$this, 'preferLocalSlave'];
         }
         // if it is a string, assume it is some method on this class
         if (isset($options['slave_select_callable']) && is_string($options['slave_select_callable']))
         {
-            $options['slave_select_callable'] = array($this, $options['slave_select_callable']);
+            $options['slave_select_callable'] = [$this, $options['slave_select_callable']];
         }
 
         $igbinaryPresent = is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
         $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \utf8_strtolower($options['serializer']) == 'igbinary');
 
-        if ( !empty($options['host']) ) {
+        if (!empty($options['host']))
+        {
             $options['server'] = $options['host'];
         }
-        if ( empty($options['server']) ) {
+        if (empty($options['server']))
+        {
             $options['server'] = 'localhost';
         }
 
         parent::__construct($options);
     }
 
-    /**
-     * @param array $ips
-     * @return array
-     */
-    protected function getLocalIps(array $ips = null)
+    protected function getLocalIps(array $ips = null): array
     {
         if (!is_array($ips))
         {
@@ -201,19 +195,23 @@ class Redis  extends Cm_Cache_Backend_Redis
             {
                 $output = shell_exec("hostname --all-ip-addresses");
             }
-            catch(\Exception $e) { $output = ''; }
+            catch (\Exception $e)
+            {
+                $output = '';
+            }
             if ($output)
             {
                 $ips = array_fill_keys(array_filter(array_map('trim', (explode(' ', $output)))), true);
             }
         }
+
         return $ips ?: [];
     }
 
     /**
-     * @param array $ips
+     * @param array            $ips
      * @param \Credis_Client[] $slaves
-     * @param $master
+     * @param                  $master
      * @return \Credis_Client|null
      * @noinspection PhpUnusedParameterInspection
      */
@@ -221,7 +219,7 @@ class Redis  extends Cm_Cache_Backend_Redis
     {
         if ($ips)
         {
-            foreach($slaves as $slave)
+            foreach ($slaves as $slave)
             {
                 // slave host is just an ip
                 $host = $slave->getHost();
@@ -233,23 +231,25 @@ class Redis  extends Cm_Cache_Backend_Redis
         }
 
         $slaveKey = array_rand($slaves, 1);
+
         return $slaves[$slaveKey];
     }
 
     /**
      * @param \Credis_Client[] $slaves
-     * @param $master
+     * @param                  $master
      * @return \Credis_Client|null
      */
     public function preferLocalSlave(array $slaves, $master)
     {
         $ips = $this->getLocalIps();
+
         return $this->selectLocalRedis($ips, $slaves, $master);
     }
 
     /**
      * @param \Credis_Client[] $slaves
-     * @param $master
+     * @param                  $master
      * @return \Credis_Client|null
      */
     protected function preferLocalSlaveLocalDisk(array $slaves, $master)
@@ -261,7 +261,10 @@ class Redis  extends Cm_Cache_Backend_Redis
             {
                 $output = shell_exec("hostname --all-ip-addresses");
             }
-            catch(\Exception $e) { $output = ''; }
+            catch (\Exception $e)
+            {
+                $output = '';
+            }
             if ($output !== false)
             {
                 file_put_contents('/tmp/local_ips', $output);
@@ -273,12 +276,13 @@ class Redis  extends Cm_Cache_Backend_Redis
         {
             $ips = array_fill_keys(array_filter(array_map('trim', (explode(' ', $output)))), true);
         }
+
         return $this->selectLocalRedis($ips ?: [], $slaves, $master);
     }
 
     /**
      * @param \Credis_Client[] $slaves
-     * @param $master
+     * @param                  $master
      * @return \Credis_Client|null
      */
     public function preferLocalSlaveAPCu(array $slaves, $master)
@@ -297,67 +301,46 @@ class Redis  extends Cm_Cache_Backend_Redis
                 apcu_store('localips', $ips);
             }
         }
+
         return $this->selectLocalRedis($ips ?: [], $slaves, $master);
     }
 
-    /**
-     * @return int
-     */
-    public function getCompressThreshold()
+    public function getCompressThreshold(): int
     {
         return $this->_compressThreshold;
     }
 
-    /**
-     * @param int $value
-     */
-    public function setCompressThreshold($value)
+    public function setCompressThreshold(int $value)
     {
         $this->_compressThreshold = $value;
     }
 
-    /**
-     * @param string $data
-     * @return string
-     */
-    public function DecodeData($data)
+    public function DecodeData(string $data): string
     {
         return $this->_decodeData($data);
     }
 
-    /**
-     * @param bool $allowSlave
-     * @return \Credis_Client
-     */
-    public function getCredis($allowSlave = false)
+    public function getCredis(bool $allowSlave = false): \Credis_Client
     {
         if ($allowSlave && $this->_slave)
         {
             return $this->_slave;
         }
+
         return $this->_redis;
     }
 
-    /**
-     * @return \Credis_Client
-     */
-    public function getSlaveCredis()
+    public function getSlaveCredis(): \Credis_Client
     {
         return $this->_slave;
     }
 
-    /**
-     * @param \Credis_Client $slave
-     */
-    public function setSlaveCredis($slave)
+    public function setSlaveCredis(\Credis_Client $slave)
     {
         $this->_slave = $slave;
     }
 
-    /**
-     * @return bool
-     */
-    public function useLua()
+    public function useLua(): bool
     {
         return $this->_useLua;
     }
@@ -368,26 +351,33 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function doFetch($id)
     {
         $redisQueryForStat = $this->redisQueryForStat;
-        return $redisQueryForStat('gets', function() use ($id) {
-            if ($this->_slave) {
+
+        return $redisQueryForStat('gets', function () use ($id) {
+            if ($this->_slave)
+            {
                 $data = $this->_slave->get($id);
 
                 // Prevent compounded effect of cache flood on asynchronously replicating master/slave setup
-                if ($this->_retryReadsOnMaster && $data === false) {
+                if ($this->_retryReadsOnMaster && $data === false)
+                {
                     $data = $this->_redis->get($id);
                 }
-            } else {
+            }
+            else
+            {
                 $data = $this->_redis->get($id);
             }
 
-            if ($data === null || $data === false) {
+            if ($data === null || $data === false)
+            {
                 return false;
             }
 
             $this->stats['bytes_received'] += strlen($data);
             $decoded = $this->_decodeData($data);
 
-            if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad) {
+            if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad)
+            {
                 return $decoded;
             }
 
@@ -403,7 +393,8 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function doFetchMultiple(array $keys)
     {
         $redisQueryForStat = $this->redisQueryForStat;
-        return $redisQueryForStat('gets', function() use ($keys) {
+
+        return $redisQueryForStat('gets', function () use ($keys) {
             $redis = $this->_slave ? $this->_slave : $this->_redis;
 
             $fetchedItems = $redis->mget($keys);
@@ -411,7 +402,7 @@ class Redis  extends Cm_Cache_Backend_Redis
             $autoExpire = $this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad;
             $decoded = [];
             $mgetResults = array_combine($keys, $fetchedItems);
-            foreach($mgetResults as $key => $data)
+            foreach ($mgetResults as $key => $data)
             {
                 if ($data === null || $data === false)
                 {
@@ -437,17 +428,13 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function doContains($id)
     {
         $redisQueryForStat = $this->redisQueryForStat;
-        return $redisQueryForStat('gets', function() use ($id) {
+
+        return $redisQueryForStat('gets', function () use ($id) {
             // Don't use slave for this since `doContains`/`test` is usually used for locking
             return $this->_redis->exists($id);
         });
     }
 
-    /**
-     * @param string $data
-     * @param int $level
-     * @return string
-     */
     protected function _encodeData($data, $level)
     {
         $timerForStat = $this->timerForStat;
@@ -463,10 +450,6 @@ class Redis  extends Cm_Cache_Backend_Redis
         });
     }
 
-    /**
-     * @param string $data
-     * @return mixed
-     */
     protected function _decodeData($data)
     {
         $timerForStat = $this->timerForStat;
@@ -488,7 +471,8 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function doSave($id, $data, $lifeTime = 0)
     {
         $redisQueryForStat = $this->redisQueryForStat;
-        return $redisQueryForStat('sets', function() use ($id, $data, $lifeTime) {
+
+        return $redisQueryForStat('sets', function () use ($id, $data, $lifeTime) {
             $data = $this->_encodeData($data, $this->_compressData);
             $lifetime = $this->_getAutoExpiringLifetime($lifeTime, $id);
             $lifeTime = min($lifetime, self::MAX_LIFETIME);
@@ -514,7 +498,8 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function doDelete($id)
     {
         $redisQueryForStat = $this->redisQueryForStat;
-        return $redisQueryForStat('deletes', function() use ($id) {
+
+        return $redisQueryForStat('deletes', function () use ($id) {
             return $this->_redis->del($id) >= 0;
         });
     }
@@ -525,14 +510,15 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function doFlush()
     {
         $redisQueryForStat = $this->redisQueryForStat;
-        return $redisQueryForStat('flushes', function() {
+
+        return $redisQueryForStat('flushes', function () {
             $response = $this->_redis->flushdb();
 
             return $response === true || $response == 'OK';
         });
     }
 
-    public function getRedisStats()
+    public function getRedisStats(): array
     {
         return $this->stats;
     }
@@ -543,7 +529,8 @@ class Redis  extends Cm_Cache_Backend_Redis
     protected function doGetStats()
     {
         $redisQueryForStat = $this->redisQueryForStat;
-        return $redisQueryForStat('gets', function() {
+
+        return $redisQueryForStat('gets', function () {
             //$redis = $this->_slave ? $this->_slave : $this->_redis;
             $info = $this->_redis->info();
 
@@ -552,7 +539,7 @@ class Redis  extends Cm_Cache_Backend_Redis
                 Cache::STATS_MISSES           => $info['Stats']['keyspace_misses'],
                 Cache::STATS_UPTIME           => $info['Server']['uptime_in_seconds'],
                 Cache::STATS_MEMORY_USAGE     => $info['Memory']['used_memory'],
-                Cache::STATS_MEMORY_AVAILABLE => false
+                Cache::STATS_MEMORY_AVAILABLE => false,
             ];
         });
     }

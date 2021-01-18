@@ -1,7 +1,4 @@
 <?php
-/**
- * @noinspection PhpMissingReturnTypeInspection
- */
 
 namespace SV\RedisCache\XF\Repository;
 
@@ -68,7 +65,7 @@ class SessionActivity extends XFCP_SessionActivity
 
             if (isset($onlineStats['counts']))
             {
-                foreach($onlineStats['counts'] as $key => &$value)
+                foreach ($onlineStats['counts'] as $key => &$value)
                 {
                     if (\is_numeric($value))
                     {

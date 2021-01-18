@@ -1,8 +1,6 @@
 <?php
 /**
  * @noinspection DuplicatedCode
- * @noinspection PhpMissingParamTypeInspection
- * @noinspection PhpMissingReturnTypeInspection
  */
 
 namespace SV\RedisCache\Repository;
@@ -13,7 +11,6 @@ use XF\Mvc\Reply\View;
 
 class Redis extends Repository
 {
-
     /**
      * @return Redis|Repository
      */
@@ -29,7 +26,7 @@ class Redis extends Repository
      * @param string|null $context
      * @param int|null    $slaveId
      */
-    public function insertRedisInfoParams(View $view, $context, $slaveId)
+    public function insertRedisInfoParams(View $view, string $context = null, int $slaveId = null)
     {
         $mainConfig = \XF::app()->config()['cache'];
         $redisInfo = [];
@@ -54,7 +51,7 @@ class Redis extends Repository
             }
         }
 
-        foreach($contexts as $contextLabel => $config)
+        foreach ($contexts as $contextLabel => $config)
         {
             $cache = \XF::app()->cache($contextLabel, false);
             if ($cache &&
@@ -105,12 +102,12 @@ class Redis extends Repository
     /**
      * Processes redis info and adds as parameter to view.
      *
-     * @param       $config
+     * @param array $config
      * @param array $data
      * @param bool  $useLua
      * @return array
      */
-    private function addRedisInfo($config, array $data, $useLua = true)
+    private function addRedisInfo(array $config, array $data, bool $useLua = true): array
     {
         $database = 0;
         $slaves = [];
@@ -166,6 +163,7 @@ class Redis extends Repository
         $data['lua'] = $useLua;
         $data['phpredis'] = phpversion('redis');
         $data['HasIOStats'] = isset($data['instantaneous_input_kbps']) && isset($data['instantaneous_output_kbps']);
+
         return $data;
     }
 }

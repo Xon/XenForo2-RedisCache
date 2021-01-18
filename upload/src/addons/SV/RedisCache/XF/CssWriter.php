@@ -16,9 +16,9 @@ class CssWriter extends XFCP_CssWriter
         {
             // work-around for buggy-bots
             $input = $request->filter([
-                'amp;s'   => 'uint',
-                'amp;l'   => 'uint',
-                'amp;k'   => 'str'
+                'amp;s' => 'uint',
+                'amp;l' => 'uint',
+                'amp;k' => 'str',
             ]);
             $styleId = $input['amp;s'];
             $languageId = $input['amp;l'];
@@ -34,6 +34,7 @@ class CssWriter extends XFCP_CssWriter
             {
                 $response = $this->getResponse('');
                 $response->httpCode(404);
+
                 return $response;
             }
         }
@@ -47,6 +48,7 @@ class CssWriter extends XFCP_CssWriter
         {
             $renderer->setForceRawCache(true);
         }
+
         return parent::run($templates, $styleId, $languageId, $validation);
     }
 
@@ -56,10 +58,11 @@ class CssWriter extends XFCP_CssWriter
         {
             return $output;
         }
-        if (strpos($output,'@CHARSET') === 0)
+        if (strpos($output, '@CHARSET') === 0)
         {
             return $output;
         }
+
         return parent::finalizeOutput($output);
     }
 
@@ -72,6 +75,7 @@ class CssWriter extends XFCP_CssWriter
             $response->header('content-encoding', 'gzip');
             $response->header('vary', 'Accept-Encoding');
         }
+
         return $response;
     }
 }

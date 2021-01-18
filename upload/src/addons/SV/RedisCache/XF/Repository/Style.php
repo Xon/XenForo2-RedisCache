@@ -1,6 +1,5 @@
 <?php
 /**
- * @noinspection PhpMissingParamTypeInspection
  * @noinspection PhpMissingReturnTypeInspection
  */
 
@@ -23,8 +22,8 @@ class Style extends XFCP_Style
 
     public function styleCachePurge()
     {
-        $this->_clearCache("xfCssCache_");
-        $this->_clearCache("xfSvgCache_");
+        $this->_svClearCache("xfCssCache_");
+        $this->_svClearCache("xfSvgCache_");
     }
 
     /**
@@ -32,7 +31,7 @@ class Style extends XFCP_Style
      * @param int|null $styleId
      * @noinspection PhpUnusedParameterInspection
      */
-    protected function _clearCache($pattern, $styleId = null)
+    protected function _svClearCache(string $pattern, int $styleId = null)
     {
         $cache = \XF::app()->cache();
         if (($cache instanceof Redis) && ($credis = $cache->getCredis(false)))

@@ -23,12 +23,11 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
      * Sets the namespace to prefix all cache ids with.
      *
      * @param string $namespace
-     *
      * @return void
      */
     public function setNamespace($namespace)
     {
-        $this->namespace        = (string) $namespace;
+        $this->namespace = (string)$namespace;
     }
 
     /**
@@ -54,19 +53,22 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
      */
     public function fetchMultiple(array $keys)
     {
-        if (empty($keys)) {
-            return array();
+        if (empty($keys))
+        {
+            return [];
         }
-        
+
         // note: the array_combine() is in place to keep an association between our $keys and the $namespacedKeys
-        $namespacedKeys = array_combine($keys, array_map(array($this, 'getNamespacedId'), $keys));
-        $items          = $this->doFetchMultiple($namespacedKeys);
-        $foundItems     = array();
+        $namespacedKeys = array_combine($keys, array_map([$this, 'getNamespacedId'], $keys));
+        $items = $this->doFetchMultiple($namespacedKeys);
+        $foundItems = [];
 
         // no internal array function supports this sort of mapping: needs to be iterative
         // this filters and combines keys in one pass
-        foreach ($namespacedKeys as $requestedKey => $namespacedKey) {
-            if (isset($items[$namespacedKey]) || array_key_exists($namespacedKey, $items)) {
+        foreach ($namespacedKeys as $requestedKey => $namespacedKey)
+        {
+            if (isset($items[$namespacedKey]) || array_key_exists($namespacedKey, $items))
+            {
                 $foundItems[$requestedKey] = $items[$namespacedKey];
             }
         }
@@ -111,7 +113,6 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
      * Prefixes the passed id with the configured namespace value.
      *
      * @param string $id The id to namespace.
-     *
      * @return string The namespaced id.
      */
     public function getNamespacedId($id)

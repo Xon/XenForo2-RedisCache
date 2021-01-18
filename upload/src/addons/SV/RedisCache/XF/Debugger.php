@@ -26,7 +26,7 @@ class Debugger extends XFCP_Debugger
         $redisSections = '';
         $time = 0;
         $count = 0;
-        foreach($contexts as $contextLabel => $config)
+        foreach ($contexts as $contextLabel => $config)
         {
             $cache = \XF::app()->cache($contextLabel, false);
             if ($cache &&
