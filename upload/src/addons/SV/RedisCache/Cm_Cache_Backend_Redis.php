@@ -3,6 +3,7 @@
 ==New BSD License==
 
 Copyright (c) 2013, Colin Mollenhour
+Copyright (c) 2017-2021, "Xon"
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
