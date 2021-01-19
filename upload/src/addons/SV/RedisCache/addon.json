@@ -3,7 +3,7 @@
     "title": "Redis Cache",
     "description": "XenForo + Redis",
     "version_string": "2.10.0",
-    "version_id": 20100000,
+    "version_id": 20100001,
     "dev" : "Xon",
     "dev_url": "https://atelieraphelion.com/",
     "faq_url": "",
