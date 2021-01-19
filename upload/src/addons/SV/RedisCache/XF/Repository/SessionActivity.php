@@ -45,7 +45,10 @@ class SessionActivity extends XFCP_SessionActivity
                 }
                 if ($userIdsToLoad)
                 {
-                    $loadedUsers = $app->find('XF:User', $userIdsToLoad)->toArray();
+                    $loadedUsers = $app->finder('XF:User')
+                                       ->whereIds($userIdsToLoad)
+                                       ->fetch()
+                                       ->toArray();
                     if ($loadedUsers)
                     {
                         $toSort = new ArrayCollection($users + $loadedUsers);
