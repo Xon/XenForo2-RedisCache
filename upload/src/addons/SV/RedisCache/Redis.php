@@ -52,7 +52,7 @@ class Redis extends Cm_Cache_Backend_Redis
         return $callback();
     }
 
-    protected function redisQueryForStatDebugPhp7($stat, \Closure $callback)
+    protected function redisQueryForStatDebug($stat, \Closure $callback)
     {
         $this->stats[$stat]++;
         /** @var float $startTime */
