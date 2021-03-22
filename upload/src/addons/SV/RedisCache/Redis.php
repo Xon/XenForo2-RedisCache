@@ -96,7 +96,7 @@ class Redis extends Cm_Cache_Backend_Redis
         return $callback();
     }
 
-    protected function timerForStatDebugPhp7($stat, \Closure $callback)
+    protected function timerForStatDebug($stat, \Closure $callback)
     {
         /** @var float $startTime */
         $startTime = \microtime(true);
