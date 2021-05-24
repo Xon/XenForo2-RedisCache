@@ -166,7 +166,7 @@ class Redis extends Cm_Cache_Backend_Redis
             $options['slave_select_callable'] = [$this, 'preferLocalSlave'];
         }
         // if it is a string, assume it is some method on this class
-        if (isset($options['slave_select_callable']) && is_string($options['slave_select_callable']))
+        if (isset($options['slave_select_callable']) && \is_string($options['slave_select_callable']))
         {
             $options['slave_select_callable'] = [$this, $options['slave_select_callable']];
         }
@@ -188,7 +188,7 @@ class Redis extends Cm_Cache_Backend_Redis
 
     protected function getLocalIps(array $ips = null): array
     {
-        if (!is_array($ips))
+        if (!\is_array($ips))
         {
             // I can't believe there isn't a better way
             try
@@ -288,11 +288,11 @@ class Redis extends Cm_Cache_Backend_Redis
     public function preferLocalSlaveAPCu(array $slaves, $master)
     {
         $ips = null;
-        if (function_exists('apcu_fetch'))
+        if (\function_exists('apcu_fetch'))
         {
             $ips = apcu_fetch('localips', $hasIps);
         }
-        if (!is_array($ips))
+        if (!\is_array($ips))
         {
             $ips = $this->getLocalIps();
             if (function_exists('apcu_store'))
@@ -373,7 +373,7 @@ class Redis extends Cm_Cache_Backend_Redis
                 return false;
             }
 
-            $this->stats['bytes_received'] += strlen($data);
+            $this->stats['bytes_received'] += \strlen($data);
             $decoded = $this->_decodeData($data);
 
             if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad)
@@ -409,7 +409,7 @@ class Redis extends Cm_Cache_Backend_Redis
                     continue;
                 }
 
-                $this->stats['bytes_received'] += strlen($data);
+                $this->stats['bytes_received'] += \strlen($data);
                 $decoded[$key] = $this->_decodeData($data);
 
                 if ($autoExpire)
@@ -477,7 +477,7 @@ class Redis extends Cm_Cache_Backend_Redis
             $lifetime = $this->_getAutoExpiringLifetime($lifeTime, $id);
             $lifeTime = min($lifetime, self::MAX_LIFETIME);
 
-            $this->stats['bytes_sent'] += strlen($data);
+            $this->stats['bytes_sent'] += \strlen($data);
 
             if ($lifeTime > 0)
             {

@@ -67,7 +67,7 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         // this filters and combines keys in one pass
         foreach ($namespacedKeys as $requestedKey => $namespacedKey)
         {
-            if (isset($items[$namespacedKey]) || array_key_exists($namespacedKey, $items))
+            if (isset($items[$namespacedKey]) || \array_key_exists($namespacedKey, $items))
             {
                 $foundItems[$requestedKey] = $items[$namespacedKey];
             }

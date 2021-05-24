@@ -24,7 +24,7 @@ class SessionActivity extends XFCP_SessionActivity
             $keyParts[] = \XF::visitor()->user_id;
             $cacheKey = 'onlineList.' . $cacheUsersOnline . '.' . md5(\json_encode($keyParts));
             $result = $cache->fetch($cacheKey);
-            if (is_array($result))
+            if (\is_array($result))
             {
                 $userIds = $result['userIds'] ?? [];
                 unset($result['userIds']);
@@ -76,7 +76,7 @@ class SessionActivity extends XFCP_SessionActivity
                     if (\is_numeric($value))
                     {
                         /** @noinspection PhpWrongStringConcatenationInspection */
-                        $value = strval(floatval($value)) + 0;
+                        $value = \strval(\floatval($value)) + 0;
                     }
                 }
             }

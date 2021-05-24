@@ -10,7 +10,7 @@ class RawResponseText extends ResponseStream
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct($resource, $length = null)
     {
-        if (!is_string($resource))
+        if (!\is_string($resource))
         {
             throw new \InvalidArgumentException("Must pass valid string in");
         }

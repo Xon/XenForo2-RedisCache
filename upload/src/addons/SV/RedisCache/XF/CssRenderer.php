@@ -74,7 +74,7 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         // client doesn't support compression, so decompress before sending it
-        $css = strlen($output) > 0 ? @\gzdecode($output) : '';
+        $css = \strlen($output) > 0 ? @\gzdecode($output) : '';
 
         if (!$this->includeCharsetInOutput && strpos($css, static::$charsetBits) === 0)
         {
@@ -97,8 +97,8 @@ class CssRenderer extends XFCP_CssRenderer
             return;
         }
 
-        $output = static::$charsetBits . strval($output);
-        $len = strlen($output);
+        $output = static::$charsetBits . \strval($output);
+        $len = \strlen($output);
 
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $credis = $cache->getCredis(false);

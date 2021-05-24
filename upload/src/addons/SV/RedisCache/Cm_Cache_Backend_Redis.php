@@ -125,7 +125,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $clientOptions->readTimeout = isset($options['read_timeout']) ? (float)$options['read_timeout'] : null;
         $clientOptions->password = isset($options['password']) ? $options['password'] : null;
         $clientOptions->database = isset($options['database']) ? (int)$options['database'] : 0;
-        $clientOptions->persistent = isset($options['persistent']) ? strval($options['persistent']) . '_' . strval($clientOptions->database) : '';
+        $clientOptions->persistent = isset($options['persistent']) ? \strval($options['persistent']) . '_' . \strval($clientOptions->database) : '';
         $clientOptions->timeout = isset($options['timeout']) ? $options['timeout'] : self::DEFAULT_CONNECT_TIMEOUT;
 
         return $clientOptions;
@@ -150,10 +150,10 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $sentinelMaster = empty($options['sentinel_master']) ? null : $options['sentinel_master'];
         if ($sentinelMaster)
         {
-            $sentinelClientOptions = isset($options['sentinel']) && is_array($options['sentinel'])
+            $sentinelClientOptions = isset($options['sentinel']) && \is_array($options['sentinel'])
                 ? $this->getClientOptions($options['sentinel'] + $options)
                 : $this->_clientOptions;
-            $servers = is_array($options['server']) ? $options['server'] : preg_split('/\s*,\s*/', trim($options['server']), null, PREG_SPLIT_NO_EMPTY);
+            $servers = \is_array($options['server']) ? $options['server'] : preg_split('/\s*,\s*/', trim($options['server']), null, PREG_SPLIT_NO_EMPTY);
             $sentinel = null;
             $exception = null;
             for ($i = 0; $i <= $sentinelClientOptions->connectRetries; $i++) // Try each sentinel in round-robin fashion
@@ -260,7 +260,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             // Support loading from a replication slave
             if (isset($options['load_from_slave']))
             {
-                if (is_array($options['load_from_slave']))
+                if (\is_array($options['load_from_slave']))
                 {
                     if (isset($options['load_from_slave']['server']))
                     {  // Single slave
@@ -276,7 +276,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                         $server = $slave['server'];
                         $port = $slave['port'];
                         $clientOptions = $this->getClientOptions($slave + $options);
-                        $totalServers = count($options['load_from_slave']) + 1;
+                        $totalServers = \count($options['load_from_slave']) + 1;
                     }
                 }
                 else
@@ -293,7 +293,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                         $slaveKey = array_rand($slaves, 1);
                         $server = $slaves[$slaveKey];
                         $port = null;
-                        $totalServers = count($slaves) + 1;
+                        $totalServers = \count($slaves) + 1;
                     }
                     else
                     {
@@ -302,7 +302,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 }
                 // Skip setting up slave if master is not write only and it is randomly chosen to be the read server
                 $masterWriteOnly = isset($options['master_write_only']) ? (int)$options['master_write_only'] : false;
-                if (is_string($server) && $server && !(!$masterWriteOnly && rand(1, $totalServers) === 1))
+                if (\is_string($server) && $server && !(!$masterWriteOnly && rand(1, $totalServers) === 1))
                 {
                     try
                     {
@@ -502,7 +502,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
      */
     protected function _encodeData($data, $level)
     {
-        if ($this->_compressionLib && $level !== 0 && strlen($data) >= $this->_compressThreshold)
+        if ($this->_compressionLib && $level !== 0 && \strlen($data) >= $this->_compressThreshold)
         {
             switch ($this->_compressionLib)
             {
