@@ -1,8 +1,10 @@
 _releases
 _data
-hashes.json
+_build
+_vendor
 /.idea/
+hashes.json
 .DS_Store
-git.json
 .phpstorm.meta.php
 _metadata.json
+.php_cs.cache
