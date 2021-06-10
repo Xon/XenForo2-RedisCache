@@ -407,7 +407,12 @@ class Redis extends Cm_Cache_Backend_Redis
                 }
 
                 $this->stats['bytes_received'] += \strlen($data);
-                $decoded[$key] = $this->_decodeData($data);
+                $decodedData = $this->_decodeData($data);
+                if ($decodedData === false)
+                {
+                    continue;
+                }
+                $decoded[$key] = $decodedData;
 
                 if ($autoExpire)
                 {
@@ -455,7 +460,10 @@ class Redis extends Cm_Cache_Backend_Redis
             return parent::_decodeData($data);
         });
         unset($data);
-
+        if ($decompressedData === false)
+        {
+            return false;
+        }
         return $timerForStat('time_decoding', function () use ($decompressedData) {
             return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
         });
