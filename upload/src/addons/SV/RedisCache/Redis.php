@@ -1,7 +1,4 @@
 <?php
-/**
- * @noinspection PhpMissingReturnTypeInspection
- */
 
 namespace SV\RedisCache;
 
@@ -172,7 +169,7 @@ class Redis extends Cm_Cache_Backend_Redis
         }
 
         $igbinaryPresent = is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
-        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \utf8_strtolower($options['serializer']) == 'igbinary');
+        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \utf8_strtolower($options['serializer']) === 'igbinary');
 
         if (!empty($options['host']))
         {
@@ -230,7 +227,7 @@ class Redis extends Cm_Cache_Backend_Redis
             }
         }
 
-        $slaveKey = array_rand($slaves, 1);
+        $slaveKey = array_rand($slaves);
 
         return $slaves[$slaveKey];
     }
@@ -395,7 +392,7 @@ class Redis extends Cm_Cache_Backend_Redis
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () use ($keys) {
-            $redis = $this->_slave ? $this->_slave : $this->_redis;
+            $redis = $this->_slave ?: $this->_redis;
 
             $fetchedItems = $redis->mget($keys);
 
@@ -458,11 +455,10 @@ class Redis extends Cm_Cache_Backend_Redis
             return parent::_decodeData($data);
         });
         unset($data);
-        $data = $timerForStat('time_decoding', function () use ($decompressedData) {
+
+        return $timerForStat('time_decoding', function () use ($decompressedData) {
             return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
         });
-
-        return $data;
     }
 
     /**
@@ -512,9 +508,10 @@ class Redis extends Cm_Cache_Backend_Redis
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('flushes', function () {
+            /** @var string|bool $response */
             $response = $this->_redis->flushdb();
 
-            return $response === true || $response == 'OK';
+            return $response === true || $response === 'OK';
         });
     }
 

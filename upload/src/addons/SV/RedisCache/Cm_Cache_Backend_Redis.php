@@ -121,12 +121,12 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     {
         $clientOptions = new \stdClass();
         $clientOptions->forceStandalone = isset($options['force_standalone']) && $options['force_standalone'];
-        $clientOptions->connectRetries = isset($options['connect_retries']) ? (int)$options['connect_retries'] : self::DEFAULT_CONNECT_RETRIES;
-        $clientOptions->readTimeout = isset($options['read_timeout']) ? (float)$options['read_timeout'] : null;
-        $clientOptions->password = isset($options['password']) ? $options['password'] : null;
-        $clientOptions->database = isset($options['database']) ? (int)$options['database'] : 0;
-        $clientOptions->persistent = isset($options['persistent']) ? \strval($options['persistent']) . '_' . \strval($clientOptions->database) : '';
-        $clientOptions->timeout = isset($options['timeout']) ? $options['timeout'] : self::DEFAULT_CONNECT_TIMEOUT;
+        $clientOptions->connectRetries = (int)($options['connect_retries'] ?? self::DEFAULT_CONNECT_RETRIES);
+        $clientOptions->readTimeout = isset($options['read_timeout']) ? \floatval($options['read_timeout']) : null;
+        $clientOptions->password = isset($options['password']) ? \strval($options['password']) : null;
+        $clientOptions->database = (int)($options['database'] ?? 0);
+        $clientOptions->persistent = isset($options['persistent']) ? $options['persistent'] . '_' . $clientOptions->database : '';
+        $clientOptions->timeout =  isset($options['timeout']) ? \floatval($options['timeout']) : self::DEFAULT_CONNECT_TIMEOUT;
 
         return $clientOptions;
     }
@@ -184,13 +184,13 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                         if (!empty($options['sentinel_master_verify']))
                         {
                             $roleData = $redisMaster->role();
-                            if (!$roleData || $roleData[0] != 'master')
+                            if (!$roleData || $roleData[0] !== 'master')
                             {
                                 usleep(100000); // Sleep 100ms and try again
                                 $redisMaster = $sentinel->getMasterClient($sentinelMaster);
                                 $this->_applyClientOptions($redisMaster);
                                 $roleData = $redisMaster->role();
-                                if (!$roleData || $roleData[0] != 'master')
+                                if (!$roleData || $roleData[0] !== 'master')
                                 {
                                     throw new \CredisException('Unable to determine master redis server.');
                                 }
@@ -218,7 +218,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 $slaves = $sentinel->getSlaveClients($sentinelMaster);
                 if ($slaves)
                 {
-                    if ($options['load_from_slaves'] == 2)
+                    if ($options['load_from_slaves'] === 2)
                     {
                         array_push($slaves, $this->_redis); // Also send reads to the master
                     }
@@ -230,7 +230,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     else
                     {
                         /** @var string $slaveKey */
-                        $slaveKey = array_rand($slaves, 1);
+                        $slaveKey = array_rand($slaves);
                         $slave = $slaves[$slaveKey];
                     }
                     if ($slave instanceof \Credis_Client && $slave !== $this->_redis)
@@ -253,7 +253,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         // Direct connection to single Redis server and optional slaves
         else
         {
-            $port = isset($options['port']) ? $options['port'] : 6379;
+            $port = (int)($options['port'] ?? 6379);
             $this->_redis = new \Credis_Client($options['server'], $port, $this->_clientOptions->timeout, $this->_clientOptions->persistent);
             $this->_applyClientOptions($this->_redis);
 
@@ -271,7 +271,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     }
                     else
                     {  // Multiple slaves
-                        $slaveKey = array_rand($options['load_from_slave'], 1);
+                        $slaveKey = array_rand($options['load_from_slave']);
                         $slave = $options['load_from_slave'][$slaveKey];
                         $server = $slave['server'];
                         $port = $slave['port'];
@@ -290,7 +290,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     {
                         $slaves = preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
                         /** @var string $slaveKey */
-                        $slaveKey = array_rand($slaves, 1);
+                        $slaveKey = array_rand($slaves);
                         $server = $slaves[$slaveKey];
                         $port = null;
                         $totalServers = \count($slaves) + 1;
@@ -543,7 +543,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     {
         try
         {
-            if (substr($data, 2, 3) == self::COMPRESS_PREFIX)
+            if (substr($data, 2, 3) === self::COMPRESS_PREFIX)
             {
                 switch (substr($data, 0, 2))
                 {

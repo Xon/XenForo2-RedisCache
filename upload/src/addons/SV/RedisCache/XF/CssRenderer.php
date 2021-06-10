@@ -1,6 +1,5 @@
 <?php
 /**
- * @noinspection PhpMissingParamTypeInspection
  * @noinspection PhpMissingReturnTypeInspection
  */
 
@@ -44,16 +43,27 @@ class CssRenderer extends XFCP_CssRenderer
         return new RawResponseText($output, $length);
     }
 
-    protected function getFinalCachedOutput(array $templates)
+    protected function getCredits(bool $allowSlave = false)
     {
         $cache = $this->cache;
-        if (!$this->allowCached || !($cache instanceof Redis) || !($credis = $cache->getCredis(false)))
+        if (!$this->allowCached || !($cache instanceof Redis) || !($credis = $cache->getCredis($allowSlave)))
+        {
+            return null;
+        }
+
+        return $credis;
+    }
+
+    protected function getFinalCachedOutput(array $templates)
+    {
+        $credis = $this->getCredits(true);
+        if (!$credis)
         {
             return parent::getFinalCachedOutput($templates);
         }
-
+        /** @var Redis $cache */
+        $cache = $this->cache;
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
-        $credis = $cache->getCredis(true);
         $data = $credis->hGetAll($key);
         if (empty($data))
         {
@@ -89,19 +99,20 @@ class CssRenderer extends XFCP_CssRenderer
 
     protected function cacheFinalOutput(array $templates, $output)
     {
-        $cache = $this->cache;
-        if (!$this->allowCached || !$this->allowFinalCacheUpdate || !($cache instanceof Redis) || !($credis = $cache->getCredis(false)))
+        $credis = $this->getCredits();
+        if (!$credis)
         {
             parent::cacheFinalOutput($templates, $output);
 
             return;
         }
+        /** @var Redis $cache */
+        $cache = $this->cache;
 
-        $output = static::$charsetBits . \strval($output);
+        $output = static::$charsetBits . $output;
         $len = \strlen($output);
 
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
-        $credis = $cache->getCredis(false);
         $credis->hMSet($key, [
             'o' => $len > 0 ? \gzencode($output, 9) : '',
             'l' => $len,
