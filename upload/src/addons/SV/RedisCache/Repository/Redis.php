@@ -118,15 +118,15 @@ class Redis extends Repository
             $database = empty($config['config']['database']) ? 0 : (int)$config['config']['database'];
             foreach ($data as $key => $value)
             {
-                if (preg_match('/^db(\d+)$/i', $key, $matches))
+                if (\preg_match('/^db(\d+)$/i', $key, $matches))
                 {
                     $index = $matches[1];
                     unset($data[$key]);
-                    $list = explode(',', $value);
+                    $list = \explode(',', $value);
                     $dbStats = [];
                     foreach ($list as $item)
                     {
-                        $parts = explode('=', $item);
+                        $parts = \explode('=', $item);
                         $dbStats[$parts[0]] = $parts[1];
                     }
 
@@ -138,15 +138,15 @@ class Redis extends Repository
             {
                 foreach ($data as $key => $value)
                 {
-                    if (preg_match('/^slave(\d+)$/i', $key, $matches))
+                    if (\preg_match('/^slave(\d+)$/i', $key, $matches))
                     {
                         $index = $matches[1];
                         unset($data[$key]);
-                        $list = explode(',', $value);
+                        $list = \explode(',', $value);
                         $dbStats = [];
                         foreach ($list as $item)
                         {
-                            $parts = explode('=', $item);
+                            $parts = \explode('=', $item);
                             $dbStats[$parts[0]] = $parts[1];
                         }
 

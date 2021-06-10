@@ -153,7 +153,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             $sentinelClientOptions = isset($options['sentinel']) && \is_array($options['sentinel'])
                 ? $this->getClientOptions($options['sentinel'] + $options)
                 : $this->_clientOptions;
-            $servers = \is_array($options['server']) ? $options['server'] : preg_split('/\s*,\s*/', trim($options['server']), null, PREG_SPLIT_NO_EMPTY);
+            $servers = \is_array($options['server']) ? $options['server'] : \preg_split('/\s*,\s*/', \trim($options['server']), null, PREG_SPLIT_NO_EMPTY);
             $sentinel = null;
             $exception = null;
             for ($i = 0; $i <= $sentinelClientOptions->connectRetries; $i++) // Try each sentinel in round-robin fashion
@@ -220,9 +220,9 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 {
                     if ($options['load_from_slaves'] === 2)
                     {
-                        array_push($slaves, $this->_redis); // Also send reads to the master
+                        \array_push($slaves, $this->_redis); // Also send reads to the master
                     }
-                    $slaveSelect = isset($options['slave_select_callable']) && is_callable($options['slave_select_callable']) ? $options['slave_select_callable'] : null;
+                    $slaveSelect = isset($options['slave_select_callable']) && \is_callable($options['slave_select_callable']) ? $options['slave_select_callable'] : null;
                     if ($slaveSelect)
                     {
                         $slave = $slaveSelect($slaves, $this->_redis);
@@ -230,7 +230,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     else
                     {
                         /** @var string $slaveKey */
-                        $slaveKey = array_rand($slaves);
+                        $slaveKey = \array_rand($slaves);
                         $slave = $slaves[$slaveKey];
                     }
                     if ($slave instanceof \Credis_Client && $slave !== $this->_redis)
@@ -271,7 +271,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     }
                     else
                     {  // Multiple slaves
-                        $slaveKey = array_rand($options['load_from_slave']);
+                        $slaveKey = \array_rand($options['load_from_slave']);
                         $slave = $options['load_from_slave'][$slaveKey];
                         $server = $slave['server'];
                         $port = $slave['port'];
@@ -288,9 +288,9 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     // If multiple addresses are given, split and choose a random one
                     if (strpos($server, ',') !== false)
                     {
-                        $slaves = preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
+                        $slaves = \preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
                         /** @var string $slaveKey */
-                        $slaveKey = array_rand($slaves);
+                        $slaveKey = \array_rand($slaves);
                         $server = $slaves[$slaveKey];
                         $port = null;
                         $totalServers = \count($slaves) + 1;
@@ -341,29 +341,29 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         {
             $this->_compressionLib = (string)$options['compression_lib'];
         }
-        else if (function_exists('snappy_compress'))
+        else if (\function_exists('snappy_compress'))
         {
             $this->_compressionLib = 'snappy';
         }
-        else if (function_exists('lz4_compress'))
+        else if (\function_exists('lz4_compress'))
         {
-            $version = phpversion("lz4");
-            if (version_compare($version, "0.3.0") < 0)
+            $version = \phpversion("lz4");
+            if (\version_compare($version, "0.3.0") < 0)
             {
                 $this->_compressData = $this->_compressData > 1;
             }
             $this->_compressionLib = 'l4z';
         }
-        else if (function_exists('zstd_compress'))
+        else if (\function_exists('zstd_compress'))
         {
             $version = phpversion("zstd");
-            if (version_compare($version, "0.4.13") < 0)
+            if (\version_compare($version, "0.4.13") < 0)
             {
                 $this->_compressData = $this->_compressData > 1;
             }
             $this->_compressionLib = 'zstd';
         }
-        else if (function_exists('lzf_compress'))
+        else if (\function_exists('lzf_compress'))
         {
             $this->_compressionLib = 'lzf';
         }
@@ -371,7 +371,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         {
             $this->_compressionLib = 'gzip';
         }
-        $this->_compressPrefix = substr($this->_compressionLib, 0, 2) . self::COMPRESS_PREFIX;
+        $this->_compressPrefix = \substr($this->_compressionLib, 0, 2) . self::COMPRESS_PREFIX;
 
         if (isset($options['use_lua']))
         {
@@ -488,7 +488,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     protected function _matchesAutoExpiringPattern($id)
     {
         $matches = [];
-        preg_match($this->_autoExpirePattern, $id, $matches);
+        \preg_match($this->_autoExpirePattern, $id, $matches);
 
         return !empty($matches);
     }
@@ -543,25 +543,25 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     {
         try
         {
-            if (substr($data, 2, 3) === self::COMPRESS_PREFIX)
+            if (\substr($data, 2, 3) === self::COMPRESS_PREFIX)
             {
-                switch (substr($data, 0, 2))
+                switch (\substr($data, 0, 2))
                 {
                     case 'sn':
-                        /** @noinspection PhpUndefinedFunctionInspection */ $data = snappy_uncompress(substr($data, 5));
+                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \snappy_uncompress(\substr($data, 5));
                         break;
                     case 'lz':
-                        /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_decompress(substr($data, 5));
+                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \lzf_decompress(\substr($data, 5));
                         break;
                     case 'l4':
-                        /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_uncompress(substr($data, 5));
+                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \lz4_uncompress(\substr($data, 5));
                         break;
                     case 'zs':
-                        /** @noinspection PhpUndefinedFunctionInspection */ $data = zstd_uncompress(substr($data, 5));
+                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \zstd_uncompress(\substr($data, 5));
                         break;
                     case 'gz':
                     case 'zc':
-                        $data = gzuncompress(substr($data, 5));
+                        $data = \gzuncompress(\substr($data, 5));
                         break;
                 }
             }

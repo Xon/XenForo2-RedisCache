@@ -150,7 +150,7 @@ class Redis extends Cm_Cache_Backend_Redis
             $this->timerForStat = [$this, 'timerForStat'];
             $this->redisQueryForStat = [$this, 'redisQueryForStat'];
         }
-        if (is_callable('\Closure::fromCallable'))
+        if (\is_callable('\Closure::fromCallable'))
         {
             /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
             $this->redisQueryForStat = \Closure::fromCallable($this->redisQueryForStat);
@@ -168,7 +168,7 @@ class Redis extends Cm_Cache_Backend_Redis
             $options['slave_select_callable'] = [$this, $options['slave_select_callable']];
         }
 
-        $igbinaryPresent = is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
+        $igbinaryPresent = \is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
         $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \utf8_strtolower($options['serializer']) === 'igbinary');
 
         if (!empty($options['host']))
@@ -190,7 +190,7 @@ class Redis extends Cm_Cache_Backend_Redis
             // I can't believe there isn't a better way
             try
             {
-                $output = shell_exec("hostname --all-ip-addresses");
+                $output = \shell_exec("hostname --all-ip-addresses");
             }
             catch (\Exception $e)
             {
@@ -198,7 +198,7 @@ class Redis extends Cm_Cache_Backend_Redis
             }
             if ($output)
             {
-                $ips = array_fill_keys(array_filter(array_map('trim', (explode(' ', $output)))), true);
+                $ips = \array_fill_keys(\array_filter(\array_map('\trim', \explode(' ', $output))), true);
             }
         }
 
@@ -227,7 +227,7 @@ class Redis extends Cm_Cache_Backend_Redis
             }
         }
 
-        $slaveKey = array_rand($slaves);
+        $slaveKey = \array_rand($slaves);
 
         return $slaves[$slaveKey];
     }
@@ -251,12 +251,12 @@ class Redis extends Cm_Cache_Backend_Redis
      */
     protected function preferLocalSlaveLocalDisk(array $slaves, $master)
     {
-        $output = @file_get_contents('/tmp/local_ips');
+        $output = @\file_get_contents('/tmp/local_ips');
         if ($output === false)
         {
             try
             {
-                $output = shell_exec("hostname --all-ip-addresses");
+                $output = \shell_exec("hostname --all-ip-addresses");
             }
             catch (\Exception $e)
             {
@@ -264,14 +264,14 @@ class Redis extends Cm_Cache_Backend_Redis
             }
             if ($output !== false)
             {
-                file_put_contents('/tmp/local_ips', $output);
+                \file_put_contents('/tmp/local_ips', $output);
             }
         }
 
         $ips = null;
         if ($output)
         {
-            $ips = array_fill_keys(array_filter(array_map('trim', (explode(' ', $output)))), true);
+            $ips = \array_fill_keys(\array_filter(\array_map('\trim', \explode(' ', $output))), true);
         }
 
         return $this->selectLocalRedis($ips ?: [], $slaves, $master);
@@ -287,15 +287,15 @@ class Redis extends Cm_Cache_Backend_Redis
         $ips = null;
         if (\function_exists('apcu_fetch'))
         {
-            $ips = apcu_fetch('localips', $hasIps);
+            $ips = \apcu_fetch('localips', $hasIps);
         }
         if (!\is_array($ips))
         {
             $ips = $this->getLocalIps();
-            if (function_exists('apcu_store'))
+            if (\function_exists('apcu_store'))
             {
                 // bit racing on the first connection, but local IPs rarely change.
-                apcu_store('localips', $ips);
+                \apcu_store('localips', $ips);
             }
         }
 
@@ -398,7 +398,7 @@ class Redis extends Cm_Cache_Backend_Redis
 
             $autoExpire = $this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad;
             $decoded = [];
-            $mgetResults = array_combine($keys, $fetchedItems);
+            $mgetResults = \array_combine($keys, $fetchedItems);
             foreach ($mgetResults as $key => $data)
             {
                 if ($data === null || $data === false)

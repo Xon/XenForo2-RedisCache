@@ -58,8 +58,8 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
             return [];
         }
 
-        // note: the array_combine() is in place to keep an association between our $keys and the $namespacedKeys
-        $namespacedKeys = array_combine($keys, array_map([$this, 'getNamespacedId'], $keys));
+        // note: the \array_combine() is in place to keep an association between our $keys and the $namespacedKeys
+        $namespacedKeys = \array_combine($keys, \array_map([$this, 'getNamespacedId'], $keys));
         $items = $this->doFetchMultiple($namespacedKeys);
         $foundItems = [];
 

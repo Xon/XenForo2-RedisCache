@@ -86,10 +86,10 @@ class CssRenderer extends XFCP_CssRenderer
         // client doesn't support compression, so decompress before sending it
         $css = \strlen($output) > 0 ? @\gzdecode($output) : '';
 
-        if (!$this->includeCharsetInOutput && strpos($css, static::$charsetBits) === 0)
+        if (!$this->includeCharsetInOutput && \strpos($css, static::$charsetBits) === 0)
         {
             // strip out the css header bits
-            $css = substr($css, \strlen(static::$charsetBits));
+            $css = \substr($css, \strlen(static::$charsetBits));
         }
 
         return $css;
@@ -212,7 +212,7 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         $results = [];
-        $rawResults = $cache->fetchMultiple(array_values($keys));
+        $rawResults = $cache->fetchMultiple(\array_values($keys));
         foreach ($templates as $i => $template)
         {
             $key = $keys[$i];
