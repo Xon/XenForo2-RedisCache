@@ -12,8 +12,16 @@ use XF\Template\Templater;
 
 class CssRenderer extends XFCP_CssRenderer
 {
+    /** @var int */
     const LESS_SHORT_CACHE_TIME     = 5 * 60;
+    /** @var int */
     const TEMPLATE_SHORT_CACHE_TIME = 5 * 60;
+    /** @var bool */
+    protected $echoUncompressedData = false;
+    /** @var bool */
+    protected $includeCharsetInOutput = false;
+    /** @var int|null */
+    protected $inputModifiedDate = null;
 
     public function __construct(App $app, Templater $templater, \Doctrine\Common\Cache\CacheProvider $cache = null)
     {
@@ -24,18 +32,27 @@ class CssRenderer extends XFCP_CssRenderer
         parent::__construct($app, $templater, $cache);
     }
 
-    protected $echoUncompressedData = false;
-
     public function setForceRawCache(bool $value)
     {
         $this->echoUncompressedData = $value;
     }
 
-    protected $includeCharsetInOutput = false;
-
     public function setIncludeCharsetInOutput(bool $value)
     {
         $this->includeCharsetInOutput = $value;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getInputModifiedDate()
+    {
+        return $this->inputModifiedDate;
+    }
+
+    public function setInputModifiedDate(int $value = null)
+    {
+        $this->inputModifiedDate = $value;
     }
 
     protected function svWrapOutput(string $output, bool $length): RawResponseText
@@ -60,11 +77,14 @@ class CssRenderer extends XFCP_CssRenderer
 
         if (\count($templates))
         {
-            $date = $this->app->request()->filter('d','uint');
-            $styleModifiedDate = $this->style->getLastModified();
-            if ($date === 0 || $styleModifiedDate && $date > $styleModifiedDate)
+            $date = $this->getInputModifiedDate();
+            if ($date !== null)
             {
-                return [];
+                $styleModifiedDate = $this->style->getLastModified();
+                if ($date === 0 || $styleModifiedDate && $date > $styleModifiedDate)
+                {
+                    return [];
+                }
             }
         }
 
