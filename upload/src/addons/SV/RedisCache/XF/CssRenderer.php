@@ -54,6 +54,23 @@ class CssRenderer extends XFCP_CssRenderer
         return $credis;
     }
 
+    protected function filterValidTemplates(array $templates)
+    {
+        $templates = parent::filterValidTemplates($templates);
+
+        if (\count($templates))
+        {
+            $date = $this->app->request()->filter('d','uint');
+            $styleModifiedDate = $this->style->getLastModified();
+            if ($date === 0 || $styleModifiedDate && $date > $styleModifiedDate)
+            {
+                return [];
+            }
+        }
+
+        return $templates;
+    }
+
     protected function getFinalCachedOutput(array $templates)
     {
         $credis = $this->getCredits(true);
