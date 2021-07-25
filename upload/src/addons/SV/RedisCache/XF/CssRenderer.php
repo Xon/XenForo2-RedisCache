@@ -146,8 +146,14 @@ class CssRenderer extends XFCP_CssRenderer
         /** @var Redis $cache */
         $cache = $this->cache;
 
-        $output = static::$charsetBits . $output;
+        $output = \trim($output);
         $len = \strlen($output);
+        // cache a negative lookup; but do not prefix $charsetBits
+        if ($len !== 0)
+        {
+            $output = static::$charsetBits . $output;
+            $len = \strlen($output);
+        }
 
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $credis->hMSet($key, [
