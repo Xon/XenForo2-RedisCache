@@ -286,7 +286,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                     $clientOptions = $this->_clientOptions;
 
                     // If multiple addresses are given, split and choose a random one
-                    if (strpos($server, ',') !== false)
+                    if (\strpos($server, ',') !== false)
                     {
                         $slaves = \preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
                         /** @var string $slaveKey */
@@ -325,7 +325,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
 
         if (isset($options['lifetimelimit']))
         {
-            $this->_lifetimelimit = (int)min($options['lifetimelimit'], self::MAX_LIFETIME);
+            $this->_lifetimelimit = (int)\min($options['lifetimelimit'], self::MAX_LIFETIME);
         }
 
         if (isset($options['compress_threshold']))
@@ -447,7 +447,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $matches = $this->_matchesAutoExpiringPattern($id);
         if ($matches)
         {
-            $this->_redis->expire(self::PREFIX_KEY . $id, min($this->_autoExpireLifetime, $this->_lifetimelimit));
+            $this->_redis->expire(self::PREFIX_KEY . $id, \min($this->_autoExpireLifetime, $this->_lifetimelimit));
         }
     }
 

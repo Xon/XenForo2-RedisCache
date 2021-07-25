@@ -45,7 +45,7 @@ class CssWriter extends XFCP_CssWriter
         $renderer->setInputModifiedDate($this->app->request()->filter('d','uint'));
 
         $showDebugOutput = (\XF::$debugMode && $request->get('_debug'));
-        if (!$showDebugOutput && strpos($request->getServer('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== false)
+        if (!$showDebugOutput && \strpos($request->getServer('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== false)
         {
             $renderer->setForceRawCache(true);
         }
@@ -59,7 +59,7 @@ class CssWriter extends XFCP_CssWriter
         {
             return $output;
         }
-        if (strpos($output, '@CHARSET') === 0)
+        if (\strpos($output, '@CHARSET') === 0)
         {
             return $output;
         }

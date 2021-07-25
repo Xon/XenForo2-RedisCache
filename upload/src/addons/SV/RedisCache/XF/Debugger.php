@@ -13,7 +13,7 @@ class Debugger extends XFCP_Debugger
     public function getDebugPageWrapperHtml($debugHtml)
     {
         $app = $this->app;
-        $pageTime = microtime(true) - $app['time.granular'];
+        $pageTime = \microtime(true) - $app['time.granular'];
 
         $mainConfig = \XF::app()->config()['cache'];
         $contexts = [];
@@ -44,13 +44,13 @@ class Debugger extends XFCP_Debugger
                     {
                         $count += $statValue;
                     }
-                    $statsHtml .= "<tr><td>" . htmlspecialchars($statName) . "</td><td>" . htmlspecialchars($statValue) . "</td></tr>\n";
+                    $statsHtml .= "<tr><td>" . \htmlspecialchars($statName) . "</td><td>" . \htmlspecialchars($statValue) . "</td></tr>\n";
                 }
 
                 $statsHtml .= "</table>\n";
 
 
-                $redisSections .= "\n<h3>" . htmlspecialchars($contextLabel ?: 'main') . "</h3>\n" . $statsHtml;
+                $redisSections .= "\n<h3>" . \htmlspecialchars($contextLabel ?: 'main') . "</h3>\n" . $statsHtml;
             }
         }
 
@@ -58,8 +58,8 @@ class Debugger extends XFCP_Debugger
         if ($redisSections)
         {
             $dbPercent = ($time / $pageTime) * 100;
-            $time = number_format($time, 4);
-            $percentage = number_format($dbPercent, 1);
+            $time = \number_format($time, 4);
+            $percentage = \number_format($dbPercent, 1);
             $debugHtml .= "\n<h2>Redis Connection stats ({$count}, time: {$time}s, {$percentage}%)</h2>\n" . $redisSections;
         }
 

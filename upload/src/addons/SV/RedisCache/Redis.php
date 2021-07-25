@@ -443,7 +443,7 @@ class Redis extends Cm_Cache_Backend_Redis
 
         $encodedData = $timerForStat('time_encoding', function () use ($data) {
             // XF stores binary data as strings which causes issues using json for serialization
-            return $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
+            return $this->useIgbinary ? @\igbinary_serialize($data) : @\serialize($data);
         });
         unset($data);
 
@@ -465,7 +465,7 @@ class Redis extends Cm_Cache_Backend_Redis
             return false;
         }
         return $timerForStat('time_decoding', function () use ($decompressedData) {
-            return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
+            return $this->useIgbinary ? @\igbinary_unserialize($decompressedData) : @\unserialize($decompressedData);
         });
     }
 
@@ -479,7 +479,7 @@ class Redis extends Cm_Cache_Backend_Redis
         return $redisQueryForStat('sets', function () use ($id, $data, $lifeTime) {
             $data = $this->_encodeData($data, $this->_compressData);
             $lifetime = $this->_getAutoExpiringLifetime($lifeTime, $id);
-            $lifeTime = min($lifetime, self::MAX_LIFETIME);
+            $lifeTime = \min($lifetime, self::MAX_LIFETIME);
 
             $this->stats['bytes_sent'] += \strlen($data);
 

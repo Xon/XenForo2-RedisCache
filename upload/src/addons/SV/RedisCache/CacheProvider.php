@@ -119,6 +119,6 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
     {
         // remove namespace versioning
 
-        return sprintf('%s_%s', $this->namespace, $id);
+        return \sprintf('%s_%s', $this->namespace, $id);
     }
 }

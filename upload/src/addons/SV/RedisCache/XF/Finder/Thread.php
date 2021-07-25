@@ -20,7 +20,7 @@ class Thread extends XFCP_Thread
             Globals::$cacheForum = null;
 
             $conditions = $finder->conditions;
-            sort($conditions);
+            \sort($conditions);
             $joins = $finder->joins;
             foreach ($joins as $key => &$join)
             {
@@ -30,8 +30,8 @@ class Thread extends XFCP_Thread
                 }
                 $join = \array_filter($join);
             }
-            ksort($joins);
-            $key = 'forum_' . $forum->node_id . '_threadcount_' . md5(serialize($conditions) . serialize($joins) . serialize($finder->order));
+            \ksort($joins);
+            $key = 'forum_' . $forum->node_id . '_threadcount_' . \md5(\serialize($conditions) . \serialize($joins) . \serialize($finder->order));
 
             /** @var int|bool $total */
             $total = $cache->fetch($key);
