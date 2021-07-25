@@ -55,7 +55,7 @@ class CssWriter extends XFCP_CssWriter
 
     public function finalizeOutput($output)
     {
-        if ($output instanceof ResponseStream)
+        if ($output instanceof ResponseStream || \strlen($output) === 0)
         {
             return $output;
         }
@@ -69,12 +69,21 @@ class CssWriter extends XFCP_CssWriter
 
     public function getResponse($output)
     {
+        $force404Output = \strlen($output) === 0;
+        if ($force404Output)
+        {
+            $this->renderer->setAllowCached(false);
+        }
         $response = parent::getResponse($output);
         if ($output instanceof ResponseStream)
         {
             $response->compressIfAble(false);
             $response->header('content-encoding', 'gzip');
             $response->header('vary', 'Accept-Encoding');
+        }
+        if ($force404Output)
+        {
+            $response->httpCode(404);
         }
 
         return $response;

@@ -41,7 +41,7 @@ class Redis extends Repository
         }
         else
         {
-            if ($context === '')
+            if (\strlen($context) === 0)
             {
                 $contexts[$context] = $mainConfig;
             }

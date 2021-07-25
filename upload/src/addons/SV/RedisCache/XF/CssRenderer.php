@@ -15,7 +15,13 @@ class CssRenderer extends XFCP_CssRenderer
     /** @var int */
     const LESS_SHORT_CACHE_TIME     = 5 * 60;
     /** @var int */
+    const EMPTY_TEMPLATE_SHORT_CACHE_TIME = 1;
+    /** @var int */
     const TEMPLATE_SHORT_CACHE_TIME = 5 * 60;
+    /** @var int */
+    const EMPTY_OUTPUT_CACHE_TIME = 1;
+    /** @var int */
+    const OUTPUT_CACHE_TIME = 60 * 60;
     /** @var bool */
     protected $echoUncompressedData = false;
     /** @var bool */
@@ -102,7 +108,7 @@ class CssRenderer extends XFCP_CssRenderer
         $cache = $this->cache;
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $data = $credis->hGetAll($key);
-        if (empty($data))
+        if (!\is_array($data))
         {
             return false;
         }
@@ -160,7 +166,9 @@ class CssRenderer extends XFCP_CssRenderer
             'o' => $len > 0 ? \gzencode($output, 9) : '',
             'l' => $len,
         ]);
-        $credis->expire($key, 3600);
+        $credis->expire($key, $len === 0
+            ? static::EMPTY_OUTPUT_CACHE_TIME
+            : static::OUTPUT_CACHE_TIME);
     }
 
     /** @var null|array */
@@ -229,7 +237,7 @@ class CssRenderer extends XFCP_CssRenderer
 
         $output = parent::parseLessColorValue($value);
 
-        $cache->save($key, $output, self::LESS_SHORT_CACHE_TIME);
+        $cache->save($key, $output, static::LESS_SHORT_CACHE_TIME);
 
         return $output;
     }
@@ -287,6 +295,8 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         $key = $this->getComponentCacheKey('xfCssTemplate', $title);
-        $cache->save($key, $output, self::TEMPLATE_SHORT_CACHE_TIME);
+        $cache->save($key, $output, \strlen($output) === 0
+            ? static::EMPTY_TEMPLATE_SHORT_CACHE_TIME
+            : static::TEMPLATE_SHORT_CACHE_TIME);
     }
 }
