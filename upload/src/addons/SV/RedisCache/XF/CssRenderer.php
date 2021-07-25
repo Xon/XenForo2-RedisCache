@@ -132,7 +132,7 @@ class CssRenderer extends XFCP_CssRenderer
         return $css;
     }
 
-    static $charsetBits = '@CHARSET "UTF-8";' . "\n\n";
+    public static $charsetBits = '@CHARSET "UTF-8";' . "\n\n";
 
     protected function cacheFinalOutput(array $templates, $output)
     {

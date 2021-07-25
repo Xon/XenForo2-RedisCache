@@ -59,7 +59,7 @@ class CssWriter extends XFCP_CssWriter
         {
             return $output;
         }
-        if (\strpos($output, '@CHARSET') === 0)
+        if (\stripos($output, CssRenderer::$charsetBits) === 0)
         {
             return $output;
         }
