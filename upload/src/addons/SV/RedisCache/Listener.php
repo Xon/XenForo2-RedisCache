@@ -45,7 +45,7 @@ class Listener
     {
         $hasChanges = false;
 
-        if (($config['provider'] ?? '') === 'Redis')
+        if (\strcasecmp($config['provider'] ?? '', 'redis') === 0)
         {
             $config['provider'] = 'SV\RedisCache\Redis';
             $hasChanges = true;
