@@ -54,13 +54,13 @@ class Listener
         $obj = $factoryObjects['cache'][$context] ?? null;
         if ($obj instanceof \XF\Cache\RedisCache)
         {
-            $obj = new Redis([
+            $cacheObj = new Redis([
                 'redis'         => $obj->getRedis(),
                 'compress_data' => 0, // for compatibility; do not use compression
                 'serializer'    => 'igbinary', // \XF\Cache\RedisCache tries to use igbinary and then php serialization
             ]);
-            $obj->setNamespace($config['config']['namespace'] ?? $globalNamespace);
-            $factoryObjects['cache'][$context] = $obj;
+            $cacheObj->setNamespace($config['config']['namespace'] ?? $globalNamespace);
+            $factoryObjects['cache'][$context] = $cacheObj;
             $hasChanges = true;
         }
 
