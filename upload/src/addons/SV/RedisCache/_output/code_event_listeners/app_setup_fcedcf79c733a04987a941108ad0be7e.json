@@ -1,0 +1,9 @@
+{
+    "event_id": "app_setup",
+    "execute_order": 1,
+    "callback_class": "SV\\RedisCache\\Listener",
+    "callback_method": "appSetup",
+    "active": true,
+    "hint": "",
+    "description": "XF Cloud support to avoid requiring config.php changes"
+}

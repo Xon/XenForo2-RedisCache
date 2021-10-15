@@ -181,6 +181,12 @@ class Redis extends Cm_Cache_Backend_Redis
         }
 
         parent::__construct($options);
+
+        $redisConnector = $options['redis'] ?? null;
+        if ($redisConnector instanceof \Redis)
+        {
+            $this->_redis->setRedisConnector($redisConnector, true);
+        }
     }
 
     protected function getLocalIps(array $ips = null): array
