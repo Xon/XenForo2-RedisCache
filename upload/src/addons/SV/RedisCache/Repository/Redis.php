@@ -156,7 +156,8 @@ class Redis extends Repository
             }
         }
 
-        $data['serializer'] = empty($config['config']['serializer']) ? 'php' : $config['config']['serializer'];
+        $igbinaryPresent = \is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
+        $data['serializer'] = empty($config['config']['serializer']) ? ($igbinaryPresent ? 'igbinary' : 'php') : $config['config']['serializer'];
         $data['slaves'] = $slaves;
         $data['db'] = $db;
         $data['db_default'] = $database;
