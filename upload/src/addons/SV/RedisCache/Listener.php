@@ -17,10 +17,10 @@ class Listener
         $container = $app->container();
         $factoryObjects = ContainerExtractor::getFactoryObjects($container);
 
-        $hasChanges = self::patchConfigBlock($container, $factoryObjects, $globalNamespace, $config['cache'], '');
+        $hasChanges = self::patchConfigBlock($factoryObjects, $globalNamespace, $config['cache'], '');
         foreach ($config['cache']['context'] as $context => &$contextConfig)
         {
-            if (self::patchConfigBlock($container, $factoryObjects, $globalNamespace, $contextConfig, $context))
+            if (self::patchConfigBlock($factoryObjects, $globalNamespace, $contextConfig, $context))
             {
                 $hasChanges = true;
             }
@@ -41,31 +41,27 @@ class Listener
         $setterFn($factoryObjects);
     }
 
-    protected static function patchConfigBlock(\XF\Container $container, array &$factoryObjects, string $globalNamespace, array &$config, $context): bool
+    protected static function patchConfigBlock(array &$factoryObjects, string $globalNamespace, array &$config, $context): bool
     {
         $hasChanges = false;
 
-        if (\strtolower($config['provider'] ?? '') === 'redis')
+        if (($config['provider'] ?? '') === 'Redis')
         {
             $config['provider'] = 'SV\RedisCache\Redis';
             $hasChanges = true;
         }
 
         $obj = $factoryObjects['cache'][$context] ?? null;
-        if ($obj)
+        if ($obj instanceof \XF\Cache\RedisCache)
         {
-            $cacheObj = $container->offsetGet('cache');
-            if ($cacheObj instanceof \XF\Cache\RedisCache)
-            {
-                $obj = new Redis([
-                    'redis'         => $cacheObj->getRedis(),
-                    'compress_data' => 0, // for compatibility; do not use compression
-                    'serializer'    => 'igbinary', // \XF\Cache\RedisCache tries to use igbinary and then php serialization
-                ]);
-                $obj->setNamespace($config['config']['namespace'] ?? $globalNamespace);
-                $factoryObjects['cache'][$context] = $obj;
-                $hasChanges = true;
-            }
+            $obj = new Redis([
+                'redis'         => $obj->getRedis(),
+                'compress_data' => 0, // for compatibility; do not use compression
+                'serializer'    => 'igbinary', // \XF\Cache\RedisCache tries to use igbinary and then php serialization
+            ]);
+            $obj->setNamespace($config['config']['namespace'] ?? $globalNamespace);
+            $factoryObjects['cache'][$context] = $obj;
+            $hasChanges = true;
         }
 
         return $hasChanges;
