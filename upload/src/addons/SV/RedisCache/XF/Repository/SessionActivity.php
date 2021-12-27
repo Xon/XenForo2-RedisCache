@@ -99,6 +99,10 @@ class SessionActivity extends XFCP_SessionActivity
                         $value = 0;
                     }
                 }
+                else
+                {
+                    $value = 0;
+                }
             }
 
             $cache->save($cacheKey, $onlineStats, $cacheUsersOnline);
