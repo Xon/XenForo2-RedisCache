@@ -17,7 +17,7 @@ class SessionActivity extends XFCP_SessionActivity
         $cache = $app->cache();
         $cacheUsersOnline = (int)(\XF::options()->svCacheUsersOnline ?? 0);
         $cacheKey = null;
-        if ($cacheUsersOnline > 0 && $cache)
+        if ($cacheUsersOnline > 0 && $cache !== null)
         {
             $keyParts = [$forceIncludeVisitor, $userLimit, $staffQuery];
             // must be pre-user or otherwise the followed user list breaks :(
@@ -65,27 +65,41 @@ class SessionActivity extends XFCP_SessionActivity
 
         $onlineStatsBlock = parent::getOnlineStatsBlockData($forceIncludeVisitor, $userLimit, $staffQuery);
 
-        if ($cacheKey)
+        if ($cacheKey !== null)
         {
-            $onlineStats = $onlineStatsBlock;
-
-            if (isset($onlineStats['counts']))
+            $users = $onlineStatsBlock['users'] ?? [];
+            if ($users instanceof AbstractCollection)
             {
-                foreach ($onlineStats['counts'] as $key => &$value)
+                $userIds = $users->keys();
+            }
+            else if (\is_array($users))
+            {
+                $userIds = \array_keys($users);
+            }
+            else
+            {
+                $userIds = [];
+            }
+            $onlineStats = [
+                'counts'  => $onlineStatsBlock['counts'] ?? [],
+                'userIds' => $userIds,
+            ];
+
+            foreach ($onlineStats['counts'] as &$value)
+            {
+                if (\is_numeric($value))
                 {
-                    if (\is_numeric($value))
+                    try
                     {
                         /** @noinspection PhpWrongStringConcatenationInspection */
                         $value = \strval(\floatval($value)) + 0;
                     }
+                    catch (\Throwable $e)
+                    {
+                        $value = 0;
+                    }
                 }
             }
-
-            $users = $onlineStats['users'];
-            unset($onlineStats['users']);
-            $onlineStats['userIds'] = $users instanceof AbstractCollection
-                ? $users->keys()
-                : \array_keys($users);
 
             $cache->save($cacheKey, $onlineStats, $cacheUsersOnline);
         }
