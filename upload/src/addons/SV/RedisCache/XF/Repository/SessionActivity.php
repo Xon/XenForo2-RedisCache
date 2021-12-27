@@ -34,7 +34,7 @@ class SessionActivity extends XFCP_SessionActivity
                 foreach ($userIds as $userId)
                 {
                     $user = $em->findCached('XF:User', $userId);
-                    if ($user)
+                    if ($user !== null)
                     {
                         $users[$userId] = $user;
                     }
@@ -43,13 +43,13 @@ class SessionActivity extends XFCP_SessionActivity
                         $userIdsToLoad[$userId] = $userId;
                     }
                 }
-                if ($userIdsToLoad)
+                if (\count($userIdsToLoad) !== 0)
                 {
                     $loadedUsers = $app->finder('XF:User')
                                        ->whereIds($userIdsToLoad)
                                        ->fetch()
                                        ->toArray();
-                    if ($loadedUsers)
+                    if (\count($loadedUsers) !== 0)
                     {
                         $toSort = new ArrayCollection($users + $loadedUsers);
                         $users = $toSort->sortByList($userIds)
