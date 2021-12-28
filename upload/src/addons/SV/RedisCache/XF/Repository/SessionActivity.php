@@ -34,7 +34,7 @@ class SessionActivity extends XFCP_SessionActivity
                 foreach ($userIds as $userId)
                 {
                     $user = $em->findCached('XF:User', $userId);
-                    if ($user !== null)
+                    if ($user)
                     {
                         $users[$userId] = $user;
                     }
