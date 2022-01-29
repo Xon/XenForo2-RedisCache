@@ -24,7 +24,7 @@ class Thread extends XFCP_Thread
             $joins = $finder->joins;
             foreach ($joins as $key => &$join)
             {
-                if (!$join['fundamental'] || !$join['exists'])
+                if (!$join['fundamental'] && !$join['exists'])
                 {
                     unset($joins[$key]);
                 }
