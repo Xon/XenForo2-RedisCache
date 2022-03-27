@@ -78,6 +78,11 @@ class CssWriter extends XFCP_CssWriter
         if ($output instanceof ResponseStream)
         {
             $response->compressIfAble(false);
+            try
+            {
+                @ini_set("zlib.output_compression", "Off");
+            }
+            catch (\Throwable $e) {}
             $response->header('content-encoding', 'gzip');
             $response->header('vary', 'Accept-Encoding');
         }
