@@ -34,7 +34,7 @@ class Style extends XFCP_Style
     protected function _svClearCache(string $pattern, int $styleId = null)
     {
         $cache = \XF::app()->cache();
-        if (($cache instanceof Redis) && ($credis = $cache->getCredis(false)))
+        if (($cache instanceof Redis) && ($credis = $cache->getCredis()))
         {
             $pattern = $cache->getNamespacedId($pattern) . "*";
             $expiry = 2 * 60;

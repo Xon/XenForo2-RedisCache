@@ -67,7 +67,10 @@ class Redis extends Cm_Cache_Backend_Redis
         }
     }
 
-    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
+    /**
+     * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
+     * @noinspection PhpMethodParametersCountMismatchInspection
+     */
     protected function redisQueryForStatDebugPhp73($stat, \Closure $callback)
     {
         $this->stats[$stat]++;
@@ -110,7 +113,10 @@ class Redis extends Cm_Cache_Backend_Redis
         }
     }
 
-    /** @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection */
+    /**
+     * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
+     * @noinspection PhpMethodParametersCountMismatchInspection
+     */
     protected function timerForStatDebugPhp73($stat, \Closure $callback)
     {
         /** @var float $startTime */

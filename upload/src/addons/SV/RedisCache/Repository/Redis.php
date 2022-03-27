@@ -54,9 +54,8 @@ class Redis extends Repository
         foreach ($contexts as $contextLabel => $config)
         {
             $cache = \XF::app()->cache($contextLabel, false);
-            if ($cache &&
-                $cache instanceof \SV\RedisCache\Redis &&
-                $credis = $cache->getCredis(false))
+            if (($cache instanceof \SV\RedisCache\Redis) &&
+                ($credis = $cache->getCredis()))
             {
                 $useLua = $cache->useLua();
                 $redisInfo[$contextLabel] = $this->addRedisInfo($config, $credis->info(), $useLua);

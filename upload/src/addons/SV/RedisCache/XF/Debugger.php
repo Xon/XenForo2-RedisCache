@@ -29,8 +29,7 @@ class Debugger extends XFCP_Debugger
         foreach ($contexts as $contextLabel => $config)
         {
             $cache = \XF::app()->cache($contextLabel, false);
-            if ($cache &&
-                $cache instanceof \SV\RedisCache\Redis)
+            if ($cache instanceof \SV\RedisCache\Redis)
             {
                 $statsHtml = "<table>\n";
 

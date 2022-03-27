@@ -220,7 +220,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 {
                     if ($options['load_from_slaves'] === 2)
                     {
-                        \array_push($slaves, $this->_redis); // Also send reads to the master
+                        $slaves[] = $this->_redis; // Also send reads to the master
                     }
                     $slaveSelect = isset($options['slave_select_callable']) && \is_callable($options['slave_select_callable']) ? $options['slave_select_callable'] : null;
                     if ($slaveSelect)
