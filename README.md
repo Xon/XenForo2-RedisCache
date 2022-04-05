@@ -18,6 +18,7 @@ For best performance use: [phpredis PECL extension](http://pecl.php.net/package/
 Sample Redis configuration for XenForo:
 ```
 $config['cache']['enabled'] = true;
+$config['cache']['sessions'] = true;
 $config['cache']['provider'] = 'SV\RedisCache\Redis';
 $config['cache']['config'] = [
         'server' => '127.0.0.1',
@@ -28,6 +29,14 @@ $config['cache']['config'] = [
         'read_timeout' => 1,
         'timeout' => 1,
 ];
+```
+
+## Authentication support
+Redis supports username/password authentication.
+This is most common in cloud environments which use redis 6 (ie with a username), while older redis only supports just a password
+```
+$config['cache']['config']['username'] = 'myUsername'; // requires redis 6+, or for cloud redis installations
+$config['cache']['config']['password'] = '....';
 ```
 
 # Master/Slave
