@@ -19,7 +19,7 @@ Sample Redis configuration for XenForo:
 ```
 $config['cache']['enabled'] = true;
 $config['cache']['provider'] = 'SV\RedisCache\Redis';
-$config['cache']['config'] = array(
+$config['cache']['config'] = [
         'server' => '127.0.0.1',
         'port' => 6379,
         'connect_retries' => 2,
@@ -27,14 +27,14 @@ $config['cache']['config'] = array(
         'compress_data' => 2,
         'read_timeout' => 1,
         'timeout' => 1,
-    );
+];
 ```
 
 # Master/Slave
 Loading Data from a single slave is possible, or alternatively Redis Sentinel support can be used  high-availability. See http://redis.io/topics/sentinel for more information.
 ```
 Single Slave:
-$config['cache']['config']['load_from_slave'] = array(
+$config['cache']['config']['load_from_slave'] = [
         'server' => '127.0.0.1',
         'port' => 6378,
         'connect_retries' => 2,
@@ -43,7 +43,7 @@ $config['cache']['config']['load_from_slave'] = array(
         'read_timeout' => 1,
         'timeout' => 1,
         'retry_reads_on_master' => true,
-    );
+];
 ```
 
 If 'retry_reads_on_master' is truthy then reads will be retried against master when slave returns "(nil)" value (ie slave is not yet initialized).

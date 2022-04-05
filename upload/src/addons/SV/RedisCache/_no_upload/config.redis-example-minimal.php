@@ -1,5 +1,6 @@
 <?php
 // setup redis caching
+$config['cache']['sessions'] = true;
 $config['cache']['enabled'] = true;
 $config['cache']['provider'] = 'SV\RedisCache\Redis';
 $config['cache']['config'] = [
