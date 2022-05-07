@@ -124,6 +124,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $clientOptions->connectRetries = (int)($options['connect_retries'] ?? self::DEFAULT_CONNECT_RETRIES);
         $clientOptions->readTimeout = isset($options['read_timeout']) ? \floatval($options['read_timeout']) : null;
         $clientOptions->password = isset($options['password']) ? \strval($options['password']) : null;
+        $clientOptions->username = isset($options['username']) ? \strval($options['username']) : null;
         $clientOptions->database = (int)($options['database'] ?? 0);
         $clientOptions->persistent = isset($options['persistent']) ? $options['persistent'] . '_' . $clientOptions->database : '';
         $clientOptions->timeout =  isset($options['timeout']) ? \floatval($options['timeout']) : self::DEFAULT_CONNECT_TIMEOUT;
@@ -171,7 +172,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                         }
                         if ($sentinelClientOptions->password)
                         {
-                            $sentinelClient->auth($sentinelClientOptions->password) or $this->throwException('Unable to authenticate with the redis sentinel.');
+                            $sentinelClient->auth($sentinelClientOptions->password, $sentinelClientOptions->username ?? null) or $this->throwException('Unable to authenticate with the redis sentinel.');
                         }
                         $sentinel = new \Credis_Sentinel($sentinelClient);
                         $sentinel
@@ -432,7 +433,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
 
         if ($clientOptions->password)
         {
-            $client->auth($clientOptions->password) or $this->throwException('Unable to authenticate with the redis server.');
+            $client->auth($clientOptions->password, $clientOptions->username ?? null) or $this->throwException('Unable to authenticate with the redis server.');
         }
 
         // Always select database when persistent is used in case connection is re-used by other clients
