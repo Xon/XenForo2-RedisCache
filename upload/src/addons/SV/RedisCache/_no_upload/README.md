@@ -8,7 +8,7 @@ Supports compression algos; gzip, lzf, lz4 (as l4z), snappy and zstd
 ## Igbinary Support
 
 If igbinary is usable, this add-on defaults to using it as a serialize. To supress this;
-```
+```php
 $config['cache']['config']['serializer'] = 'php';
 ```
 
@@ -16,7 +16,7 @@ $config['cache']['config']['serializer'] = 'php';
 For best performance use: [phpredis PECL extension](http://pecl.php.net/package/redis)
 
 Sample Redis configuration for XenForo:
-```
+```php
 $config['cache']['enabled'] = true;
 $config['cache']['sessions'] = true;
 $config['cache']['provider'] = 'SV\RedisCache\Redis';
@@ -34,15 +34,25 @@ $config['cache']['config'] = [
 ## Authentication support
 Redis supports username/password authentication.
 This is most common in cloud environments which use redis 6 (ie with a username), while older redis only supports just a password
-```
+```php
 $config['cache']['config']['username'] = 'myUsername'; // requires redis 6+, or for cloud redis installations
 $config['cache']['config']['password'] = '....';
 ```
 
+## SSL/TLS support
+
+```php
+$config['cache']['config']['server'] = 'ssl://127.0.0.1';
+// See https://www.php.net/manual/en/context.ssl.php for details
+$config['cache']['config']['tlsOptions'] = [
+   'SNI_enabled' => true,
+];
+```
+
 # Master/Slave
 Loading Data from a single slave is possible, or alternatively Redis Sentinel support can be used  high-availability. See http://redis.io/topics/sentinel for more information.
-```
-Single Slave:
+```php
+// Single Slave:
 $config['cache']['config']['load_from_slave'] = [
         'server' => '127.0.0.1',
         'port' => 6378,
@@ -58,14 +68,14 @@ $config['cache']['config']['load_from_slave'] = [
 If 'retry_reads_on_master' is truthy then reads will be retried against master when slave returns "(nil)" value (ie slave is not yet initialized).
 
 Redis Sentinel Enable with:
-```
+```php
 $config['cache']['config']['sentinel_master_set'] = 'mymaster';
 $config['cache']['config']['server'] = '127.0.0.1:26379';
 ```
 'server' now points to a comma delimited list of sentinal servers to find the master. Note; the port must be explicitly listed
 
 To load data from slaves use;
-```
+```php
 $config['cache']['config']['load_from_slaves'] = true;
 ```
 This will prefer any slave with an IP matching an IP on the machine. This is fetched via the non-portable method:```shell_exec("hostname --all-ip-addresses")```
@@ -73,7 +83,7 @@ To run on windows, or if shell_exec is disabled, you must define an 'slave-selec
 
 
 By default, a local slave is preferred, this can be changed by setting:
-```
+```php
 $config['cache']['config']['slave-select'] = function (array $slaves) { 
         $slaveKey = \array_rand($slaves);
         return $slaves[$slaveKey];
