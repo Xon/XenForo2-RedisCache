@@ -128,6 +128,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $clientOptions->database = (int)($options['database'] ?? 0);
         $clientOptions->persistent = isset($options['persistent']) ? $options['persistent'] . '_' . $clientOptions->database : '';
         $clientOptions->timeout =  isset($options['timeout']) ? \floatval($options['timeout']) : self::DEFAULT_CONNECT_TIMEOUT;
+        $clientOptions->tlsOptions = (array)($options['tlsOptions'] ?? []);
 
         return $clientOptions;
     }
@@ -434,6 +435,11 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         if ($clientOptions->password)
         {
             $client->auth($clientOptions->password, $clientOptions->username ?? null) or $this->throwException('Unable to authenticate with the redis server.');
+        }
+
+        if ($clientOptions->tlsOptions)
+        {
+            $client->setTlsOptions($clientOptions->tlsOptions);
         }
 
         // Always select database when persistent is used in case connection is re-used by other clients
