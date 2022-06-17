@@ -164,7 +164,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 {
                     try
                     {
-                        $sentinelClient = new \Credis_Client($server, null, $sentinelClientOptions->timeout, $sentinelClientOptions->persistent);
+                        $sentinelClient = new \Credis_Client($server, 26379, $sentinelClientOptions->timeout, $sentinelClientOptions->persistent);
                         $sentinelClient->forceStandalone();
                         $sentinelClient->setMaxConnectRetries(0);
                         if ($sentinelClientOptions->readTimeout)
