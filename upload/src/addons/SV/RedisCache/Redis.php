@@ -220,11 +220,11 @@ class Redis extends Cm_Cache_Backend_Redis
     /**
      * @param array            $ips
      * @param \Credis_Client[] $slaves
-     * @param                  $master
+     * @param \Credis_Client   $master
      * @return \Credis_Client|null
      * @noinspection PhpUnusedParameterInspection
      */
-    protected function selectLocalRedis(array $ips, array $slaves, $master)
+    protected function selectLocalRedis(array $ips, array $slaves, \Credis_Client $master)
     {
         if ($ips)
         {
@@ -246,10 +246,10 @@ class Redis extends Cm_Cache_Backend_Redis
 
     /**
      * @param \Credis_Client[] $slaves
-     * @param                  $master
+     * @param  \Credis_Client   $master
      * @return \Credis_Client|null
      */
-    public function preferLocalSlave(array $slaves, $master)
+    public function preferLocalSlave(array $slaves, \Credis_Client $master)
     {
         $ips = $this->getLocalIps();
 
@@ -258,10 +258,10 @@ class Redis extends Cm_Cache_Backend_Redis
 
     /**
      * @param \Credis_Client[] $slaves
-     * @param                  $master
+     * @param \Credis_Client   $master
      * @return \Credis_Client|null
      */
-    protected function preferLocalSlaveLocalDisk(array $slaves, $master)
+    protected function preferLocalSlaveLocalDisk(array $slaves, \Credis_Client $master)
     {
         $output = @\file_get_contents('/tmp/local_ips');
         if ($output === false)
@@ -291,10 +291,10 @@ class Redis extends Cm_Cache_Backend_Redis
 
     /**
      * @param \Credis_Client[] $slaves
-     * @param                  $master
+     * @param \Credis_Client   $master
      * @return \Credis_Client|null
      */
-    public function preferLocalSlaveAPCu(array $slaves, $master)
+    public function preferLocalSlaveAPCu(array $slaves, \Credis_Client $master)
     {
         $ips = null;
         if (\function_exists('apcu_fetch'))
