@@ -113,8 +113,12 @@ class CssRenderer extends XFCP_CssRenderer
             return false;
         }
 
-        $output = $data['o'] ?? ''; // gzencoded
-        $length = $data['l'] ?? 0;
+        $output = $data['o'] ?? null; // gzencoded
+        $length = $data['l'] ?? null;
+        if ($output === null || $length === null)
+        {
+            return '';
+        }
 
         if (!$length || !$this->includeCharsetInOutput)
         {
