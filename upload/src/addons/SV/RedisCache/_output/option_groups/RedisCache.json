@@ -1,5 +1,6 @@
 {
     "icon": "fa-forward",
     "display_order": 31,
+    "advanced": false,
     "debug_only": false
 }
