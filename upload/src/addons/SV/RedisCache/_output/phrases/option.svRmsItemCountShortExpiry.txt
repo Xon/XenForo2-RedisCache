@@ -1,1 +1,1 @@
-RMS  Expiry time
+Short RMS Expiry time
