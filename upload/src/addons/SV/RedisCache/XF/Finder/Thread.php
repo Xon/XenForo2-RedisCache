@@ -42,8 +42,8 @@ class Thread extends XFCP_Thread
             $total = $finder->total();
 
             $options = \XF::options();
-            $longExpiry = (int)($options->sv_threadcountcache_short ?? 0);
-            $shortExpiry = (int)($options->sv_threadcountcache_long ?? 0);
+            $longExpiry = (int)($options->sv_threadcountcache_long ?? 0);
+            $shortExpiry = (int)($options->sv_threadcountcache_short ?? 0);
             $shortExpiryThreshold = (int)($options->sv_threadcount_short ?? 0) * (int)($options->discussionsPerPage ?? 0);
             $expiry = $total <= $shortExpiryThreshold ? $shortExpiry : $longExpiry;
 
