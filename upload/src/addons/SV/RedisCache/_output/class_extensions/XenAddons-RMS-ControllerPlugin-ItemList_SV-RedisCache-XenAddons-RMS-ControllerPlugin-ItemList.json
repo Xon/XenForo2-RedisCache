@@ -1,6 +1,6 @@
 {
     "from_class": "XenAddons\\RMS\\ControllerPlugin\\ItemList",
     "to_class": "SV\\RedisCache\\XenAddons\\RMS\\ControllerPlugin\\ItemList",
-    "execute_order": 10,
+    "execute_order": 5562,
     "active": true
 }
