@@ -3,6 +3,8 @@
 namespace SV\RedisCache\XenAddons\RMS\Finder;
 
 use SV\RedisCache\Globals;
+use function is_callable;
+use function var_dump;
 
 /**
  * Extends \XenAddons\RMS\Finder\Item
@@ -44,7 +46,7 @@ class Item extends XFCP_Item
             {
                 return $total;
             }
-            $total = $this->total();
+            $total = parent::total();
 
             $options = \XF::options();
             $longExpiry = (int)($options->svRmsItemCountLongExpiry ?? 0);
