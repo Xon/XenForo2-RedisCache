@@ -3,6 +3,16 @@
 // ################## THIS IS A GENERATED FILE ##################
 // DO NOT EDIT DIRECTLY. EDIT THE CLASS EXTENSIONS IN THE CONTROL PANEL.
 
+namespace SV\RedisCache\XenAddons\RMS\ControllerPlugin
+{
+	class XFCP_ItemList extends \XenAddons\RMS\ControllerPlugin\ItemList {}
+}
+
+namespace SV\RedisCache\XenAddons\RMS\Finder
+{
+	class XFCP_Item extends \XenAddons\RMS\Finder\Item {}
+}
+
 namespace SV\RedisCache\XF\Admin\Controller
 {
 	class XFCP_Index extends \XF\Admin\Controller\Index {}

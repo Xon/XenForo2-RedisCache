@@ -1,0 +1,2 @@
+The time in seconds to cache small RMS item counts.<br/>
+0 to disable

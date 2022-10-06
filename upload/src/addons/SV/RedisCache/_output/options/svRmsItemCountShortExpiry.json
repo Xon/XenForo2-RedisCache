@@ -1,0 +1,13 @@
+{
+    "edit_format": "spinbox",
+    "edit_format_params": "units={{ phrase('seconds') }}\nmin=0",
+    "data_type": "integer",
+    "sub_options": [],
+    "validation_class": "",
+    "validation_method": "",
+    "advanced": false,
+    "default_value": "60",
+    "relations": {
+        "RedisCache": 230
+    }
+}

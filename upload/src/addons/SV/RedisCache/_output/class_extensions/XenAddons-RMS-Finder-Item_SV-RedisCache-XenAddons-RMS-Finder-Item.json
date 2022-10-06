@@ -1,0 +1,6 @@
+{
+    "from_class": "XenAddons\\RMS\\Finder\\Item",
+    "to_class": "SV\\RedisCache\\XenAddons\\RMS\\Finder\\Item",
+    "execute_order": 10,
+    "active": true
+}

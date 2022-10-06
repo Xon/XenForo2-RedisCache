@@ -1,0 +1,1 @@
+Caches RMS item counts counts to reduce forum view page times
