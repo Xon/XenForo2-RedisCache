@@ -175,7 +175,7 @@ class Redis extends Cm_Cache_Backend_Redis
         }
 
         $igbinaryPresent = \is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
-        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \utf8_strtolower($options['serializer']) === 'igbinary');
+        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \strtolower($options['serializer']) === 'igbinary');
 
         if (!empty($options['host']))
         {
