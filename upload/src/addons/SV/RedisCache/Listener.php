@@ -34,7 +34,6 @@ class Listener
         $container->set('config', $config);
         // note; can't use ContainerExtractor::setFactoryObjects style trick as the context is wrong and uses __set instead of touching the variable directly
         $setter = function ($value) {
-            /** @noinspection PhpUndefinedFieldInspection */
             $this->factoryObjects = $value;
         };
         $setterFn = \Closure::bind($setter, $container, $container);
