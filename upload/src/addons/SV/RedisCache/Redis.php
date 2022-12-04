@@ -490,6 +490,7 @@ class Redis extends Cm_Cache_Backend_Redis
 
         return $redisQueryForStat('sets', function () use ($id, $data, $lifeTime) {
             $data = $this->_encodeData($data, $this->_compressData);
+            $lifeTime = (int)$lifeTime;
             $lifetime = $this->_getAutoExpiringLifetime($lifeTime, $id);
             $lifeTime = \min($lifetime, self::MAX_LIFETIME);
 
