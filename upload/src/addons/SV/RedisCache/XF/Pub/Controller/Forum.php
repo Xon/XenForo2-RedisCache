@@ -3,6 +3,7 @@
 namespace SV\RedisCache\XF\Pub\Controller;
 
 use SV\RedisCache\Globals;
+use SV\RedisCache\XF\Finder\Thread as ExtendedThreadFinder;
 
 class Forum extends XFCP_Forum
 {
@@ -10,11 +11,11 @@ class Forum extends XFCP_Forum
     {
         parent::applyDateLimitFilters($forum, $threadFinder, $filters);
 
-        $threadCountCaching = \XF::options()->sv_threadcount_caching ?? false;
-        if ($threadCountCaching && $this->app()->cache())
+        $threadCountCaching = (bool)(\XF::options()->sv_threadcount_caching ?? false);
+        if ($threadCountCaching && $this->app()->cache() !== null)
         {
-            Globals::$cacheForum = $forum;
-            Globals::$threadFinder = clone $threadFinder;
+            /** @var ExtendedThreadFinder $threadFinder */
+            $threadFinder->cacheTotals(true, $forum);
         }
     }
 }
