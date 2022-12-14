@@ -2,6 +2,8 @@
 
 namespace SV\RedisCache\Finder;
 
+use function is_object;
+
 trait CachableFinderTotalTrait
 {
     /** @var bool */
@@ -39,7 +41,10 @@ trait CachableFinderTotalTrait
                 unset($joins[$key]);
                 continue;
             }
-            $join = \array_filter($join);
+            // exclude objects (ie $join['structure']) as it can contain arbitrary unserializable data
+            $join = \array_filter($join, function ($v) {
+                return $v && !is_object($v);
+            });
         }
         \ksort($joins);
         $key = $prefix . \md5(\serialize($conditions) . \serialize($joins) . \serialize($this->order));
