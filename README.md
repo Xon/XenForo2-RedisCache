@@ -5,6 +5,10 @@ This add-on is based off [Cm_Cache_Backend_Redis](https://github.com/colinmollen
 
 Supports compression algos; gzip, lzf, lz4 (as l4z), snappy and zstd
 
+## Phpstorm Lua support
+
+The plugin https://plugins.jetbrains.com/plugin/14698-luanalysis can be used to provide syntax highlighting and inspector support for lua
+
 ## Igbinary Support
 
 If igbinary is usable, this add-on defaults to using it as a serialize. To supress this;
@@ -49,11 +53,11 @@ $config['cache']['config']['tlsOptions'] = [
 ];
 ```
 
-# Master/Slave
-Loading Data from a single slave is possible, or alternatively Redis Sentinel support can be used  high-availability. See http://redis.io/topics/sentinel for more information.
+# Primary/replica
+Loading Data from a single replica is possible, or alternatively Redis Sentinel support can be used  high-availability. See http://redis.io/topics/sentinel for more information.
 ```php
-// Single Slave:
-$config['cache']['config']['load_from_slave'] = [
+// Single Replica:
+$config['cache']['config']['load_from_replica'] = [
         'server' => '127.0.0.1',
         'port' => 6378,
         'connect_retries' => 2,
@@ -61,35 +65,35 @@ $config['cache']['config']['load_from_slave'] = [
         'compress_data' => 2,
         'read_timeout' => 1,
         'timeout' => 1,
-        'retry_reads_on_master' => true,
+        'retry_reads_on_primary' => true,
 ];
 ```
 
-If 'retry_reads_on_master' is truthy then reads will be retried against master when slave returns "(nil)" value (ie slave is not yet initialized).
+If 'retry_reads_on_primary' is truthy then reads will be retried against primary when replica returns "(nil)" value (ie replica is not yet initialized).
 
 Redis Sentinel Enable with:
 ```php
-$config['cache']['config']['sentinel_master_set'] = 'mymaster';
+$config['cache']['config']['sentinel_primary'] = 'mymaster';
 $config['cache']['config']['server'] = '127.0.0.1:26379';
 ```
-'server' now points to a comma delimited list of sentinal servers to find the master. Note; the port must be explicitly listed
+'server' now points to a comma delimited list of sentinal servers to find the primary. Note; the port must be explicitly listed
 
-To load data from slaves use;
+To load data from replicas use;
 ```php
-$config['cache']['config']['load_from_slaves'] = true;
+$config['cache']['config']['load_from_replicas'] = true;
 ```
-This will prefer any slave with an IP matching an IP on the machine. This is fetched via the non-portable method:```shell_exec("hostname --all-ip-addresses")```
-To run on windows, or if shell_exec is disabled, you must define an 'slave-select' attribute.
+This will prefer any replica with an IP matching an IP on the machine. This is fetched via the non-portable method:```shell_exec("hostname --all-ip-addresses")```
+To run on windows, or if shell_exec is disabled, you must define an 'replica_select_callable' attribute.
 
 
-By default, a local slave is preferred, this can be changed by setting:
+By default, a local replica is preferred, this can be changed by setting:
 ```php
-$config['cache']['config']['slave-select'] = function (array $slaves) { 
-        $slaveKey = \array_rand($slaves);
-        return $slaves[$slaveKey];
+$config['cache']['config']['replica_select_callable'] = function (array $replicas) { 
+        $replicaKey = \array_rand($replicas);
+        return $replicas[$replicaKey];
 };
 ```
-Setting to false (or some non-callable) will fall back to a random slave.
+Setting to false (or some non-callable) will fall back to a random replica.
 
 Licensing:
 

@@ -24,9 +24,9 @@ class Redis extends Repository
      *
      * @param View        $view
      * @param string|null $context
-     * @param int|null    $slaveId
+     * @param int|null    $replicaId
      */
-    public function insertRedisInfoParams(View $view, string $context = null, int $slaveId = null)
+    public function insertRedisInfoParams(View $view, string $context = null, int $replicaId = null)
     {
         $mainConfig = \XF::app()->config()['cache'];
         $redisInfo = [];
@@ -59,27 +59,27 @@ class Redis extends Repository
             {
                 $useLua = $cache->useLua();
                 $redisInfo[$contextLabel] = $this->addRedisInfo($config, $credis->info(), $useLua);
-                $slaves = $redisInfo[$contextLabel]['slaves'];
-                if ($slaveId !== null)
+                $replicas = $redisInfo[$contextLabel]['replicas'];
+                if ($replicaId !== null)
                 {
-                    if (isset($slaves[$slaveId]))
+                    if (isset($replicas[$replicaId]))
                     {
-                        $slaveDetails = $slaves[$slaveId];
+                        $replicaDetails = $replicas[$replicaId];
                         $database = empty($config['config']['database']) ? 0 : (int)$config['config']['database'];
                         $password = empty($config['config']['password']) ? null : $config['config']['password'];
                         $timeout = empty($config['config']['timeout']) ? null : $config['config']['timeout'];
                         $persistent = empty($config['config']['persistent']) ? null : $config['config']['persistent'];
                         $forceStandalone = empty($config['config']['force_standalone']) ? null : $config['config']['force_standalone'];
 
-                        // query the slave for stats
-                        $slaveClient = new Credis_Client($slaveDetails['ip'], $slaveDetails['port'], $timeout, $persistent, $database, $password);
+                        // query the replica for stats
+                        $replicaClient = new Credis_Client($replicaDetails['ip'], $replicaDetails['port'], $timeout, $persistent, $database, $password);
                         if ($forceStandalone)
                         {
-                            $slaveClient->forceStandalone();
+                            $replicaClient->forceStandalone();
                         }
-                        $redisInfo[$contextLabel] = $this->addRedisInfo($config, $slaveClient->info(), $useLua);
+                        $redisInfo[$contextLabel] = $this->addRedisInfo($config, $replicaClient->info(), $useLua);
 
-                        $redisInfo[$context]['slaveId'] = $slaveId;
+                        $redisInfo[$context]['replicaId'] = $replicaId;
                     }
                     else
                     {
@@ -93,7 +93,7 @@ class Redis extends Repository
         {
             $view->setParam('cacheContextSingle', $context !== null);
             $view->setParam('cacheContext', $context);
-            $view->setParam('redisSlaveId', $slaveId);
+            $view->setParam('redisReplicaId', $replicaId);
             $view->setParam('redis', $redisInfo);
         }
     }
@@ -109,7 +109,7 @@ class Redis extends Repository
     private function addRedisInfo(array $config, array $data, bool $useLua = true): array
     {
         $database = 0;
-        $slaves = [];
+        $replicas = [];
         $db = [];
 
         if (!empty($data))
@@ -132,7 +132,7 @@ class Redis extends Repository
                     $db[$index] = $dbStats;
                 }
             }
-            // got slaves
+            // got replicas
             if (isset($data['connected_slaves']) && isset($data['master_repl_offset']))
             {
                 foreach ($data as $key => $value)
@@ -149,7 +149,7 @@ class Redis extends Repository
                             $dbStats[$parts[0]] = $parts[1];
                         }
 
-                        $slaves[$index] = $dbStats;
+                        $replicas[$index] = $dbStats;
                     }
                 }
             }
@@ -157,7 +157,7 @@ class Redis extends Repository
 
         $igbinaryPresent = \is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
         $data['serializer'] = empty($config['config']['serializer']) ? ($igbinaryPresent ? 'igbinary' : 'php') : $config['config']['serializer'];
-        $data['slaves'] = $slaves;
+        $data['replicas'] = $replicas;
         $data['db'] = $db;
         $data['db_default'] = $database;
         $data['lua'] = $useLua;

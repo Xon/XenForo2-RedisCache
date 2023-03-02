@@ -7,6 +7,8 @@ namespace SV\RedisCache;
  */
 
 use Doctrine\Common\Cache\Cache;
+use function method_exists;
+use function str_replace;
 
 require_once('Credis/Client.php');
 require_once('Credis/Sentinel.php');
@@ -164,19 +166,34 @@ class Redis extends Cm_Cache_Backend_Redis
             $this->timerForStat = \Closure::fromCallable($this->timerForStat);
         }
 
-        if (!isset($options['slave_select_callable']))
-        {
-            $options['slave_select_callable'] = [$this, 'preferLocalSlave'];
-        }
+        // normalize old options to newer ones
+        $options['sentinel_primary'] = $options['sentinel_primary'] ?? $options['sentinel_master'] ?? $options['sentinel_master_set'] ?? $options['sentinel_primary_set'] ?? null;
+        unset($options['sentinel_master'], $options['sentinel_master_set'], $options['sentinel_master_set']);
+        $options['sentinel_primary_verify'] = $options['sentinel_primary_verify'] ?? $options['sentinel_master_verify'] ?? null;
+        unset($options['sentinel_master_verify']);
+        $options['primary_write_only'] = $options['primary_write_only'] ?? $options['master_write_only'] ?? null;
+        unset($options['master_write_only']);
+        $options['retry_reads_on_primary'] = $options['retry_reads_on_primary'] ?? $options['retry_reads_on_master'] ?? false;
+        unset($options['retry_reads_on_master']);
+
+        $options['load_from_replica'] = $options['load_from_replica'] ?? $options['load_from_slave'] ?? null;
+        unset($options['load_from_slave']);
+        $options['load_from_replicas'] = $options['load_from_replicas'] ?? $options['load_from_slaves'] ?? null;
+        unset($options['load_from_slaves']);
+        $options['replica_select_callable'] = $options['replica_select_callable'] ?? $options['replica-select'] ?? $options['slave_select_callable'] ?? $options['slave-select'] ?? 'preferLocalReplica';
+        unset($options['replica-select'], $options['slave_select_callable'], $options['slave-select']);
+
         // if it is a string, assume it is some method on this class
-        if (isset($options['slave_select_callable']) && \is_string($options['slave_select_callable']))
+        $replicaSelect = $options['replica_select_callable'] ?? null;
+        if (\is_string($replicaSelect))
         {
-            $options['slave_select_callable'] = [$this, $options['slave_select_callable']];
+            $options['replica_select_callable'] = [$this, $replicaSelect];
         }
 
         $igbinaryPresent = \is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
         $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \strtolower($options['serializer']) === 'igbinary');
 
+        // stock phpredis connector compatibility
         if (!empty($options['host']))
         {
             $options['server'] = $options['host'];
@@ -218,50 +235,66 @@ class Redis extends Cm_Cache_Backend_Redis
     }
 
     /**
-     * @param array            $ips
-     * @param \Credis_Client[] $slaves
-     * @param \Credis_Client   $master
+     * @param array<string,string> $ips
+     * @param \Credis_Client[] $replicas
+     * @param \Credis_Client   $primary
      * @return \Credis_Client|null
      * @noinspection PhpUnusedParameterInspection
      */
-    protected function selectLocalRedis(array $ips, array $slaves, \Credis_Client $master)
+    protected function selectLocalRedis(array $ips, array $replicas, \Credis_Client $primary): ?\Credis_Client
     {
         if ($ips)
         {
-            foreach ($slaves as $slave)
+            foreach ($replicas as $replica)
             {
-                // slave host is just an ip
-                $host = $slave->getHost();
+                // replica host is just an ip
+                $host = $replica->getHost();
                 if (isset($ips[$host]))
                 {
-                    return $slave;
+                    return $replica;
                 }
             }
         }
 
-        $slaveKey = \array_rand($slaves);
+        $replicaKey = \array_rand($replicas);
 
-        return $slaves[$slaveKey];
+        return $replicas[$replicaKey];
     }
 
     /**
-     * @param \Credis_Client[] $slaves
-     * @param  \Credis_Client   $master
+     * @deprecated
+     */
+    public function preferLocalSlave(array $replicas, \Credis_Client $primary): ?\Credis_Client
+    {
+        return $this->preferLocalReplica($replicas, $primary);
+    }
+
+    /**
+     * @param \Credis_Client[] $replicas
+     * @param  \Credis_Client  $primary
      * @return \Credis_Client|null
      */
-    public function preferLocalSlave(array $slaves, \Credis_Client $master)
+    public function preferLocalReplica(array $replicas, \Credis_Client $primary): ?\Credis_Client
     {
         $ips = $this->getLocalIps();
 
-        return $this->selectLocalRedis($ips, $slaves, $master);
+        return $this->selectLocalRedis($ips, $replicas, $primary);
     }
 
     /**
-     * @param \Credis_Client[] $slaves
-     * @param \Credis_Client   $master
+     * @deprecated
+     */
+    public function preferLocalSlaveLocalDisk(array $replicas, \Credis_Client $primary): ?\Credis_Client
+    {
+        return $this->preferLocalReplicaLocalDisk($replicas, $primary);
+    }
+
+    /**
+     * @param \Credis_Client[] $replicas
+     * @param \Credis_Client   $primary
      * @return \Credis_Client|null
      */
-    protected function preferLocalSlaveLocalDisk(array $slaves, \Credis_Client $master)
+    protected function preferLocalReplicaLocalDisk(array $replicas, \Credis_Client $primary): ?\Credis_Client
     {
         $output = @\file_get_contents('/tmp/local_ips');
         if ($output === false)
@@ -286,15 +319,23 @@ class Redis extends Cm_Cache_Backend_Redis
             $ips = \array_fill_keys(\array_filter(\array_map('\trim', \explode(' ', $output))), true);
         }
 
-        return $this->selectLocalRedis($ips ?: [], $slaves, $master);
+        return $this->selectLocalRedis($ips ?: [], $replicas, $primary);
     }
 
     /**
-     * @param \Credis_Client[] $slaves
-     * @param \Credis_Client   $master
+     * @deprecated
+     */
+    public function preferLocalSlaveAPCu(array $replicas, \Credis_Client $primary): ?\Credis_Client
+    {
+        return $this->preferLocalReplicaAPCu($replicas, $primary);
+    }
+
+    /**
+     * @param \Credis_Client[] $replicas
+     * @param \Credis_Client   $primary
      * @return \Credis_Client|null
      */
-    public function preferLocalSlaveAPCu(array $slaves, \Credis_Client $master)
+    public function preferLocalReplicaAPCu(array $replicas, \Credis_Client $primary): ?\Credis_Client
     {
         $ips = null;
         if (\function_exists('apcu_fetch'))
@@ -311,7 +352,7 @@ class Redis extends Cm_Cache_Backend_Redis
             }
         }
 
-        return $this->selectLocalRedis($ips ?: [], $slaves, $master);
+        return $this->selectLocalRedis($ips ?: [], $replicas, $primary);
     }
 
     public function getCompressThreshold(): int
@@ -329,24 +370,43 @@ class Redis extends Cm_Cache_Backend_Redis
         return $this->_decodeData($data);
     }
 
-    public function getCredis(bool $allowSlave = false): \Credis_Client
+    public function getCredis(bool $allowReplica = false): \Credis_Client
     {
-        if ($allowSlave && $this->_slave)
+        if ($allowReplica && $this->_replica !== null)
         {
-            return $this->_slave;
+            return $this->_replica;
         }
 
         return $this->_redis;
     }
 
-    public function getSlaveCredis(): \Credis_Client
+    /**
+     * @return ?\Credis_Client
+     * @deprecated
+     */
+    public function getSlaveCredis(): ?\Credis_Client
     {
-        return $this->_slave;
+        return $this->getReplicaCredis();
     }
 
-    public function setSlaveCredis(\Credis_Client $slave)
+    /**
+     * @deprecated
+     * @param \Credis_Client|null $replica
+     * @return void
+     */
+    public function setSlaveCredis(?\Credis_Client $replica): void
     {
-        $this->_slave = $slave;
+        $this->_replica = $replica;
+    }
+
+    public function getReplicaCredis(): ?\Credis_Client
+    {
+        return $this->_replica;
+    }
+
+    public function setReplicaCredis(?\Credis_Client $replica): void
+    {
+        $this->_replica = $replica;
     }
 
     public function useLua(): bool
@@ -362,12 +422,12 @@ class Redis extends Cm_Cache_Backend_Redis
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () use ($id) {
-            if ($this->_slave)
+            if ($this->_replica !== null)
             {
-                $data = $this->_slave->get($id);
+                $data = $this->_replica->get($id);
 
-                // Prevent compounded effect of cache flood on asynchronously replicating master/slave setup
-                if ($this->_retryReadsOnMaster && $data === false)
+                // Prevent compounded effect of cache flood on asynchronously replicating primary/replica setup
+                if ($this->_retryReadsOnPrimary && $data === false)
                 {
                     $data = $this->_redis->get($id);
                 }
@@ -404,7 +464,7 @@ class Redis extends Cm_Cache_Backend_Redis
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () use ($keys) {
-            $redis = $this->_slave ?: $this->_redis;
+            $redis = $this->_replica ?? $this->_redis;
 
             $fetchedItems = $redis->mget($keys);
 
@@ -444,7 +504,7 @@ class Redis extends Cm_Cache_Backend_Redis
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () use ($id) {
-            // Don't use slave for this since `doContains`/`test` is usually used for locking
+            // Don't use replica for this since `doContains`/`test` is usually used for locking
             return $this->_redis->exists($id);
         });
     }
@@ -549,7 +609,7 @@ class Redis extends Cm_Cache_Backend_Redis
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () {
-            //$redis = $this->_slave ? $this->_slave : $this->_redis;
+            //$redis = $this->_replica ?? $this->_redis;
             $info = $this->_redis->info();
 
             return [

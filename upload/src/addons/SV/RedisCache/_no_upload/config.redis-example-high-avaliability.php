@@ -10,7 +10,7 @@ $config['cache']['config'] = [
 ];
 
 // minimal case for sentinel support (aka HA)
-$config['cache']['config']['sentinel_master_set'] = 'mymaster';
+$config['cache']['config']['sentinel_primary'] = 'mymaster';
 $config['cache']['config']['server'] = '127.0.0.1:26379';
-$config['cache']['config']['load_from_slaves'] = true; // send readonly queries to the slaves
-$config['cache']['config']['sentinel_persistent'] = null; // persistent connection option for the sentinel, but not the master/slave
+$config['cache']['config']['load_from_replicas'] = true; // send readonly queries to the replicas
+$config['cache']['config']['sentinel_persistent'] = null; // persistent connection option for the sentinel, but not the primary/replica

@@ -66,10 +66,10 @@ class CssRenderer extends XFCP_CssRenderer
         return new RawResponseText($output, $length);
     }
 
-    protected function getCredits(bool $allowSlave = false)
+    protected function getCredits(bool $allowReplica = false)
     {
         $cache = $this->cache;
-        if (!$this->allowCached || !($cache instanceof Redis) || !($credis = $cache->getCredis($allowSlave)))
+        if (!$this->allowCached || !($cache instanceof Redis) || !($credis = $cache->getCredis($allowReplica)))
         {
             return null;
         }

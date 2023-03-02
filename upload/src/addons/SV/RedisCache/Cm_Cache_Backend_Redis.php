@@ -38,6 +38,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace SV\RedisCache;
 
 
+use function is_callable;
+use function min;
+
 /**
  * Redis adapter baseline
  *
@@ -95,11 +98,11 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     protected $_luaMaxCStack = 5000;
 
     /**
-     * If 'retry_reads_on_master' is truthy then reads will be retried against master when slave returns "(nil)" value
+     * If 'retry_reads_on_primary' is truthy then reads will be retried against primary when replica returns "(nil)" value
      *
      * @var boolean
      */
-    protected $_retryReadsOnMaster = false;
+    protected $_retryReadsOnPrimary = false;
 
     /**
      * @var \stdClass
@@ -107,11 +110,11 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     protected $_clientOptions;
 
     /**
-     * If 'load_from_slaves' is truthy then reads are performed on a randomly selected slave server
+     * If 'load_from_replicas' is truthy then reads are performed on a randomly selected replica server
      *
-     * @var \Credis_Client
+     * @var ?\Credis_Client
      */
-    protected $_slave;
+    protected $_replica = null;
 
     /**
      * @param array $options
@@ -148,9 +151,9 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
 
         $this->_clientOptions = $this->getClientOptions($options);
 
-        // If 'sentinel_master' is specified then server is actually sentinel and master address should be fetched from server.
-        $sentinelMaster = empty($options['sentinel_master']) ? null : $options['sentinel_master'];
-        if ($sentinelMaster)
+        // If 'sentinel_primary' is specified then server is actually sentinel and primary address should be fetched from server.
+        $sentinelPrimary = $options['sentinel_primary'] ?? null;
+        if ($sentinelPrimary)
         {
             $sentinelClientOptions = isset($options['sentinel']) && \is_array($options['sentinel'])
                 ? $this->getClientOptions($options['sentinel'] + $options)
@@ -179,27 +182,27 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                         $sentinel
                             ->setClientTimeout($this->_clientOptions->timeout)
                             ->setClientPersistent($this->_clientOptions->persistent);
-                        $redisMaster = $sentinel->getMasterClient($sentinelMaster);
-                        $this->_applyClientOptions($redisMaster);
+                        $redisPrimary = $sentinel->getMasterClient($sentinelPrimary);
+                        $this->_applyClientOptions($redisPrimary);
 
-                        // Verify connected server is actually master as per Sentinel client spec
-                        if (!empty($options['sentinel_master_verify']))
+                        // Verify connected server is actually primary as per Sentinel client spec
+                        if (!empty($options['sentinel_primary_verify']))
                         {
-                            $roleData = $redisMaster->role();
+                            $roleData = $redisPrimary->role();
                             if (!$roleData || $roleData[0] !== 'master')
                             {
                                 usleep(100000); // Sleep 100ms and try again
-                                $redisMaster = $sentinel->getMasterClient($sentinelMaster);
-                                $this->_applyClientOptions($redisMaster);
-                                $roleData = $redisMaster->role();
+                                $redisPrimary = $sentinel->getMasterClient($sentinelPrimary);
+                                $this->_applyClientOptions($redisPrimary);
+                                $roleData = $redisPrimary->role();
                                 if (!$roleData || $roleData[0] !== 'master')
                                 {
-                                    throw new \CredisException('Unable to determine master redis server.');
+                                    throw new \CredisException('Unable to determine primary redis server.');
                                 }
                             }
                         }
 
-                        $this->_redis = $redisMaster;
+                        $this->_redis = $redisPrimary;
                         break 2;
                     }
                     catch (\Exception $e)
@@ -214,37 +217,38 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 throw new \CredisException('Unable to connect to a redis sentinel: ' . $exception->getMessage(), 0, $exception);
             }
 
-            // Optionally use read slaves - will only be used for 'load' operation
-            if (!empty($options['load_from_slaves']))
+            // Optionally use read replicas - will only be used for 'load' operation
+            $loadFromReplicas = $options['load_from_replicas'] ?? null;
+            if (!empty($loadFromReplicas))
             {
-                $slaves = $sentinel->getSlaveClients($sentinelMaster);
-                if ($slaves)
+                $replicas = $sentinel->getSlaveClients($sentinelPrimary);
+                if ($replicas)
                 {
-                    if ($options['load_from_slaves'] === 2)
+                    if ($loadFromReplicas === 2)
                     {
-                        $slaves[] = $this->_redis; // Also send reads to the master
+                        $replicas[] = $this->_redis; // Also send reads to the primary
                     }
-                    $slaveSelect = isset($options['slave_select_callable']) && \is_callable($options['slave_select_callable']) ? $options['slave_select_callable'] : null;
-                    if ($slaveSelect)
+                    $replicaSelect = $options['replica_select_callable'] ?? null;
+                    if ($replicaSelect !== null && is_callable($replicaSelect))
                     {
-                        $slave = $slaveSelect($slaves, $this->_redis);
+                        $replica = $replicaSelect($replicas, $this->_redis);
                     }
                     else
                     {
-                        /** @var string $slaveKey */
-                        $slaveKey = \array_rand($slaves);
-                        $slave = $slaves[$slaveKey];
+                        /** @var string $replicaKey */
+                        $replicaKey = \array_rand($replicas);
+                        $replica = $replicas[$replicaKey];
                     }
-                    if ($slave instanceof \Credis_Client && $slave !== $this->_redis)
+                    if ($replica instanceof \Credis_Client && $replica !== $this->_redis)
                     {
                         try
                         {
-                            $this->_applyClientOptions($slave, true);
-                            $this->_slave = $slave;
+                            $this->_applyClientOptions($replica, true);
+                            $this->_replica = $replica;
                         }
                         catch (\Exception $e)
                         {
-                            // If there is a problem with first slave then skip 'load_from_slaves' option
+                            // If there is a problem with first replica then skip 'load_from_replicas' option
                         }
                     }
                 }
@@ -252,153 +256,115 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             unset($sentinel);
         }
 
-        // Direct connection to single Redis server and optional slaves
+        // Direct connection to single Redis server and optional replicas
         else
         {
             $port = (int)($options['port'] ?? 6379);
             $this->_redis = new \Credis_Client($options['server'], $port, $this->_clientOptions->timeout, $this->_clientOptions->persistent);
             $this->_applyClientOptions($this->_redis);
 
-            // Support loading from a replication slave
-            if (isset($options['load_from_slave']))
+            // Support loading from a replication replica
+            if (isset($options['load_from_replica']))
             {
-                if (\is_array($options['load_from_slave']))
+                if (\is_array($options['load_from_replica']))
                 {
-                    if (isset($options['load_from_slave']['server']))
-                    {  // Single slave
-                        $server = $options['load_from_slave']['server'];
-                        $port = $options['load_from_slave']['port'];
-                        $clientOptions = $this->getClientOptions($options['load_from_slave'] + $options);
+                    if (isset($options['load_from_replica']['server']))
+                    {  // Single replica
+                        $server = $options['load_from_replica']['server'];
+                        $port = $options['load_from_replica']['port'];
+                        $clientOptions = $this->getClientOptions($options['load_from_replica'] + $options);
                         $totalServers = 2;
                     }
                     else
-                    {  // Multiple slaves
-                        $slaveKey = \array_rand($options['load_from_slave']);
-                        $slave = $options['load_from_slave'][$slaveKey];
-                        $server = $slave['server'];
-                        $port = $slave['port'];
-                        $clientOptions = $this->getClientOptions($slave + $options);
-                        $totalServers = \count($options['load_from_slave']) + 1;
+                    {  // Multiple replicas
+                        $replicaKey = \array_rand($options['load_from_replica']);
+                        $replica = $options['load_from_replica'][$replicaKey];
+                        $server = $replica['server'];
+                        $port = $replica['port'];
+                        $clientOptions = $this->getClientOptions($replica + $options);
+                        $totalServers = \count($options['load_from_replica']) + 1;
                     }
                 }
                 else
                 {  // String
-                    $server = $options['load_from_slave'];
+                    $server = $options['load_from_replica'];
                     $port = 6379;
                     $clientOptions = $this->_clientOptions;
 
                     // If multiple addresses are given, split and choose a random one
                     if (\strpos($server, ',') !== false)
                     {
-                        $slaves = \preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
-                        /** @var string $slaveKey */
-                        $slaveKey = \array_rand($slaves);
-                        $server = $slaves[$slaveKey];
+                        $replicas = \preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
+                        /** @var string $replicaKey */
+                        $replicaKey = \array_rand($replicas);
+                        $server = $replicas[$replicaKey];
                         $port = null;
-                        $totalServers = \count($slaves) + 1;
+                        $totalServers = \count($replicas) + 1;
                     }
                     else
                     {
                         $totalServers = 2;
                     }
                 }
-                // Skip setting up slave if master is not write only and it is randomly chosen to be the read server
-                $masterWriteOnly = isset($options['master_write_only']) ? (int)$options['master_write_only'] : false;
-                if (\is_string($server) && $server && !(!$masterWriteOnly && rand(1, $totalServers) === 1))
+                // Skip setting up replica if primary is not write only and it is randomly chosen to be the read server
+                $primaryWriteOnly = (bool)($options['primary_write_only'] ?? false);
+                if (\is_string($server) && $server && !(!$primaryWriteOnly && rand(1, $totalServers) === 1))
                 {
                     try
                     {
-                        $slave = new \Credis_Client($server, $port, $clientOptions->timeout, $clientOptions->persistent);
-                        $this->_applyClientOptions($slave, true, $clientOptions);
-                        $this->_slave = $slave;
+                        $replica = new \Credis_Client($server, $port, $clientOptions->timeout, $clientOptions->persistent);
+                        $this->_applyClientOptions($replica, true, $clientOptions);
+                        $this->_replica = $replica;
                     }
                     catch (\Exception $e)
                     {
-                        // Slave will not be used
+                        // Replica will not be used
                     }
                 }
             }
         }
 
-        if (isset($options['compress_data']))
-        {
-            $this->_compressData = (int)$options['compress_data'];
-        }
+        $this->_compressData = (int)($options['compress_data'] ?? $this->_compressData);
+        $this->_lifetimelimit = (int)\min($options['lifetimelimit'] ?? $this->_lifetimelimit , self::MAX_LIFETIME);
+        $this->_compressThreshold = (int)min(1, (int)($options['compress_threshold'] ?? $this->_compressThreshold));
 
-        if (isset($options['lifetimelimit']))
+        $this->_compressionLib = (string)($options['compression_lib'] ?? '');
+        if ($this->_compressionLib === '')
         {
-            $this->_lifetimelimit = (int)\min($options['lifetimelimit'], self::MAX_LIFETIME);
-        }
-
-        if (isset($options['compress_threshold']))
-        {
-            $this->_compressThreshold = (int)$options['compress_threshold'];
-            if ($this->_compressThreshold < 1)
+            if (\function_exists('lz4_compress'))
             {
-                $this->_compressThreshold = 1;
+                $version = \phpversion("lz4");
+                if (\version_compare($version, "0.3.0") < 0)
+                {
+                    $this->_compressData = $this->_compressData > 1;
+                }
+                $this->_compressionLib = 'l4z';
             }
-        }
-
-        if (isset($options['compression_lib']))
-        {
-            $this->_compressionLib = (string)$options['compression_lib'];
-        }
-        else if (\function_exists('snappy_compress'))
-        {
-            $this->_compressionLib = 'snappy';
-        }
-        else if (\function_exists('lz4_compress'))
-        {
-            $version = \phpversion("lz4");
-            if (\version_compare($version, "0.3.0") < 0)
+            else if (\function_exists('zstd_compress'))
             {
-                $this->_compressData = $this->_compressData > 1;
+                $version = phpversion("zstd");
+                if (\version_compare($version, "0.4.13") < 0)
+                {
+                    $this->_compressData = $this->_compressData > 1;
+                }
+                $this->_compressionLib = 'zstd';
             }
-            $this->_compressionLib = 'l4z';
-        }
-        else if (\function_exists('zstd_compress'))
-        {
-            $version = phpversion("zstd");
-            if (\version_compare($version, "0.4.13") < 0)
+            else if (\function_exists('lzf_compress'))
             {
-                $this->_compressData = $this->_compressData > 1;
+                $this->_compressionLib = 'lzf';
             }
-            $this->_compressionLib = 'zstd';
-        }
-        else if (\function_exists('lzf_compress'))
-        {
-            $this->_compressionLib = 'lzf';
-        }
-        else
-        {
-            $this->_compressionLib = 'gzip';
+            else
+            {
+                $this->_compressionLib = 'gzip';
+            }
         }
         $this->_compressPrefix = \substr($this->_compressionLib, 0, 2) . self::COMPRESS_PREFIX;
 
-        if (isset($options['use_lua']))
-        {
-            $this->_useLua = (bool)$options['use_lua'];
-        }
-
-        if (isset($options['retry_reads_on_master']))
-        {
-            $this->_retryReadsOnMaster = (bool)$options['retry_reads_on_master'];
-        }
-
-        if (isset($options['auto_expire_lifetime']))
-        {
-            $this->_autoExpireLifetime = (int)$options['auto_expire_lifetime'];
-        }
-
-        if (isset($options['auto_expire_pattern']))
-        {
-            $this->_autoExpirePattern = (string)$options['auto_expire_pattern'];
-        }
-
-        if (isset($options['auto_expire_refresh_on_load']))
-        {
-            $this->_autoExpireRefreshOnLoad = (bool)$options['auto_expire_refresh_on_load'];
-        }
+        $this->_useLua = (bool)($options['use_lua'] ?? $this->_useLua);
+        $this->_retryReadsOnPrimary = (bool)($options['retry_reads_on_primary'] ?? $this->_retryReadsOnPrimary);
+        $this->_autoExpireLifetime = (int)($options['auto_expire_lifetime'] ?? $this->_autoExpireLifetime);
+        $this->_autoExpirePattern = (string)($options['auto_expire_pattern'] ?? $this->_autoExpirePattern);
+        $this->_autoExpireRefreshOnLoad = (string)($options['auto_expire_refresh_on_load'] ?? $this->_autoExpireRefreshOnLoad);
     }
 
     protected function throwException($msg)

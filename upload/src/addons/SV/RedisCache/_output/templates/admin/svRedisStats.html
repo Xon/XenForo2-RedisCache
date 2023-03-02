@@ -1,11 +1,11 @@
 <style>
-.redis-slaves {
+.redis-replicas {
 	display: flex;
 	flex-direction: row;
 	flex-wrap:wrap;
 	justify-content: flex-start;
 }
-.redis-slaves .redis-info-item {
+.redis-replicas .redis-info-item {
 	flex-basis: 350px;
 }
 </style>
@@ -80,37 +80,37 @@
 			<dd>{$redis.connected_clients|number}</dd>
 		</dl>
 
-		<xf:if is="$redis.slaves">
+		<xf:if is="$redis.replicas">
 			<dl class="pairs pairs--columns">
-				<dt>{{ phrase('redis_slaves') }}</dt>
-				<dd>{{ count($redis.slaves) }}</dd>
+				<dt>{{ phrase('redis_replicas') }}</dt>
+				<dd>{{ count($redis.replicas) }}</dd>
 			</dl>
 		</xf:if>
 	</xf:if>
 </div>
 
-<xf:if is="!$redis.loading && $redis.slaves">
+<xf:if is="!$redis.loading && $redis.replicas">
 	<div class="redis-info">
-	<div class="redis-info-item redis-slaves">
-		<xf:foreach loop="$redis.slaves" key="$index" value="$slave">
-			<div class="redis-info-item redis-slave redis-slave{$index}" data-slave="{$index}">
+	<div class="redis-info-item replicas">
+		<xf:foreach loop="$redis.replicas" key="$index" value="$replica">
+			<div class="redis-info-item redis-replica redis-replica{$index}" data-replica="{$index}">
 				<h3>
-					<a href="{{ link('redis-info/slave', {'slave_id': $index, 'context': $context} ) }}" data-xf-click="overlay" data-cache="0">
-						{{ phrase('redis_slave_x', {'i': $index} ) }}
+					<a href="{{ link('redis-info/replica', {'replica_id': $index, 'context': $context} ) }}" data-xf-click="overlay" data-cache="0">
+						{{ phrase('redis_replica_x', {'i': $index} ) }}
 					</a>
 				</h3>
 
 				<dl class="pairs pairs--columns pairs--fixedSmall">
-					<dt>{{ phrase('redis_slave_address') }}</dt>
-					<dd>{$slave.ip}:{$slave.port}</dd>
+					<dt>{{ phrase('redis_replica_address') }}</dt>
+					<dd>{$replica.ip}:{$replica.port}</dd>
 				</dl>
 				<dl class="pairs pairs--columns pairs--fixedSmall">
-					<dt>{{ phrase('redis_slave_lag') }}</dt>
-					<dd>{$slave.lag}</dd>
+					<dt>{{ phrase('redis_replica_lag') }}</dt>
+					<dd>{$replica.lag}</dd>
 				</dl>
 				<dl class="pairs pairs--columns pairs--fixedSmall">
-					<dt>{{ phrase('redis_slave_state') }}</dt>
-					<dd>{$slave.state}</dd>
+					<dt>{{ phrase('redis_replica_state') }}</dt>
+					<dd>{$replica.state}</dd>
 				</dl>
 			</div>
 		</xf:foreach>

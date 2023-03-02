@@ -21,24 +21,24 @@ $config['cache']['config'] = [
         'compression_lib' => null, // dynamically select first of; snappy,lzf,l4z,gzip IF EMPTY/null
         'use_lua' => true,
         'serializer' => 'igbinary', // to disable set to 'php'
-        'retry_reads_on_master' => false,
+        'retry_reads_on_primary' => false,
         // HA support
-        'load_from_slave' => null, // config entry similar to $config['cache']['config'], except without HA options
-        'load_from_slaves' => null, // config entry similar to $config['cache']['config'], except without HA options
-        'sentinel_master_set' => null,
+        'load_from_replica' => null, // config entry similar to $config['cache']['config'], except without HA options
+        'load_from_replicas' => null, // config entry similar to $config['cache']['config'], except without HA options
+        'sentinel_primary' => null,
         'sentinel_persistent' => null,
 ];
-// single slave (has most of the details of config):
-$config['cache']['config']['load_from_slave'] = [
+// single replica (has most of the details of config):
+$config['cache']['config']['load_from_replica'] = [
         'server' => '127.0.0.1',
         'port' => 6378,
 ];
 
 // minimal case for sentinel support (aka HA)
-$config['cache']['config']['sentinel_master_set'] = 'mymaster';
+$config['cache']['config']['sentinel_primary'] = 'mymaster';
 $config['cache']['config']['server'] = '127.0.0.1:26379';
-$config['cache']['config']['load_from_slaves'] = false; // send readonly queries to the slaves
-$config['cache']['config']['sentinel_persistent'] = null; // persistent connection option for the sentinel, but not the master/slave
+$config['cache']['config']['load_from_replicas'] = false; // send readonly queries to the replicas
+$config['cache']['config']['sentinel_persistent'] = null; // persistent connection option for the sentinel, but not the primary/replica
 
 // minimal case
 $config['cache']['config'] = [

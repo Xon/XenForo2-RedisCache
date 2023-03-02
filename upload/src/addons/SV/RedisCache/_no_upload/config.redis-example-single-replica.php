@@ -8,8 +8,8 @@ $config['cache']['config'] = [
         'server' => '127.0.0.1',
         'port' => 6379,
 ];
-// single slave (has most of the details of config):
-$config['cache']['config']['load_from_slave'] = [
+// single replica (has most of the details of config):
+$config['cache']['config']['load_from_replica'] = [
         'server' => '127.0.0.1',
         'port' => 6378,
 ];

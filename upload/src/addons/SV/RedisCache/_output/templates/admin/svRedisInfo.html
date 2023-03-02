@@ -1,6 +1,6 @@
 <xf:title>
     {{ phrase('redis_info') }}<xf:if is="$cacheContext"> - {$cacheContext}</xf:if>
-    {{ $redisSlaveId !== null ? ($cacheContext ? ' - ' : '' ) . phrase('redis_slave_x', {'i': $redisSlaveId} ) : '' }}
+    {{ $redisReplicaId !== null ? ($cacheContext ? ' - ' : '' ) . phrase('redis_replica_x', {'i': $redisReplicaId} ) : '' }}
 </xf:title>
 
 
