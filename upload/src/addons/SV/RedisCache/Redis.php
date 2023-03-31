@@ -7,8 +7,6 @@ namespace SV\RedisCache;
  */
 
 use Doctrine\Common\Cache\Cache;
-use function method_exists;
-use function str_replace;
 
 require_once('Credis/Client.php');
 require_once('Credis/Sentinel.php');
@@ -467,6 +465,10 @@ class Redis extends Cm_Cache_Backend_Redis
             $redis = $this->_replica ?? $this->_redis;
 
             $fetchedItems = $redis->mget($keys);
+            if (!is_array($fetchedItems))
+            {
+                throw new \CredisException('Redis::mget returned an unexpected valid, the redis server is likely in a non-operational state');
+            }
 
             $autoExpire = $this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad;
             $decoded = [];
