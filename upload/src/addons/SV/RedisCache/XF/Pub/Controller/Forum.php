@@ -2,7 +2,6 @@
 
 namespace SV\RedisCache\XF\Pub\Controller;
 
-use SV\RedisCache\Globals;
 use SV\RedisCache\XF\Finder\Thread as ExtendedThreadFinder;
 
 class Forum extends XFCP_Forum

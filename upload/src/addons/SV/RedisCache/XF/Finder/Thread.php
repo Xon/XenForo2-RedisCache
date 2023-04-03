@@ -6,7 +6,6 @@
 namespace SV\RedisCache\XF\Finder;
 
 use SV\RedisCache\Finder\CachableFinderTotalTrait;
-use SV\RedisCache\Globals;
 
 class Thread extends XFCP_Thread
 {
