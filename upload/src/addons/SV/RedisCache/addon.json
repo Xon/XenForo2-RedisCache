@@ -3,15 +3,21 @@
     "title": "Redis Cache",
     "description": "XenForo + Redis",
     "version_string": "2.13.0",
-    "version_id": 20130000,
-    "dev" : "Xon",
+    "version_id": 1680493863,
+    "dev": "Xon",
     "dev_url": "https://atelieraphelion.com/",
     "faq_url": "",
     "support_url": "https://xenforo.com/community/resources/redis-cache-by-xon.5562/",
     "extra_urls": [],
-    "require" : {
-        "XF": [2010070, "XenForo 2.2.0+"],
-        "php": ["7.2.0", "PHP 7.2.0+"]
+    "require": {
+        "XF": [
+            2010070,
+            "XenForo 2.2.0+"
+        ],
+        "php": [
+            "7.2.0",
+            "PHP 7.2.0+"
+        ]
     },
     "icon": "fa-forward"
 }
