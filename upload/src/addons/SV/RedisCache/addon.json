@@ -9,7 +9,7 @@
     "faq_url": "",
     "support_url": "https://xenforo.com/community/resources/redis-cache-by-xon.5562/",
     "extra_urls": [
-        "Add-on site":, "https://atelieraphelion.com/products/redis-cache-by-xon.126/"
+        "Add-on site": "https://atelieraphelion.com/products/redis-cache-by-xon.126/"
     ],
     "require": {
         "XF": [
