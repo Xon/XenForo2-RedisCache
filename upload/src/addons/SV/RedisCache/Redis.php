@@ -543,6 +543,41 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
+    protected function doSaveMultiple(array $keysAndValues, $lifetime = 0)
+    {
+        $redisQueryForStat = $this->redisQueryForStat;
+
+        return $redisQueryForStat('sets', function () use ($keysAndValues, $lifetime) {
+            $lifetime = (int)$lifetime;
+            foreach ($keysAndValues as &$data)
+            {
+                $data = $this->_encodeData($data, $this->_compressData);
+                $this->stats['bytes_sent'] += \strlen($data);
+            }
+            unset($data);
+
+            if ($lifetime > 0)
+            {
+                $this->_redis->multi();
+                $this->_redis->mSet($keysAndValues);
+                foreach ($keysAndValues as $key => $null)
+                {
+                    $perKeyLifeTime = $lifetime;
+                    $perKeyLifeTime = $this->_getAutoExpiringLifetime($perKeyLifeTime, $key);
+                    $perKeyLifeTime = \min($perKeyLifeTime, self::MAX_LIFETIME);
+                    $this->_redis->expire($key, $perKeyLifeTime);
+                }
+                $ret = $this->_redis->exec();
+            }
+            else
+            {
+                $this->_redis->mSet($keysAndValues);
+            }
+
+            return true;
+        });
+    }
+
     /**
      * {@inheritdoc}
      */
