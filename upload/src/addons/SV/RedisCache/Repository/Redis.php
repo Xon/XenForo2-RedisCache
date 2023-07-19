@@ -169,9 +169,9 @@ class Redis extends Repository
         return $data;
     }
 
-    public function visitCacheByPattern(string $pattern, &$cursor, float $maxRunTime, callable $func, int $batch = 1000): void
+    public function visitCacheByPattern(string $pattern, &$cursor, float $maxRunTime, callable $func, int $batch = 1000, $cache = null): void
     {
-        $cache = \XF::app()->cache();
+        $cache = $cache ?? \XF::app()->cache();
 
         // Redis php-ext uses 0 to signal stop, and null to signal start for the scan
         // Otherwise the cursor is to be considered an arbitrary blob
