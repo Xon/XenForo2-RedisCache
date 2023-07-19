@@ -180,7 +180,7 @@ class Redis extends Repository
 
         $startTime = microtime(true);
         $credis = $cache->getCredis();
-        $pattern = $cache->getNamespacedId($pattern) . "*";
+        $pattern = $cache->getNamespacedId($pattern) . '*';
         $dbSize = $credis->dbsize() ?: 100000;
         // indicate to the redis instance would like to process X items at a time.
         $loopGuardSize = ($dbSize / $batch) + 10;
@@ -210,6 +210,22 @@ class Redis extends Repository
         {
             $cursor = null;
         }
+    }
+
+    public function purgeCacheByPattern(string $pattern, ?int& $cursor, float $maxRunTime, int $batch = 1000): int
+    {
+        $done = 0;
+        $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(\Credis_Client $credis, array $keys) use (&$done) {
+            $credis->pipeline();
+            /** @var array<string> $keys */
+            foreach ($keys as $key)
+            {
+                $done++;
+                $credis->del($key);
+            }
+            $credis->exec();
+        }, $batch);
+        return $done;
     }
 
     public function expireCacheByPattern(int $expiryInSeconds, string $pattern, ?int& $cursor, float $maxRunTime, int $batch = 1000): int
