@@ -6,6 +6,7 @@
 namespace SV\RedisCache\Repository;
 
 use Credis_Client;
+use SV\RedisCache\Job\PurgeRedisCacheByPattern;
 use XF\Mvc\Entity\Repository;
 use XF\Mvc\Reply\View;
 use function microtime;
@@ -172,9 +173,16 @@ class Redis extends Repository
     {
         $cache = \XF::app()->cache();
 
+        // Redis php-ext uses 0 to signal stop, and null to signal start for the scan
+        // Otherwise the cursor is to be considered an arbitrary blob
+        if ($cursor === 0)
+        {
+            return;
+        }
+
         if (!($cache instanceof \SV\RedisCache\Redis))
         {
-            $cursor = null;
+            $cursor = 0;
             return;
         }
 
@@ -183,8 +191,7 @@ class Redis extends Repository
         $pattern = $cache->getNamespacedId($pattern) . '*';
         $dbSize = $credis->dbsize() ?: 100000;
         // indicate to the redis instance would like to process X items at a time.
-        $loopGuardSize = ($dbSize / $batch) + 10;
-        // only valid values for cursor are null (the stack turns it into a 0) or whatever scan return
+        $loopGuardSize = (int)ceil($dbSize / $batch) + 10;
         // prevent looping forever
         $loopGuard = $loopGuardSize;
         do
@@ -193,7 +200,7 @@ class Redis extends Repository
             $loopGuard--;
             if ($keys === false)
             {
-                $cursor = null;
+                $cursor = 0;
                 break;
             }
 
@@ -208,11 +215,11 @@ class Redis extends Repository
         // unexpected number of loops, just abort rather than risk looping forever
         if ($loopGuard <= 0)
         {
-            $cursor = null;
+            $cursor = 0;
         }
     }
 
-    public function purgeCacheByPattern(string $pattern, ?int& $cursor, float $maxRunTime, int $batch = 1000): int
+    public function purgeCacheByPattern(string $pattern, &$cursor, float $maxRunTime, int $batch = 1000): int
     {
         $done = 0;
         $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(\Credis_Client $credis, array $keys) use (&$done) {
@@ -228,7 +235,7 @@ class Redis extends Repository
         return $done;
     }
 
-    public function expireCacheByPattern(int $expiryInSeconds, string $pattern, ?int& $cursor, float $maxRunTime, int $batch = 1000): int
+    public function expireCacheByPattern(int $expiryInSeconds, string $pattern, &$cursor, float $maxRunTime, int $batch = 1000): int
     {
         $done = 0;
         $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(\Credis_Client $credis, array $keys) use (&$done, $expiryInSeconds) {
@@ -242,5 +249,18 @@ class Redis extends Repository
             $credis->exec();
         }, $batch);
         return $done;
+    }
+
+    public function purgeThreadCountByForumDeferred(int $nodeId): void
+    {
+        if ($nodeId === 0)
+        {
+            return;
+        }
+
+        $key = 'svPurgeThreadCount.' . $nodeId;
+        \XF::runOnce($key, function () use ($key, $nodeId) {
+            PurgeRedisCacheByPattern::enqueue($key, 'forum_' . $nodeId . '_threadcount_');
+        });
     }
 }

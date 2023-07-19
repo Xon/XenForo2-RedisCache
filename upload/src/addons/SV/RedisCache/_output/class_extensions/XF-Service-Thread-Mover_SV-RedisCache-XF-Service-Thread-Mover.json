@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Service\\Thread\\Mover",
+    "to_class": "SV\\RedisCache\\XF\\Service\\Thread\\Mover",
+    "execute_order": 5562,
+    "active": true
+}

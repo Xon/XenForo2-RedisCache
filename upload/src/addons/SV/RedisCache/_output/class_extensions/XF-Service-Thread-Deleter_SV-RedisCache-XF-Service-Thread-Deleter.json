@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Service\\Thread\\Deleter",
+    "to_class": "SV\\RedisCache\\XF\\Service\\Thread\\Deleter",
+    "execute_order": 5562,
+    "active": true
+}

@@ -12,10 +12,25 @@ use function microtime;
 
 class ExpireRedisCacheByPattern extends AbstractJob
 {
+    public static function enqueue(string $key, string $patternPrefix, int $expiry): ?int
+    {
+        if ($expiry <= 0)
+        {
+            return PurgeRedisCacheByPattern::enqueue($key, $patternPrefix);
+        }
+
+        return \XF::app()->jobManager()->enqueueUnique(
+            $key, ExpireRedisCacheByPattern::class, [
+            'pattern' => $patternPrefix,
+            'expiry'  => $expiry,
+        ], false);
+    }
+
+
     protected $defaultData = [
         'pattern' => null,
         'steps'   => 0,
-        'cursor'  => null,
+        'cursor'  => null, // null - start new, 0 - stop, otherwise it is a blob returned from redis
         'batch'   => 1000,
         'expiry'  => 0,
     ];
@@ -33,17 +48,17 @@ class ExpireRedisCacheByPattern extends AbstractJob
 
         $startTime = microtime(true);
 
-        /** @var string|null $cursor */
+        /** @var string|int|null $cursor */
         $cursor = $this->data['cursor'];
-        $done = Redis::instance()->expireCacheByPattern($this->data['expiry'], $this->data['pattern'], $cursor, $maxRunTime, $this->data['batch']);
+        $steps = Redis::instance()->expireCacheByPattern($this->data['expiry'], $this->data['pattern'], $cursor, $maxRunTime, $this->data['batch']);
         if (!$cursor)
         {
             return $this->complete();
         }
 
-        $this->data['steps'] += $done;
+        $this->data['steps'] += $steps;
         $this->data['cursor'] = $cursor;
-        $this->data['batch'] = $this->calculateOptimalBatch($this->data['batch'], $done, $startTime, $maxRunTime, 10000);
+        $this->data['batch'] = $this->calculateOptimalBatch($this->data['batch'], $steps, $startTime, $maxRunTime, 10000);
 
         return $this->resume();
     }

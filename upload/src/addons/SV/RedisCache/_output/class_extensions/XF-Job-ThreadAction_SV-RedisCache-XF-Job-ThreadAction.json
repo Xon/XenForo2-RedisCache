@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Job\\ThreadAction",
+    "to_class": "SV\\RedisCache\\XF\\Job\\ThreadAction",
+    "execute_order": 5562,
+    "active": true
+}

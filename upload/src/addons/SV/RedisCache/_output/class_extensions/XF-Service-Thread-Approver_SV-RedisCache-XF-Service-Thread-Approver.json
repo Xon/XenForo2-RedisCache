@@ -1,0 +1,6 @@
+{
+    "from_class": "XF\\Service\\Thread\\Approver",
+    "to_class": "SV\\RedisCache\\XF\\Service\\Thread\\Approver",
+    "execute_order": 5562,
+    "active": true
+}
