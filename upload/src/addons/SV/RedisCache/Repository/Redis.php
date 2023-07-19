@@ -212,4 +212,19 @@ class Redis extends Repository
         }
     }
 
+    public function expireCacheByPattern(int $expiryInSeconds, string $pattern, ?int& $cursor, float $maxRunTime, int $batch = 1000): int
+    {
+        $done = 0;
+        $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(\Credis_Client $credis, array $keys) use (&$done, $expiryInSeconds) {
+            $credis->pipeline();
+            /** @var array<string> $keys */
+            foreach ($keys as $key)
+            {
+                $done++;
+                $credis->expire($key, $expiryInSeconds);
+            }
+            $credis->exec();
+        }, $batch);
+        return $done;
+    }
 }

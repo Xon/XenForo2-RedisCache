@@ -5,7 +5,7 @@
 
 namespace SV\RedisCache\XF\Repository;
 
-use SV\RedisCache\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 
 /**
  * Extends \XF\Repository\Style
@@ -33,38 +33,7 @@ class Style extends XFCP_Style
      */
     protected function _svClearCache(string $pattern, int $styleId = null)
     {
-        $cache = \XF::app()->cache();
-        if (($cache instanceof Redis) && ($credis = $cache->getCredis()))
-        {
-            $pattern = $cache->getNamespacedId($pattern) . "*";
-            $expiry = 2 * 60;
-            // indicate to the redis instance would like to process X items at a time.
-            $count = 100;
-            // prevent looping forever
-            $loopGuard = 10000;
-            // find indexes matching the pattern
-            $cursor = null;
-            do
-            {
-                $keys = $credis->scan($cursor, $pattern, $count);
-                $loopGuard--;
-                if ($keys === false)
-                {
-                    break;
-                }
-
-                // adjust TTL them, use pipe-lining
-                $credis->pipeline();
-                foreach ($keys as $key)
-                {
-                    if ($key)
-                    {
-                        $credis->expire($key, $expiry);
-                    }
-                }
-                $credis->exec();
-            }
-            while ($loopGuard > 0 && !empty($cursor));
-        }
+        $cursor = null;
+        RedisRepo::instance()->expireCacheByPattern(120, $pattern, $cursor, 0);
     }
 }
