@@ -8,6 +8,7 @@ namespace SV\RedisCache\Repository;
 use Credis_Client;
 use XF\Mvc\Entity\Repository;
 use XF\Mvc\Reply\View;
+use function microtime;
 
 class Redis extends Repository
 {
@@ -166,4 +167,49 @@ class Redis extends Repository
 
         return $data;
     }
+
+    public function visitCacheByPattern(string $pattern, &$cursor, float $maxRunTime, callable $func, int $batch = 1000): void
+    {
+        $cache = \XF::app()->cache();
+
+        if (!($cache instanceof \SV\RedisCache\Redis))
+        {
+            $cursor = null;
+            return;
+        }
+
+        $startTime = microtime(true);
+        $credis = $cache->getCredis();
+        $pattern = $cache->getNamespacedId($pattern) . "*";
+        $dbSize = $credis->dbsize() ?: 100000;
+        // indicate to the redis instance would like to process X items at a time.
+        $loopGuardSize = ($dbSize / $batch) + 10;
+        // only valid values for cursor are null (the stack turns it into a 0) or whatever scan return
+        // prevent looping forever
+        $loopGuard = $loopGuardSize;
+        do
+        {
+            $keys = $credis->scan($cursor, $pattern, $batch);
+            $loopGuard--;
+            if ($keys === false)
+            {
+                $cursor = null;
+                break;
+            }
+
+            $func($credis, $keys);
+
+            if ($maxRunTime > 0 && microtime(true) - $startTime > $maxRunTime)
+            {
+                return;
+            }
+        }
+        while ($loopGuard > 0 && $cursor);
+        // unexpected number of loops, just abort rather than risk looping forever
+        if ($loopGuard <= 0)
+        {
+            $cursor = null;
+        }
+    }
+
 }
