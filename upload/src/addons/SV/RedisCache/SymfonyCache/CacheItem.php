@@ -2,8 +2,10 @@
 
 namespace SV\RedisCache\SymfonyCache;
 
+use InvalidArgumentException;
 use Psr\Cache\CacheItemInterface;
-use function microtime;
+use function gettype;
+use function is_int;
 use function min;
 use function sprintf;
 
@@ -67,13 +69,13 @@ class CacheItem implements CacheItemInterface
         {
             $this->expiry = (int)\DateTime::createFromFormat('U', 0)->add($time)->format('U');
         }
-        else if (\is_int($time))
+        else if (is_int($time))
         {
             $this->expiry = $time;
         }
         else
         {
-            throw new \InvalidArgumentException(sprintf('Expiration date must be an int, a DateInterval or null, "%s" given.', get_debug_type($time)));
+            throw new InvalidArgumentException(sprintf('Expiration date must be an int, a DateInterval or null, "%s" given.', gettype($time)));
         }
 
         return $this;

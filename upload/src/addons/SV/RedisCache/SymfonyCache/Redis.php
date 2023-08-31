@@ -2,18 +2,29 @@
 
 namespace SV\RedisCache\SymfonyCache;
 
+use CredisException;
+use LogicException;
 use Psr\Cache\CacheItemInterface;
 use SV\RedisCache\Globals;
 use SV\RedisCache\Traits\CacheTiming;
 use SV\RedisCache\Traits\Cm_Cache_Backend_Redis;
 use SV\RedisCache\Traits\ReplicaSelect;
 use Symfony\Component\Cache\CacheItem as SymfonyCacheItem;
-use \Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
+use function array_combine;
 use function array_map;
 use function count;
 use function get_class;
+use function igbinary_serialize;
+use function igbinary_unserialize;
 use function is_array;
+use function is_callable;
 use function min;
+use function serialize;
+use function sprintf;
+use function strlen;
+use function strtolower;
+use function unserialize;
 
 class Redis implements AdapterInterface
 {
@@ -32,8 +43,8 @@ class Redis implements AdapterInterface
         $this->namespace = $options['namespace'] ?? '';
         $this->setupTimers(\XF::$debugMode);
 
-        $igbinaryPresent = \is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
-        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \strtolower($options['serializer']) === 'igbinary');
+        $igbinaryPresent = is_callable('igbinary_serialize') && is_callable('igbinary_unserialize');
+        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || strtolower($options['serializer']) === 'igbinary');
 
         $this->replicaOptions($options);
         $this->init($options);
@@ -51,7 +62,7 @@ class Redis implements AdapterInterface
 
         $encodedData = $timerForStat('time_encoding', function () use ($data) {
             // XF stores binary data as strings which causes issues using json for serialization
-            return $this->useIgbinary ? @\igbinary_serialize($data) : @\serialize($data);
+            return $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
         });
         unset($data);
 
@@ -73,7 +84,7 @@ class Redis implements AdapterInterface
             return false;
         }
         return $timerForStat('time_decoding', function () use ($decompressedData) {
-            return $this->useIgbinary ? @\igbinary_unserialize($decompressedData) : @\unserialize($decompressedData);
+            return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
         });
     }
 
@@ -81,7 +92,7 @@ class Redis implements AdapterInterface
     {
         // match Doctrine Cache key format
 
-        return \sprintf('%s_%s', $this->namespace, $id);
+        return sprintf('%s_%s', $this->namespace, $id);
     }
 
     public function getItem($key)
@@ -110,7 +121,7 @@ class Redis implements AdapterInterface
                 return new CacheItem($key, false, null);
             }
 
-            $this->stats['bytes_received'] += \strlen($data);
+            $this->stats['bytes_received'] += strlen($data);
             $decoded = $this->_decodeData($data);
 
             if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad)
@@ -132,10 +143,10 @@ class Redis implements AdapterInterface
         return $redisQueryForStat('gets', function () use ($keys) {
             $redis = $this->_replica ?: $this->_redis;
 
-            $fetchedItems = $redis->mget($keys);
+            $fetchedItems = $redis->mGet($keys);
             if (!is_array($fetchedItems))
             {
-                throw new \CredisException('Redis::mget returned an unexpected valid, the redis server is likely in a non-operational state');
+                throw new CredisException('Redis::mget returned an unexpected valid, the redis server is likely in a non-operational state');
             }
             if (count($fetchedItems) === 0)
             {
@@ -144,7 +155,7 @@ class Redis implements AdapterInterface
 
             $autoExpire = $this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad;
             $decoded = [];
-            $mgetResults = \array_combine($keys, $fetchedItems);
+            $mgetResults = array_combine($keys, $fetchedItems);
             foreach ($mgetResults as $key => $data)
             {
                 if ($data === null || $data === false)
@@ -153,7 +164,7 @@ class Redis implements AdapterInterface
                     continue;
                 }
 
-                $this->stats['bytes_received'] += \strlen($data);
+                $this->stats['bytes_received'] += strlen($data);
                 $decodedData = $this->_decodeData($data);
                 if ($decodedData === false)
                 {
@@ -178,7 +189,7 @@ class Redis implements AdapterInterface
 
         return $redisQueryForStat('flushes', function () {
             /** @var string|bool $response */
-            $response = $this->_redis->flushdb();
+            $response = $this->_redis->flushDb();
 
             return $response === true || $response === 'OK';
         });
@@ -260,13 +271,13 @@ class Redis implements AdapterInterface
         }
         else
         {
-            throw new \LogicException('Unknown CacheItemInterface subclass'.get_class($item));
+            throw new LogicException('Unknown CacheItemInterface subclass'.get_class($item));
         }
 
         if ($expiry === null && $item->isHit())
         {
             // no explicit expiry set. probably an error
-            throw new \LogicException('Require an explicit expiry to be set');
+            throw new LogicException('Require an explicit expiry to be set');
         }
 
         return $this->saveInternal($key, $value, (int)$expiry);
@@ -280,9 +291,9 @@ class Redis implements AdapterInterface
         return $redisQueryForStat('sets', function () use ($key, $value, $expiry) {
             $data = $this->_encodeData($key, $this->_compressData);
             $lifetime = $this->_getAutoExpiringLifetime($expiry, $key);
-            $lifeTime = \min($lifetime, Globals::MAX_LIFETIME);
+            $lifeTime = min($lifetime, Globals::MAX_LIFETIME);
 
-            $this->stats['bytes_sent'] += \strlen($data);
+            $this->stats['bytes_sent'] += strlen($data);
 
             if ($lifeTime > 0)
             {
