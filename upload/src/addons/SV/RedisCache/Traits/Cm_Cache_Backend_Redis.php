@@ -94,9 +94,6 @@ trait Cm_Cache_Backend_Redis
     /** @var string */
     protected $_compressPrefix;
 
-    /** @var bool */
-    protected $_useLua = true;
-
     /** @var int */
     protected $_autoExpireLifetime = 0;
 
@@ -135,6 +132,15 @@ trait Cm_Cache_Backend_Redis
      */
     protected $_replica = null;
 
+
+    /**
+     * @deprecated
+     */
+    public function useLua(): bool
+    {
+        return true;
+    }
+
     /**
      * @param array $options
      * @return stdClass
@@ -155,7 +161,7 @@ trait Cm_Cache_Backend_Redis
         return $clientOptions;
     }
 
-    protected function init(array $options = []): self
+    protected function init(array $options = []): void
     {
         if (empty($options['server']))
         {
@@ -373,7 +379,6 @@ trait Cm_Cache_Backend_Redis
         }
         $this->_compressPrefix = substr($this->_compressionLib, 0, 2) . Globals::COMPRESS_PREFIX;
 
-        $this->_useLua = (bool)($options['use_lua'] ?? $this->_useLua);
         $this->_retryReadsOnPrimary = (bool)($options['retry_reads_on_primary'] ?? $this->_retryReadsOnPrimary);
         $this->_autoExpireLifetime = (int)($options['auto_expire_lifetime'] ?? $this->_autoExpireLifetime);
         $this->_autoExpirePattern = (string)($options['auto_expire_pattern'] ?? $this->_autoExpirePattern);

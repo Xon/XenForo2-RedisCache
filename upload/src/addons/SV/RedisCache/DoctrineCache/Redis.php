@@ -77,14 +77,6 @@ class Redis extends CacheProvider
         return $this->_decodeData($data);
     }
 
-    /**
-     * @deprecated
-     */
-    public function useLua(): bool
-    {
-        return $this->_useLua;
-    }
-
     protected function doFetch($id)
     {
         $redisQueryForStat = $this->redisQueryForStat;

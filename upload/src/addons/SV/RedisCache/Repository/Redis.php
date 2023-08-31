@@ -62,8 +62,7 @@ class Redis extends Repository
             if (($cache instanceof \SV\RedisCache\Redis) &&
                 ($credis = $cache->getCredis()))
             {
-                $useLua = $cache->useLua();
-                $redisInfo[$contextLabel] = $this->addRedisInfo($config, $credis->info(), $useLua);
+                $redisInfo[$contextLabel] = $this->addRedisInfo($config, $credis->info());
                 $replicas = $redisInfo[$contextLabel]['replicas'];
                 if ($replicaId !== null)
                 {
@@ -82,7 +81,7 @@ class Redis extends Repository
                         {
                             $replicaClient->forceStandalone();
                         }
-                        $redisInfo[$contextLabel] = $this->addRedisInfo($config, $replicaClient->info(), $useLua);
+                        $redisInfo[$contextLabel] = $this->addRedisInfo($config, $replicaClient->info());
 
                         $redisInfo[$context]['replicaId'] = $replicaId;
                     }
@@ -111,7 +110,7 @@ class Redis extends Repository
      * @param bool  $useLua
      * @return array
      */
-    private function addRedisInfo(array $config, array $data, bool $useLua = true): array
+    private function addRedisInfo(array $config, array $data): array
     {
         $database = 0;
         $replicas = [];
@@ -165,7 +164,6 @@ class Redis extends Repository
         $data['replicas'] = $replicas;
         $data['db'] = $db;
         $data['db_default'] = $database;
-        $data['lua'] = $useLua;
         $data['phpredis'] = phpversion('redis');
         $data['HasIOStats'] = isset($data['instantaneous_input_kbps']) && isset($data['instantaneous_output_kbps']);
 

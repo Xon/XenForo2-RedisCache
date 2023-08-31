@@ -20,10 +20,6 @@
 		<dd>{{ $redis.phpredis ? $redis.phpredis : phrase('n_a') }}</dd>
 	</dl>
 	<dl class="pairs pairs--columns">
-		<dt>{{ phrase('redis_lua') }}</dt>
-		<dd>{{ $redis.lua ? phrase('yes') : phrase('no') }}</dd>
-	</dl>
-	<dl class="pairs pairs--columns">
 		<dt>{{ phrase('redis_serializer') }}</dt>
 		<dd>{{ $redis.serializer }}</dd>
 	</dl>
