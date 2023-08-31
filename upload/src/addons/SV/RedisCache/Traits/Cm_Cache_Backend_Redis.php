@@ -35,11 +35,14 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace SV\RedisCache;
+namespace SV\RedisCache\Traits;
 
-use SV\RedisCache\DoctrineCache\CacheProvider;
+use SV\RedisCache\Globals;
 use function is_callable;
 use function min;
+
+require_once('Credis/Client.php');
+require_once('Credis/Sentinel.php');
 
 /**
  * Redis adapter baseline
@@ -48,7 +51,7 @@ use function min;
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @author     Colin Mollenhour (http://colin.mollenhour.com)
  */
-abstract class Cm_Cache_Backend_Redis extends CacheProvider
+trait Cm_Cache_Backend_Redis
 {
     /** @var \Credis_Client */
     protected $_redis;
@@ -129,13 +132,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         return $clientOptions;
     }
 
-    /**
-     * Cm_Cache_Backend_Redis constructor.
-     *
-     * @param array $options
-     * @throws \CredisException
-     */
-    public function __construct($options = [])
+    protected function init(array $options = []): self
     {
         if (empty($options['server']))
         {
@@ -324,7 +321,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $this->_compressionLib = (string)($options['compression_lib'] ?? '');
         if ($this->_compressionLib === '')
         {
-            if (\function_exists('lz4_compress'))
+            if (\function_exists('\lz4_compress'))
             {
                 $version = \phpversion('lz4');
                 if (\version_compare($version, '0.3.0') < 0)
@@ -333,7 +330,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 }
                 $this->_compressionLib = 'l4z';
             }
-            else if (\function_exists('zstd_compress'))
+            else if (\function_exists('\zstd_compress'))
             {
                 $version = phpversion('zstd');
                 if (\version_compare($version, '0.4.13') < 0)
@@ -342,7 +339,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 }
                 $this->_compressionLib = 'zstd';
             }
-            else if (\function_exists('lzf_compress'))
+            else if (\function_exists('\lzf_compress'))
             {
                 $this->_compressionLib = 'lzf';
             }
@@ -466,6 +463,8 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
      * @param int    $level
      * @return string
      * @throws \CredisException
+     * @noinspection PhpComposerExtensionStubsInspection
+     * @noinspection RedundantSuppression
      */
     protected function _encodeData($data, $level)
     {
@@ -474,16 +473,16 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             switch ($this->_compressionLib)
             {
                 case 'snappy':
-                    /** @noinspection PhpUndefinedFunctionInspection */ $data = snappy_compress($data);
+                    /** @noinspection PhpUndefinedFunctionInspection */ $data = \snappy_compress($data);
                     break;
                 case 'lzf':
-                    /** @noinspection PhpUndefinedFunctionInspection */ $data = lzf_compress($data);
+                    /** @noinspection PhpUndefinedFunctionInspection */ $data = \lzf_compress($data);
                     break;
                 case 'l4z':
-                    /** @noinspection PhpUndefinedFunctionInspection */ $data = lz4_compress($data, $level);
+                    /** @noinspection PhpUndefinedFunctionInspection */ $data = \lz4_compress($data, $level);
                     break;
                 case 'zstd':
-                    /** @noinspection PhpUndefinedFunctionInspection */ $data = zstd_compress($data, $level);
+                    /** @noinspection PhpUndefinedFunctionInspection */ $data = \zstd_compress($data, $level);
                     break;
                 case 'gzip':
                     $data = gzcompress($data, $level);
@@ -504,7 +503,9 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
 
     /**
      * @param bool|string $data
-     * @return string
+     * @return string|false
+     * @noinspection PhpComposerExtensionStubsInspection
+     * @noinspection RedundantSuppression
      */
     protected function _decodeData($data)
     {
