@@ -5,7 +5,7 @@
  * @noinspection PhpMissingReturnTypeInspection
  */
 
-namespace SV\RedisCache;
+namespace SV\RedisCache\DoctrineCache;
 
 /**
  * Workaround for Doctrine namespace mangling making working with Redis harder ([ and ] are glob characters, require escaping on the commandline, and are just anoying to deal with.

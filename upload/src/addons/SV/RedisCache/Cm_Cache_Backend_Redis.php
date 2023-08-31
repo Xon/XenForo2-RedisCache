@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SV\RedisCache;
 
+use SV\RedisCache\DoctrineCache\CacheProvider;
 use function is_callable;
 use function min;
 
