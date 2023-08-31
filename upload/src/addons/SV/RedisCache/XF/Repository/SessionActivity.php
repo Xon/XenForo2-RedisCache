@@ -46,7 +46,7 @@ class SessionActivity extends XFCP_SessionActivity
                 if (\count($userIdsToLoad) !== 0)
                 {
                     $loadedUsers = $app->finder('XF:User')
-                                       ->whereIds($userIdsToLoad)
+                                       ->where('user_id', $userIdsToLoad)
                                        ->fetch()
                                        ->toArray();
                     if (\count($loadedUsers) !== 0)
