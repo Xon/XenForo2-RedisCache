@@ -50,18 +50,11 @@ use function min;
  */
 abstract class Cm_Cache_Backend_Redis extends CacheProvider
 {
-    public const PREFIX_KEY = '';
-
-    public const MAX_LIFETIME = 2592000; /* Redis backend limit */
-    public const COMPRESS_PREFIX         = ":\x1f\x8b";
-    public const DEFAULT_CONNECT_TIMEOUT = 2.5;
-    public const DEFAULT_CONNECT_RETRIES = 1;
-
     /** @var \Credis_Client */
     protected $_redis;
 
     /** @var int */
-    protected $_lifetimelimit = self::MAX_LIFETIME; /* Redis backend limit */
+    protected $_lifetimelimit = Globals::MAX_LIFETIME; /* Redis backend limit */
 
     /** @var int|bool */
     protected $_compressData = 1;
@@ -124,13 +117,13 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     {
         $clientOptions = new \stdClass();
         $clientOptions->forceStandalone = isset($options['force_standalone']) && $options['force_standalone'];
-        $clientOptions->connectRetries = (int)($options['connect_retries'] ?? self::DEFAULT_CONNECT_RETRIES);
+        $clientOptions->connectRetries = (int)($options['connect_retries'] ?? Globals::DEFAULT_CONNECT_RETRIES);
         $clientOptions->readTimeout = isset($options['read_timeout']) ? \floatval($options['read_timeout']) : null;
         $clientOptions->password = isset($options['password']) ? \strval($options['password']) : null;
         $clientOptions->username = isset($options['username']) ? \strval($options['username']) : null;
         $clientOptions->database = (int)($options['database'] ?? 0);
         $clientOptions->persistent = isset($options['persistent']) ? $options['persistent'] . '_' . $clientOptions->database : '';
-        $clientOptions->timeout =  isset($options['timeout']) ? \floatval($options['timeout']) : self::DEFAULT_CONNECT_TIMEOUT;
+        $clientOptions->timeout =  isset($options['timeout']) ? \floatval($options['timeout']) : Globals::DEFAULT_CONNECT_TIMEOUT;
         $clientOptions->tlsOptions = (array)($options['tlsOptions'] ?? []);
 
         return $clientOptions;
@@ -325,7 +318,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         }
 
         $this->_compressData = (int)($options['compress_data'] ?? $this->_compressData);
-        $this->_lifetimelimit = (int)min($options['lifetimelimit'] ?? $this->_lifetimelimit , self::MAX_LIFETIME);
+        $this->_lifetimelimit = (int)min($options['lifetimelimit'] ?? $this->_lifetimelimit , Globals::MAX_LIFETIME);
         $this->_compressThreshold = (int)min(1, (int)($options['compress_threshold'] ?? $this->_compressThreshold));
 
         $this->_compressionLib = (string)($options['compression_lib'] ?? '');
@@ -358,7 +351,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
                 $this->_compressionLib = 'gzip';
             }
         }
-        $this->_compressPrefix = \substr($this->_compressionLib, 0, 2) . self::COMPRESS_PREFIX;
+        $this->_compressPrefix = \substr($this->_compressionLib, 0, 2) . Globals::COMPRESS_PREFIX;
 
         $this->_useLua = (bool)($options['use_lua'] ?? $this->_useLua);
         $this->_retryReadsOnPrimary = (bool)($options['retry_reads_on_primary'] ?? $this->_retryReadsOnPrimary);
@@ -421,7 +414,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $matches = $this->_matchesAutoExpiringPattern($id);
         if ($matches)
         {
-            $this->_redis->expire(self::PREFIX_KEY . $id, min($this->_autoExpireLifetime, $this->_lifetimelimit));
+            $this->_redis->expire(Globals::PREFIX_KEY . $id, min($this->_autoExpireLifetime, $this->_lifetimelimit));
         }
     }
 
@@ -517,7 +510,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     {
         try
         {
-            if (\substr($data, 2, 3) === self::COMPRESS_PREFIX)
+            if (\substr($data, 2, 3) === Globals::COMPRESS_PREFIX)
             {
                 switch (\substr($data, 0, 2))
                 {
@@ -557,7 +550,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
      */
     public function ___expire($id)
     {
-        $this->_redis->del(self::PREFIX_KEY . $id);
+        $this->_redis->del(Globals::PREFIX_KEY . $id);
     }
 
     /**
