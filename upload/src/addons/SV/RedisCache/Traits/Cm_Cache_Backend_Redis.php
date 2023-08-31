@@ -1,6 +1,5 @@
 <?php
 /**
- * @noinspection PhpIncludeInspection
  * @noinspection PhpMissingParamTypeInspection
  * @noinspection PhpMissingReturnTypeInspection
  */
@@ -38,8 +37,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SV\RedisCache\Traits;
 
-require_once('Credis/Client.php');
-require_once('Credis/Sentinel.php');
+require_once(__DIR__.'/../Credis/Client.php');
+require_once(__DIR__.'/../Credis/Sentinel.php');
 
 use Credis_Client;
 use Credis_Sentinel;

@@ -23,9 +23,6 @@ use function strlen;
 use function strtolower;
 use function unserialize;
 
-require_once('../Credis/Client.php');
-require_once('../Credis/Sentinel.php');
-
 class Redis extends CacheProvider
 {
     use Cm_Cache_Backend_Redis {
