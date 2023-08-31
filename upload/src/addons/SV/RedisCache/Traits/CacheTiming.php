@@ -3,12 +3,10 @@
 namespace SV\RedisCache\Traits;
 
 use function function_exists;
-use function hrtime;
 use function microtime;
 
 trait CacheTiming
 {
-
     protected $stats = [
         'gets'               => 0,
         'gets.time'          => 0,
@@ -67,7 +65,7 @@ trait CacheTiming
         $this->stats[$stat]++;
 
         /** @var float $startTime */
-        $startTime = hrtime(true);
+        $startTime = \hrtime(true);
         try
         {
             return $callback();
@@ -75,7 +73,7 @@ trait CacheTiming
         finally
         {
             /** @var float $endTime */
-            $endTime = hrtime(true);
+            $endTime = \hrtime(true);
 
             $this->stats[$stat . '.time'] += ($endTime - $startTime) / 1000000000;
         }
@@ -108,7 +106,7 @@ trait CacheTiming
     protected function timerForStatDebugPhp73($stat, \Closure $callback)
     {
         /** @var float $startTime */
-        $startTime = hrtime(true);
+        $startTime = \hrtime(true);
         try
         {
             return $callback();
@@ -116,7 +114,7 @@ trait CacheTiming
         finally
         {
             /** @var float $endTime */
-            $endTime = hrtime(true);
+            $endTime = \hrtime(true);
 
             $this->stats[$stat] += ($endTime - $startTime) / 1000000000;
         }
