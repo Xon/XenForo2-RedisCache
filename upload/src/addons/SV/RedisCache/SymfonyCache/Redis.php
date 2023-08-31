@@ -41,19 +41,18 @@ class Redis implements AdapterInterface
     public function __construct(array $options = [])
     {
         $this->namespace = $options['namespace'] ?? '';
-        $this->setupTimers(\XF::$debugMode);
-
+        // common options
         $igbinaryPresent = is_callable('igbinary_serialize') && is_callable('igbinary_unserialize');
         $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || strtolower($options['serializer']) === 'igbinary');
-
-        $this->replicaOptions($options);
-        $this->init($options);
-
         $redisConnector = $options['redis'] ?? null;
         if ($redisConnector instanceof \Redis)
         {
             $this->_redis->setRedisConnector($redisConnector, true);
         }
+        // setup various traits
+        $this->setupTimers(\XF::$debugMode);
+        $this->replicaOptions($options);
+        $this->init($options);
     }
 
     public function setNamespace(string $namespace): void
@@ -106,7 +105,7 @@ class Redis implements AdapterInterface
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () use ($key) {
-            if ($this->_replica)
+            if ($this->_replica !== null)
             {
                 $data = $this->_replica->get($key);
 
