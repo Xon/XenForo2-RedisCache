@@ -56,6 +56,11 @@ class Redis implements AdapterInterface
         }
     }
 
+    public function setNamespace(string $namespace): void
+    {
+        $this->namespace = $namespace;
+    }
+
     protected function _encodeData($data, $level)
     {
         $timerForStat = $this->timerForStat;
