@@ -43,6 +43,8 @@ class SessionActivity extends XFCP_SessionActivity
                         $userIdsToLoad[$userId] = $userId;
                     }
                 }
+                unset($userIdsToLoad[0]);
+
                 if (\count($userIdsToLoad) !== 0)
                 {
                     $loadedUsers = $app->finder('XF:User')
