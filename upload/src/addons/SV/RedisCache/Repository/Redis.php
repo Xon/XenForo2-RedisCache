@@ -107,7 +107,6 @@ class Redis extends Repository
      *
      * @param array $config
      * @param array $data
-     * @param bool  $useLua
      * @return array
      */
     private function addRedisInfo(array $config, array $data): array

@@ -59,6 +59,7 @@ trait CacheTiming
 
     /**
      * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
+     * @noinspection RedundantSuppression
      */
     protected function redisQueryForStatDebugPhp73($stat, \Closure $callback)
     {
@@ -102,6 +103,7 @@ trait CacheTiming
 
     /**
      * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
+     * @noinspection RedundantSuppression
      */
     protected function timerForStatDebugPhp73($stat, \Closure $callback)
     {
