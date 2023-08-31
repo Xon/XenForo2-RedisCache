@@ -9,7 +9,11 @@ use Credis_Client;
 use SV\RedisCache\Job\PurgeRedisCacheByPattern;
 use XF\Mvc\Entity\Repository;
 use XF\Mvc\Reply\View;
+use function explode;
+use function is_callable;
 use function microtime;
+use function preg_match;
+use function strlen;
 
 class Redis extends Repository
 {
@@ -42,7 +46,7 @@ class Redis extends Repository
         }
         else
         {
-            if (\strlen($context) === 0)
+            if (strlen($context) === 0)
             {
                 $contexts[$context] = $mainConfig;
             }
@@ -118,15 +122,15 @@ class Redis extends Repository
             $database = empty($config['config']['database']) ? 0 : (int)$config['config']['database'];
             foreach ($data as $key => $value)
             {
-                if (\preg_match('/^db(\d+)$/i', $key, $matches))
+                if (preg_match('/^db(\d+)$/i', $key, $matches))
                 {
                     $index = $matches[1];
                     unset($data[$key]);
-                    $list = \explode(',', $value);
+                    $list = explode(',', $value);
                     $dbStats = [];
                     foreach ($list as $item)
                     {
-                        $parts = \explode('=', $item);
+                        $parts = explode('=', $item);
                         $dbStats[$parts[0]] = $parts[1];
                     }
 
@@ -138,15 +142,15 @@ class Redis extends Repository
             {
                 foreach ($data as $key => $value)
                 {
-                    if (\preg_match('/^slave(\d+)$/i', $key, $matches))
+                    if (preg_match('/^slave(\d+)$/i', $key, $matches))
                     {
                         $index = $matches[1];
                         unset($data[$key]);
-                        $list = \explode(',', $value);
+                        $list = explode(',', $value);
                         $dbStats = [];
                         foreach ($list as $item)
                         {
-                            $parts = \explode('=', $item);
+                            $parts = explode('=', $item);
                             $dbStats[$parts[0]] = $parts[1];
                         }
 
@@ -156,7 +160,7 @@ class Redis extends Repository
             }
         }
 
-        $igbinaryPresent = \is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
+        $igbinaryPresent = is_callable('igbinary_serialize') && is_callable('igbinary_unserialize');
         $data['serializer'] = empty($config['config']['serializer']) ? ($igbinaryPresent ? 'igbinary' : 'php') : $config['config']['serializer'];
         $data['replicas'] = $replicas;
         $data['db'] = $db;

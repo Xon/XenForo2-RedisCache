@@ -2,6 +2,10 @@
 
 namespace SV\RedisCache\Traits;
 
+use function function_exists;
+use function hrtime;
+use function microtime;
+
 trait CacheTiming
 {
 
@@ -42,16 +46,14 @@ trait CacheTiming
     protected function redisQueryForStatDebug($stat, \Closure $callback)
     {
         $this->stats[$stat]++;
-        /** @var float $startTime */
-        $startTime = \microtime(true);
+        $startTime = microtime(true);
         try
         {
             return $callback();
         }
         finally
         {
-            /** @var float $endTime */
-            $endTime = \microtime(true);
+            $endTime = microtime(true);
 
             $this->stats[$stat . '.time'] += ($endTime - $startTime);
         }
@@ -65,7 +67,7 @@ trait CacheTiming
         $this->stats[$stat]++;
 
         /** @var float $startTime */
-        $startTime = \hrtime(true);
+        $startTime = hrtime(true);
         try
         {
             return $callback();
@@ -73,7 +75,7 @@ trait CacheTiming
         finally
         {
             /** @var float $endTime */
-            $endTime = \hrtime(true);
+            $endTime = hrtime(true);
 
             $this->stats[$stat . '.time'] += ($endTime - $startTime) / 1000000000;
         }
@@ -87,16 +89,14 @@ trait CacheTiming
 
     protected function timerForStatDebug($stat, \Closure $callback)
     {
-        /** @var float $startTime */
-        $startTime = \microtime(true);
+        $startTime = microtime(true);
         try
         {
             return $callback();
         }
         finally
         {
-            /** @var float $endTime */
-            $endTime = \microtime(true);
+            $endTime = microtime(true);
 
             $this->stats[$stat] += ($endTime - $startTime);
         }
@@ -108,7 +108,7 @@ trait CacheTiming
     protected function timerForStatDebugPhp73($stat, \Closure $callback)
     {
         /** @var float $startTime */
-        $startTime = \hrtime(true);
+        $startTime = hrtime(true);
         try
         {
             return $callback();
@@ -116,7 +116,7 @@ trait CacheTiming
         finally
         {
             /** @var float $endTime */
-            $endTime = \hrtime(true);
+            $endTime = hrtime(true);
 
             $this->stats[$stat] += ($endTime - $startTime) / 1000000000;
         }
@@ -127,7 +127,7 @@ trait CacheTiming
         $this->debug = $debug;
         if ($this->debug)
         {
-            if (\function_exists('\hrtime'))
+            if (function_exists('\hrtime'))
             {
                 $this->timerForStat = [$this, 'timerForStatDebugPhp73'];
                 $this->redisQueryForStat = [$this, 'redisQueryForStatDebugPhp73'];

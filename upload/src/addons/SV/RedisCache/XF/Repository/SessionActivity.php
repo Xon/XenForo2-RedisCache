@@ -4,6 +4,14 @@ namespace SV\RedisCache\XF\Repository;
 
 use XF\Mvc\Entity\AbstractCollection;
 use XF\Mvc\Entity\ArrayCollection;
+use function array_keys;
+use function count;
+use function floatval;
+use function is_array;
+use function is_numeric;
+use function json_encode;
+use function md5;
+use function strval;
 
 /**
  * Extends \XF\Repository\SessionActivity
@@ -22,9 +30,9 @@ class SessionActivity extends XFCP_SessionActivity
             $keyParts = [$forceIncludeVisitor, $userLimit, $staffQuery];
             // must be pre-user or otherwise the followed user list breaks :(
             $keyParts[] = \XF::visitor()->user_id;
-            $cacheKey = 'onlineList.' . $cacheUsersOnline . '.' . \md5(\json_encode($keyParts));
+            $cacheKey = 'onlineList.' . $cacheUsersOnline . '.' . md5(json_encode($keyParts));
             $result = $cache->fetch($cacheKey);
-            if (\is_array($result))
+            if (is_array($result))
             {
                 $userIds = $result['userIds'] ?? [];
                 unset($result['userIds']);
@@ -43,13 +51,13 @@ class SessionActivity extends XFCP_SessionActivity
                         $userIdsToLoad[$userId] = $userId;
                     }
                 }
-                if (\count($userIdsToLoad) !== 0)
+                if (count($userIdsToLoad) !== 0)
                 {
                     $loadedUsers = $app->finder('XF:User')
                                        ->whereIds($userIdsToLoad)
                                        ->fetch()
                                        ->toArray();
-                    if (\count($loadedUsers) !== 0)
+                    if (count($loadedUsers) !== 0)
                     {
                         $toSort = new ArrayCollection($users + $loadedUsers);
                         $users = $toSort->sortByList($userIds)
@@ -72,9 +80,9 @@ class SessionActivity extends XFCP_SessionActivity
             {
                 $userIds = $users->keys();
             }
-            else if (\is_array($users))
+            else if (is_array($users))
             {
-                $userIds = \array_keys($users);
+                $userIds = array_keys($users);
             }
             else
             {
@@ -87,12 +95,12 @@ class SessionActivity extends XFCP_SessionActivity
 
             foreach ($onlineStats['counts'] as &$value)
             {
-                if (\is_numeric($value))
+                if (is_numeric($value))
                 {
                     try
                     {
                         /** @noinspection PhpWrongStringConcatenationInspection */
-                        $value = \strval(\floatval($value)) + 0;
+                        $value = strval(floatval($value)) + 0;
                     }
                     catch (\Throwable $e)
                     {

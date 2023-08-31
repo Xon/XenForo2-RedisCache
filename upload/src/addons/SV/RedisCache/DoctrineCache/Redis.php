@@ -6,12 +6,22 @@ namespace SV\RedisCache\DoctrineCache;
  * Redis adapter for XenForo2 & Doctrine
  */
 
+use CredisException;
 use Doctrine\Common\Cache\Cache;
 use SV\RedisCache\Globals;
 use SV\RedisCache\Traits\CacheTiming;
 use SV\RedisCache\Traits\Cm_Cache_Backend_Redis;
 use SV\RedisCache\Traits\ReplicaSelect;
+use function array_combine;
+use function igbinary_serialize;
+use function igbinary_unserialize;
 use function is_array;
+use function is_callable;
+use function min;
+use function serialize;
+use function strlen;
+use function strtolower;
+use function unserialize;
 
 require_once('../Credis/Client.php');
 require_once('../Credis/Sentinel.php');
@@ -29,8 +39,8 @@ class Redis extends CacheProvider
 
     public function __construct(array $options = [])
     {
-        $igbinaryPresent = \is_callable('igbinary_serialize') && \is_callable('igbinary_unserialize');
-        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || \strtolower($options['serializer']) === 'igbinary');
+        $igbinaryPresent = is_callable('igbinary_serialize') && is_callable('igbinary_unserialize');
+        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || strtolower($options['serializer']) === 'igbinary');
 
         $this->setupTimers(\XF::$debugMode);
         $this->replicaOptions($options);
@@ -100,7 +110,7 @@ class Redis extends CacheProvider
                 return false;
             }
 
-            $this->stats['bytes_received'] += \strlen($data);
+            $this->stats['bytes_received'] += strlen($data);
             $decoded = $this->_decodeData($data);
 
             if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad)
@@ -125,12 +135,12 @@ class Redis extends CacheProvider
             $fetchedItems = $redis->mGet($keys);
             if (!is_array($fetchedItems))
             {
-                throw new \CredisException('Redis::mGet returned an unexpected valid, the redis server is likely in a non-operational state');
+                throw new CredisException('Redis::mGet returned an unexpected valid, the redis server is likely in a non-operational state');
             }
 
             $autoExpire = $this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad;
             $decoded = [];
-            $mgetResults = \array_combine($keys, $fetchedItems);
+            $mgetResults = array_combine($keys, $fetchedItems);
             foreach ($mgetResults as $key => $data)
             {
                 if ($data === null || $data === false)
@@ -138,7 +148,7 @@ class Redis extends CacheProvider
                     continue;
                 }
 
-                $this->stats['bytes_received'] += \strlen($data);
+                $this->stats['bytes_received'] += strlen($data);
                 $decodedData = $this->_decodeData($data);
                 if ($decodedData === false)
                 {
@@ -173,7 +183,7 @@ class Redis extends CacheProvider
 
         $encodedData = $timerForStat('time_encoding', function () use ($data) {
             // XF stores binary data as strings which causes issues using json for serialization
-            return $this->useIgbinary ? @\igbinary_serialize($data) : @\serialize($data);
+            return $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
         });
         unset($data);
 
@@ -196,7 +206,7 @@ class Redis extends CacheProvider
             return false;
         }
         return $timerForStat('time_decoding', function () use ($decompressedData) {
-            return $this->useIgbinary ? @\igbinary_unserialize($decompressedData) : @\unserialize($decompressedData);
+            return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
         });
     }
 
@@ -210,7 +220,7 @@ class Redis extends CacheProvider
             foreach ($keysAndValues as &$data)
             {
                 $data = $this->_encodeData($data, $this->_compressData);
-                $this->stats['bytes_sent'] += \strlen($data);
+                $this->stats['bytes_sent'] += strlen($data);
             }
             unset($data);
 
@@ -222,7 +232,7 @@ class Redis extends CacheProvider
                 {
                     $perKeyLifeTime = $lifetime;
                     $perKeyLifeTime = $this->_getAutoExpiringLifetime($perKeyLifeTime, $key);
-                    $perKeyLifeTime = \min($perKeyLifeTime, Globals::MAX_LIFETIME);
+                    $perKeyLifeTime = min($perKeyLifeTime, Globals::MAX_LIFETIME);
                     $this->_redis->expire($key, $perKeyLifeTime);
                 }
                 $this->_redis->exec();
@@ -244,9 +254,9 @@ class Redis extends CacheProvider
             $data = $this->_encodeData($data, $this->_compressData);
             $lifeTime = (int)$lifeTime;
             $lifetime = $this->_getAutoExpiringLifetime($lifeTime, $id);
-            $lifeTime = \min($lifetime, Globals::MAX_LIFETIME);
+            $lifeTime = min($lifetime, Globals::MAX_LIFETIME);
 
-            $this->stats['bytes_sent'] += \strlen($data);
+            $this->stats['bytes_sent'] += strlen($data);
 
             if ($lifeTime > 0)
             {

@@ -2,6 +2,20 @@
 
 namespace SV\RedisCache\Traits;
 
+use function apcu_fetch;
+use function apcu_store;
+use function array_fill_keys;
+use function array_filter;
+use function array_map;
+use function array_rand;
+use function explode;
+use function file_get_contents;
+use function file_put_contents;
+use function function_exists;
+use function is_array;
+use function is_string;
+use function shell_exec;
+
 trait ReplicaSelect
 {
     protected function replicaOptions(array &$options)
@@ -25,7 +39,7 @@ trait ReplicaSelect
 
         // if it is a string, assume it is some method on this class
         $replicaSelect = $options['replica_select_callable'] ?? null;
-        if (\is_string($replicaSelect))
+        if (is_string($replicaSelect))
         {
             $options['replica_select_callable'] = [$this, $replicaSelect];
         }
@@ -43,12 +57,12 @@ trait ReplicaSelect
 
     protected function getLocalIps(array $ips = null): array
     {
-        if (!\is_array($ips))
+        if (!is_array($ips))
         {
             // I can't believe there isn't a better way
             try
             {
-                $output = \shell_exec('hostname --all-ip-addresses');
+                $output = shell_exec('hostname --all-ip-addresses');
             }
             catch (\Exception $e)
             {
@@ -56,7 +70,7 @@ trait ReplicaSelect
             }
             if ($output)
             {
-                $ips = \array_fill_keys(\array_filter(\array_map('\trim', \explode(' ', $output))), true);
+                $ips = array_fill_keys(array_filter(array_map('\trim', explode(' ', $output))), true);
             }
         }
 
@@ -85,7 +99,7 @@ trait ReplicaSelect
             }
         }
 
-        $replicaKey = \array_rand($replicas);
+        $replicaKey = array_rand($replicas);
 
         return $replicas[$replicaKey];
     }
@@ -125,12 +139,12 @@ trait ReplicaSelect
      */
     protected function preferLocalReplicaLocalDisk(array $replicas, \Credis_Client $primary): ?\Credis_Client
     {
-        $output = @\file_get_contents('/tmp/local_ips');
+        $output = @file_get_contents('/tmp/local_ips');
         if ($output === false)
         {
             try
             {
-                $output = \shell_exec('hostname --all-ip-addresses');
+                $output = shell_exec('hostname --all-ip-addresses');
             }
             catch (\Exception $e)
             {
@@ -138,14 +152,14 @@ trait ReplicaSelect
             }
             if ($output !== false)
             {
-                \file_put_contents('/tmp/local_ips', $output);
+                file_put_contents('/tmp/local_ips', $output);
             }
         }
 
         $ips = null;
         if ($output)
         {
-            $ips = \array_fill_keys(\array_filter(\array_map('\trim', \explode(' ', $output))), true);
+            $ips = array_fill_keys(array_filter(array_map('\trim', explode(' ', $output))), true);
         }
 
         return $this->selectLocalRedis($ips ?: [], $replicas, $primary);
@@ -167,17 +181,17 @@ trait ReplicaSelect
     public function preferLocalReplicaAPCu(array $replicas, \Credis_Client $primary): ?\Credis_Client
     {
         $ips = null;
-        if (\function_exists('apcu_fetch'))
+        if (function_exists('apcu_fetch'))
         {
-            $ips = \apcu_fetch('localips', $hasIps);
+            $ips = apcu_fetch('localips', $hasIps);
         }
-        if (!\is_array($ips))
+        if (!is_array($ips))
         {
             $ips = $this->getLocalIps();
-            if (\function_exists('apcu_store'))
+            if (function_exists('apcu_store'))
             {
                 // bit racing on the first connection, but local IPs rarely change.
-                \apcu_store('localips', $ips);
+                apcu_store('localips', $ips);
             }
         }
 

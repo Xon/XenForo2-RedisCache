@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpIncludeInspection
  * @noinspection PhpMissingParamTypeInspection
  * @noinspection PhpMissingReturnTypeInspection
  */
@@ -37,12 +38,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SV\RedisCache\Traits;
 
-use SV\RedisCache\Globals;
-use function is_callable;
-use function min;
-
 require_once('Credis/Client.php');
 require_once('Credis/Sentinel.php');
+
+use Credis_Client;
+use Credis_Sentinel;
+use CredisException;
+use stdClass;
+use SV\RedisCache\Globals;
+use function array_rand;
+use function count;
+use function floatval;
+use function function_exists;
+use function gzuncompress;
+use function is_array;
+use function is_callable;
+use function is_string;
+use function min;
+use function phpversion;
+use function preg_match;
+use function preg_split;
+use function rand;
+use function strlen;
+use function strpos;
+use function strval;
+use function substr;
+use function trim;
+use function usleep;
+use function version_compare;
 
 /**
  * Redis adapter baseline
@@ -53,7 +76,7 @@ require_once('Credis/Sentinel.php');
  */
 trait Cm_Cache_Backend_Redis
 {
-    /** @var \Credis_Client */
+    /** @var Credis_Client */
     protected $_redis;
 
     /** @var int */
@@ -101,32 +124,32 @@ trait Cm_Cache_Backend_Redis
     protected $_retryReadsOnPrimary = false;
 
     /**
-     * @var \stdClass
+     * @var stdClass
      */
     protected $_clientOptions;
 
     /**
      * If 'load_from_replicas' is truthy then reads are performed on a randomly selected replica server
      *
-     * @var ?\Credis_Client
+     * @var ?Credis_Client
      */
     protected $_replica = null;
 
     /**
      * @param array $options
-     * @return \stdClass
+     * @return stdClass
      */
     protected function getClientOptions($options = [])
     {
-        $clientOptions = new \stdClass();
+        $clientOptions = new stdClass();
         $clientOptions->forceStandalone = isset($options['force_standalone']) && $options['force_standalone'];
         $clientOptions->connectRetries = (int)($options['connect_retries'] ?? Globals::DEFAULT_CONNECT_RETRIES);
-        $clientOptions->readTimeout = isset($options['read_timeout']) ? \floatval($options['read_timeout']) : null;
-        $clientOptions->password = isset($options['password']) ? \strval($options['password']) : null;
-        $clientOptions->username = isset($options['username']) ? \strval($options['username']) : null;
+        $clientOptions->readTimeout = isset($options['read_timeout']) ? floatval($options['read_timeout']) : null;
+        $clientOptions->password = isset($options['password']) ? strval($options['password']) : null;
+        $clientOptions->username = isset($options['username']) ? strval($options['username']) : null;
         $clientOptions->database = (int)($options['database'] ?? 0);
         $clientOptions->persistent = isset($options['persistent']) ? $options['persistent'] . '_' . $clientOptions->database : '';
-        $clientOptions->timeout =  isset($options['timeout']) ? \floatval($options['timeout']) : Globals::DEFAULT_CONNECT_TIMEOUT;
+        $clientOptions->timeout =  isset($options['timeout']) ? floatval($options['timeout']) : Globals::DEFAULT_CONNECT_TIMEOUT;
         $clientOptions->tlsOptions = (array)($options['tlsOptions'] ?? []);
 
         return $clientOptions;
@@ -136,7 +159,7 @@ trait Cm_Cache_Backend_Redis
     {
         if (empty($options['server']))
         {
-            throw new \CredisException('Redis \'server\' not specified.');
+            throw new CredisException('Redis \'server\' not specified.');
         }
 
         $this->_clientOptions = $this->getClientOptions($options);
@@ -145,10 +168,10 @@ trait Cm_Cache_Backend_Redis
         $sentinelPrimary = $options['sentinel_primary'] ?? null;
         if ($sentinelPrimary)
         {
-            $sentinelClientOptions = isset($options['sentinel']) && \is_array($options['sentinel'])
+            $sentinelClientOptions = isset($options['sentinel']) && is_array($options['sentinel'])
                 ? $this->getClientOptions($options['sentinel'] + $options)
                 : $this->_clientOptions;
-            $servers = \is_array($options['server']) ? $options['server'] : \preg_split('/\s*,\s*/', \trim($options['server']), -1, PREG_SPLIT_NO_EMPTY);
+            $servers = is_array($options['server']) ? $options['server'] : preg_split('/\s*,\s*/', trim($options['server']), -1, PREG_SPLIT_NO_EMPTY);
             $sentinel = null;
             $exception = null;
             for ($i = 0; $i <= $sentinelClientOptions->connectRetries; $i++) // Try each sentinel in round-robin fashion
@@ -157,7 +180,7 @@ trait Cm_Cache_Backend_Redis
                 {
                     try
                     {
-                        $sentinelClient = new \Credis_Client($server, 26379, $sentinelClientOptions->timeout, $sentinelClientOptions->persistent);
+                        $sentinelClient = new Credis_Client($server, 26379, $sentinelClientOptions->timeout, $sentinelClientOptions->persistent);
                         $sentinelClient->forceStandalone();
                         $sentinelClient->setMaxConnectRetries(0);
                         if ($sentinelClientOptions->readTimeout)
@@ -168,7 +191,7 @@ trait Cm_Cache_Backend_Redis
                         {
                             $sentinelClient->auth($sentinelClientOptions->password, $sentinelClientOptions->username ?? null) or $this->throwException('Unable to authenticate with the redis sentinel.');
                         }
-                        $sentinel = new \Credis_Sentinel($sentinelClient);
+                        $sentinel = new Credis_Sentinel($sentinelClient);
                         $sentinel
                             ->setClientTimeout($this->_clientOptions->timeout)
                             ->setClientPersistent($this->_clientOptions->persistent);
@@ -187,7 +210,7 @@ trait Cm_Cache_Backend_Redis
                                 $roleData = $redisPrimary->role();
                                 if (!$roleData || $roleData[0] !== 'master')
                                 {
-                                    throw new \CredisException('Unable to determine primary redis server.');
+                                    throw new CredisException('Unable to determine primary redis server.');
                                 }
                             }
                         }
@@ -204,7 +227,7 @@ trait Cm_Cache_Backend_Redis
             }
             if (!$this->_redis)
             {
-                throw new \CredisException('Unable to connect to a redis sentinel: ' . $exception->getMessage(), 0, $exception);
+                throw new CredisException('Unable to connect to a redis sentinel: ' . $exception->getMessage(), 0, $exception);
             }
 
             // Optionally use read replicas - will only be used for 'load' operation
@@ -226,10 +249,10 @@ trait Cm_Cache_Backend_Redis
                     else
                     {
                         /** @var string $replicaKey */
-                        $replicaKey = \array_rand($replicas);
+                        $replicaKey = array_rand($replicas);
                         $replica = $replicas[$replicaKey];
                     }
-                    if ($replica instanceof \Credis_Client && $replica !== $this->_redis)
+                    if ($replica instanceof Credis_Client && $replica !== $this->_redis)
                     {
                         try
                         {
@@ -250,13 +273,13 @@ trait Cm_Cache_Backend_Redis
         else
         {
             $port = (int)($options['port'] ?? 6379);
-            $this->_redis = new \Credis_Client($options['server'], $port, $this->_clientOptions->timeout, $this->_clientOptions->persistent);
+            $this->_redis = new Credis_Client($options['server'], $port, $this->_clientOptions->timeout, $this->_clientOptions->persistent);
             $this->_applyClientOptions($this->_redis);
 
             // Support loading from a replication replica
             if (isset($options['load_from_replica']))
             {
-                if (\is_array($options['load_from_replica']))
+                if (is_array($options['load_from_replica']))
                 {
                     if (isset($options['load_from_replica']['server']))
                     {  // Single replica
@@ -267,12 +290,12 @@ trait Cm_Cache_Backend_Redis
                     }
                     else
                     {  // Multiple replicas
-                        $replicaKey = \array_rand($options['load_from_replica']);
+                        $replicaKey = array_rand($options['load_from_replica']);
                         $replica = $options['load_from_replica'][$replicaKey];
                         $server = $replica['server'];
                         $port = $replica['port'];
                         $clientOptions = $this->getClientOptions($replica + $options);
-                        $totalServers = \count($options['load_from_replica']) + 1;
+                        $totalServers = count($options['load_from_replica']) + 1;
                     }
                 }
                 else
@@ -282,14 +305,14 @@ trait Cm_Cache_Backend_Redis
                     $clientOptions = $this->_clientOptions;
 
                     // If multiple addresses are given, split and choose a random one
-                    if (\strpos($server, ',') !== false)
+                    if (strpos($server, ',') !== false)
                     {
-                        $replicas = \preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
+                        $replicas = preg_split('/\s*,\s*/', $server, -1, PREG_SPLIT_NO_EMPTY);
                         /** @var string $replicaKey */
-                        $replicaKey = \array_rand($replicas);
+                        $replicaKey = array_rand($replicas);
                         $server = $replicas[$replicaKey];
                         $port = null;
-                        $totalServers = \count($replicas) + 1;
+                        $totalServers = count($replicas) + 1;
                     }
                     else
                     {
@@ -298,11 +321,11 @@ trait Cm_Cache_Backend_Redis
                 }
                 // Skip setting up replica if primary is not write only and it is randomly chosen to be the read server
                 $primaryWriteOnly = (bool)($options['primary_write_only'] ?? false);
-                if (\is_string($server) && $server && !(!$primaryWriteOnly && rand(1, $totalServers) === 1))
+                if (is_string($server) && $server && !(!$primaryWriteOnly && rand(1, $totalServers) === 1))
                 {
                     try
                     {
-                        $replica = new \Credis_Client($server, $port, $clientOptions->timeout, $clientOptions->persistent);
+                        $replica = new Credis_Client($server, $port, $clientOptions->timeout, $clientOptions->persistent);
                         $this->_applyClientOptions($replica, true, $clientOptions);
                         $this->_replica = $replica;
                     }
@@ -321,25 +344,25 @@ trait Cm_Cache_Backend_Redis
         $this->_compressionLib = (string)($options['compression_lib'] ?? '');
         if ($this->_compressionLib === '')
         {
-            if (\function_exists('\lz4_compress'))
+            if (function_exists('\lz4_compress'))
             {
-                $version = \phpversion('lz4');
-                if (\version_compare($version, '0.3.0') < 0)
+                $version = phpversion('lz4');
+                if (version_compare($version, '0.3.0') < 0)
                 {
                     $this->_compressData = $this->_compressData > 1;
                 }
                 $this->_compressionLib = 'l4z';
             }
-            else if (\function_exists('\zstd_compress'))
+            else if (function_exists('\zstd_compress'))
             {
                 $version = phpversion('zstd');
-                if (\version_compare($version, '0.4.13') < 0)
+                if (version_compare($version, '0.4.13') < 0)
                 {
                     $this->_compressData = $this->_compressData > 1;
                 }
                 $this->_compressionLib = 'zstd';
             }
-            else if (\function_exists('\lzf_compress'))
+            else if (function_exists('\lzf_compress'))
             {
                 $this->_compressionLib = 'lzf';
             }
@@ -348,7 +371,7 @@ trait Cm_Cache_Backend_Redis
                 $this->_compressionLib = 'gzip';
             }
         }
-        $this->_compressPrefix = \substr($this->_compressionLib, 0, 2) . Globals::COMPRESS_PREFIX;
+        $this->_compressPrefix = substr($this->_compressionLib, 0, 2) . Globals::COMPRESS_PREFIX;
 
         $this->_useLua = (bool)($options['use_lua'] ?? $this->_useLua);
         $this->_retryReadsOnPrimary = (bool)($options['retry_reads_on_primary'] ?? $this->_retryReadsOnPrimary);
@@ -359,18 +382,18 @@ trait Cm_Cache_Backend_Redis
 
     protected function throwException($msg)
     {
-        throw new \CredisException($msg);
+        throw new CredisException($msg);
     }
 
     /**
      * Apply common configuration to client instances.
      *
-     * @param \Credis_Client $client
-     * @param bool           $forceSelect
-     * @param null           $clientOptions
-     * @throws \CredisException
+     * @param Credis_Client $client
+     * @param bool          $forceSelect
+     * @param null          $clientOptions
+     * @throws CredisException
      */
-    protected function _applyClientOptions(\Credis_Client $client, $forceSelect = false, $clientOptions = null)
+    protected function _applyClientOptions(Credis_Client $client, $forceSelect = false, $clientOptions = null)
     {
         if ($clientOptions === null)
         {
@@ -452,7 +475,7 @@ trait Cm_Cache_Backend_Redis
     protected function _matchesAutoExpiringPattern($id)
     {
         $matches = [];
-        \preg_match($this->_autoExpirePattern, $id, $matches);
+        preg_match($this->_autoExpirePattern, $id, $matches);
 
         return !empty($matches);
     }
@@ -462,13 +485,13 @@ trait Cm_Cache_Backend_Redis
      * @param string $data
      * @param int    $level
      * @return string
-     * @throws \CredisException
+     * @throws CredisException
      * @noinspection PhpComposerExtensionStubsInspection
      * @noinspection RedundantSuppression
      */
     protected function _encodeData($data, $level)
     {
-        if ($this->_compressionLib && $level !== 0 && \strlen($data) >= $this->_compressThreshold)
+        if ($this->_compressionLib && $level !== 0 && strlen($data) >= $this->_compressThreshold)
         {
             switch ($this->_compressionLib)
             {
@@ -488,11 +511,11 @@ trait Cm_Cache_Backend_Redis
                     $data = gzcompress($data, $level);
                     break;
                 default:
-                    throw new \CredisException("Unrecognized 'compression_lib'.");
+                    throw new CredisException("Unrecognized 'compression_lib'.");
             }
             if (!$data)
             {
-                throw new \CredisException('Could not compress cache data.');
+                throw new CredisException('Could not compress cache data.');
             }
 
             return $this->_compressPrefix . $data;
@@ -511,25 +534,25 @@ trait Cm_Cache_Backend_Redis
     {
         try
         {
-            if (\substr($data, 2, 3) === Globals::COMPRESS_PREFIX)
+            if (substr($data, 2, 3) === Globals::COMPRESS_PREFIX)
             {
-                switch (\substr($data, 0, 2))
+                switch (substr($data, 0, 2))
                 {
                     case 'sn':
-                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \snappy_uncompress(\substr($data, 5));
+                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \snappy_uncompress(substr($data, 5));
                         break;
                     case 'lz':
-                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \lzf_decompress(\substr($data, 5));
+                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \lzf_decompress(substr($data, 5));
                         break;
                     case 'l4':
-                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \lz4_uncompress(\substr($data, 5));
+                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \lz4_uncompress(substr($data, 5));
                         break;
                     case 'zs':
-                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \zstd_uncompress(\substr($data, 5));
+                        /** @noinspection PhpUndefinedFunctionInspection */ $data = \zstd_uncompress(substr($data, 5));
                         break;
                     case 'gz':
                     case 'zc':
-                        $data = \gzuncompress(\substr($data, 5));
+                        $data = gzuncompress(substr($data, 5));
                         break;
                 }
             }

@@ -5,6 +5,7 @@ namespace SV\RedisCache;
 use XF\App;
 use XF\Cache\RedisCache;
 use XF\Container;
+use function strcasecmp;
 
 abstract class Listener
 {
@@ -48,7 +49,7 @@ abstract class Listener
     {
         $hasChanges = false;
 
-        if (\strcasecmp($config['provider'] ?? '', 'redis') === 0)
+        if (strcasecmp($config['provider'] ?? '', 'redis') === 0)
         {
             $config['provider'] = 'SV\RedisCache\Redis';
             $hasChanges = true;

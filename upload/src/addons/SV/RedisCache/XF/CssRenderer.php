@@ -10,6 +10,15 @@ use SV\RedisCache\RawResponseText;
 use SV\RedisCache\Redis;
 use XF\App;
 use XF\Template\Templater;
+use function array_values;
+use function count;
+use function gzdecode;
+use function gzencode;
+use function is_array;
+use function strlen;
+use function strpos;
+use function substr;
+use function trim;
 
 class CssRenderer extends XFCP_CssRenderer
 {
@@ -82,7 +91,7 @@ class CssRenderer extends XFCP_CssRenderer
     {
         $templates = parent::filterValidTemplates($templates);
 
-        if (\count($templates))
+        if (count($templates) !== 0)
         {
             $date = $this->getInputModifiedDate();
             if ($date !== null)
@@ -109,7 +118,7 @@ class CssRenderer extends XFCP_CssRenderer
         $cache = $this->cache;
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $data = $credis->hGetAll($key);
-        if (!\is_array($data))
+        if (!is_array($data))
         {
             return false;
         }
@@ -132,12 +141,12 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         // client doesn't support compression, so decompress before sending it
-        $css = \strlen($output) > 0 ? @\gzdecode($output) : '';
+        $css = strlen($output) !== 0 ? @gzdecode($output) : '';
 
-        if (!$this->includeCharsetInOutput && \strpos($css, static::$charsetBits) === 0)
+        if (!$this->includeCharsetInOutput && strpos($css, static::$charsetBits) === 0)
         {
             // strip out the css header bits
-            $css = \substr($css, \strlen(static::$charsetBits));
+            $css = substr($css, strlen(static::$charsetBits));
         }
 
         return $css;
@@ -157,18 +166,18 @@ class CssRenderer extends XFCP_CssRenderer
         /** @var Redis $cache */
         $cache = $this->cache;
 
-        $output = \trim($output);
-        $len = \strlen($output);
+        $output = trim($output);
+        $len = strlen($output);
         // cache a negative lookup; but do not prefix $charsetBits
         if ($len !== 0)
         {
             $output = static::$charsetBits . $output;
-            $len = \strlen($output);
+            $len = strlen($output);
         }
 
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $credis->hMSet($key, [
-            'o' => $len > 0 ? \gzencode($output, 9) : '',
+            'o' => $len > 0 ? gzencode($output, 9) : '',
             'l' => $len,
         ]);
         $credis->expire($key, $len === 0
@@ -268,7 +277,7 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         $results = [];
-        $rawResults = $cache->fetchMultiple(\array_values($keys));
+        $rawResults = $cache->fetchMultiple(array_values($keys));
         foreach ($templates as $i => $template)
         {
             $key = $keys[$i];
@@ -300,7 +309,7 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         $key = $this->getComponentCacheKey('xfCssTemplate', $title);
-        $cache->save($key, $output, \strlen($output) === 0
+        $cache->save($key, $output, strlen($output) === 0
             ? static::EMPTY_TEMPLATE_SHORT_CACHE_TIME
             : static::TEMPLATE_SHORT_CACHE_TIME);
     }

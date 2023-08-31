@@ -2,7 +2,12 @@
 
 namespace SV\RedisCache\Finder;
 
+use function array_filter;
 use function is_object;
+use function ksort;
+use function md5;
+use function serialize;
+use function sort;
 
 trait CachableFinderTotalTrait
 {
@@ -32,7 +37,7 @@ trait CachableFinderTotalTrait
         }
 
         $conditions = $this->conditions;
-        \sort($conditions);
+        sort($conditions);
         $joins = $this->joins;
         foreach ($joins as $key => &$join)
         {
@@ -42,12 +47,12 @@ trait CachableFinderTotalTrait
                 continue;
             }
             // exclude objects (ie $join['structure']) as it can contain arbitrary unserializable data
-            $join = \array_filter($join, function ($v) {
+            $join = array_filter($join, function ($v) {
                 return $v && !is_object($v);
             });
         }
-        \ksort($joins);
-        $key = $prefix . \md5(\serialize($conditions) . \serialize($joins) . \serialize($this->order));
+        ksort($joins);
+        $key = $prefix . md5(serialize($conditions) . serialize($joins) . serialize($this->order));
 
         /** @var int|bool $total */
         $total = $cache->fetch($key);

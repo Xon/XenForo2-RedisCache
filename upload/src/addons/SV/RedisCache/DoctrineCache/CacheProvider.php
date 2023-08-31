@@ -7,6 +7,11 @@
 
 namespace SV\RedisCache\DoctrineCache;
 
+use function array_combine;
+use function array_key_exists;
+use function array_map;
+use function sprintf;
+
 /**
  * Workaround for Doctrine namespace mangling making working with Redis harder ([ and ] are glob characters, require escaping on the commandline, and are just anoying to deal with.
  * The versioning isn't required, as this is used to implement "deleteAll" on cache providers which do not have a "deleteAll" command. Which XF2 doesn't use
@@ -53,8 +58,8 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
             return [];
         }
 
-        // note: the \array_combine() is in place to keep an association between our $keys and the $namespacedKeys
-        $namespacedKeys = \array_combine($keys, \array_map([$this, 'getNamespacedId'], $keys));
+        // note: the array_combine() is in place to keep an association between our $keys and the $namespacedKeys
+        $namespacedKeys = array_combine($keys, array_map([$this, 'getNamespacedId'], $keys));
         $items = $this->doFetchMultiple($namespacedKeys);
         $foundItems = [];
 
@@ -62,7 +67,7 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         // this filters and combines keys in one pass
         foreach ($namespacedKeys as $requestedKey => $namespacedKey)
         {
-            if (isset($items[$namespacedKey]) || \array_key_exists($namespacedKey, $items))
+            if (array_key_exists($namespacedKey, $items))
             {
                 $foundItems[$requestedKey] = $items[$namespacedKey];
             }
@@ -113,6 +118,6 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
     {
         // remove namespace versioning
 
-        return \sprintf('%s_%s', $this->namespace, $id);
+        return sprintf('%s_%s', $this->namespace, $id);
     }
 }

@@ -6,6 +6,10 @@
 namespace SV\RedisCache\XF;
 
 use XF\Http\ResponseStream;
+use function is_numeric;
+use function stripos;
+use function strlen;
+use function strpos;
 
 class CssWriter extends XFCP_CssWriter
 {
@@ -30,7 +34,7 @@ class CssWriter extends XFCP_CssWriter
                 's' => 'str',
                 'l' => 'str',
             ]);
-            if (!$styleId && !\is_numeric($tmp['s']) || !$languageId && !\is_numeric($tmp['l']))
+            if (!$styleId && !is_numeric($tmp['s']) || !$languageId && !is_numeric($tmp['l']))
             {
                 $response = $this->getResponse('');
                 $response->httpCode(404);
@@ -45,7 +49,7 @@ class CssWriter extends XFCP_CssWriter
         $renderer->setInputModifiedDate($this->app->request()->filter('d','uint'));
 
         $showDebugOutput = (\XF::$debugMode && $request->get('_debug'));
-        if (!$showDebugOutput && \strpos($request->getServer('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== false)
+        if (!$showDebugOutput && strpos($request->getServer('HTTP_ACCEPT_ENCODING', ''), 'gzip') !== false)
         {
             $renderer->setForceRawCache(true);
         }
@@ -55,11 +59,11 @@ class CssWriter extends XFCP_CssWriter
 
     public function finalizeOutput($output)
     {
-        if ($output instanceof ResponseStream || \strlen($output) === 0)
+        if ($output instanceof ResponseStream || strlen($output) === 0)
         {
             return $output;
         }
-        if (\stripos($output, CssRenderer::$charsetBits) === 0)
+        if (stripos($output, CssRenderer::$charsetBits) === 0)
         {
             return $output;
         }
@@ -69,7 +73,7 @@ class CssWriter extends XFCP_CssWriter
 
     public function getResponse($output)
     {
-        $force404Output = \strlen($output) === 0;
+        $force404Output = strlen($output) === 0;
         if ($force404Output)
         {
             $this->renderer->setAllowCached(false);
