@@ -2,6 +2,7 @@
 
 namespace SV\RedisCache\XenAddons\RMS\ControllerPlugin;
 
+use XenAddons\RMS\Finder\Item as ItemFinder;
 use function is_callable;
 
 /**
@@ -9,7 +10,7 @@ use function is_callable;
  */
 class ItemList extends XFCP_ItemList
 {
-    public function applyItemFilters(\XenAddons\RMS\Finder\Item $itemFinder, array $filters)
+    public function applyItemFilters(ItemFinder $itemFinder, array $filters)
     {
         if ((\XF::options()->svRmsItemCountCaching ?? false) && is_callable([$itemFinder, 'cacheTotals']))
         {

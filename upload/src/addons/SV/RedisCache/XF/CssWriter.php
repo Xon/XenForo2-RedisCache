@@ -80,7 +80,7 @@ class CssWriter extends XFCP_CssWriter
             $response->compressIfAble(false);
             try
             {
-                @ini_set("zlib.output_compression", "Off");
+                @ini_set('zlib.output_compression', 'Off');
             }
             catch (\Throwable $e) {}
             $response->header('content-encoding', 'gzip');

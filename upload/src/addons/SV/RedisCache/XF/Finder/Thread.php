@@ -6,6 +6,7 @@
 namespace SV\RedisCache\XF\Finder;
 
 use SV\RedisCache\Finder\CachableFinderTotalTrait;
+use XF\Entity\Forum as ForumEntity;
 
 class Thread extends XFCP_Thread
 {
@@ -18,7 +19,7 @@ class Thread extends XFCP_Thread
     {
         if ($this->svCacheTotals)
         {
-            /** @var \XF\Entity\Forum $forum */
+            /** @var ForumEntity $forum */
             $forum = $this->svCacheExtra ?? null;
             $nodeId = $forum->node_id ?? 0;
 

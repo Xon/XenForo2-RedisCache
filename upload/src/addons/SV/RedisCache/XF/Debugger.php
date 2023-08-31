@@ -5,6 +5,8 @@
 
 namespace SV\RedisCache\XF;
 
+use SV\RedisCache\Redis;
+
 /**
  * Extends \XF\Debugger
  */
@@ -29,21 +31,21 @@ class Debugger extends XFCP_Debugger
         foreach ($contexts as $contextLabel => $config)
         {
             $cache = \XF::app()->cache($contextLabel, false);
-            if ($cache instanceof \SV\RedisCache\Redis)
+            if ($cache instanceof Redis)
             {
                 $statsHtml = "<table>\n";
 
                 foreach ($cache->getRedisStats() as $statName => $statValue)
                 {
-                    if (\preg_match("#^.*\.time$#", $statName))
+                    if (\preg_match('#^.*\.time$#', $statName))
                     {
                         $time += $statValue;
                     }
-                    else if (!\preg_match("#^bytes|^time_#", $statName))
+                    else if (!\preg_match('#^bytes|^time_#', $statName))
                     {
                         $count += $statValue;
                     }
-                    $statsHtml .= "<tr><td>" . \htmlspecialchars($statName) . "</td><td>" . \htmlspecialchars($statValue) . "</td></tr>\n";
+                    $statsHtml .= '<tr><td>' . \htmlspecialchars($statName) . '</td><td>' . \htmlspecialchars($statValue) . "</td></tr>\n";
                 }
 
                 $statsHtml .= "</table>\n";

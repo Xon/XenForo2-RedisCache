@@ -3,13 +3,15 @@
 namespace SV\RedisCache\XF\Service\Thread;
 
 use SV\RedisCache\Repository\Redis;
+use XF\Entity\Forum as ForumEntity;
 
 /**
  * Extends \XF\Service\Thread\Mover
  */
 class Mover extends XFCP_Mover
 {
-    public function move(\XF\Entity\Forum $forum)
+    /** @noinspection PhpMissingReturnTypeInspection */
+    public function move(ForumEntity $forum)
     {
         $ret = parent::move($forum);
         if ($ret)

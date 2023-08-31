@@ -2,9 +2,11 @@
 
 namespace SV\RedisCache;
 
-class ContainerExtractor extends \XF\Container
+use XF\Container;
+
+class ContainerExtractor extends Container
 {
-    public static function getFactoryObjects(\XF\Container $container): array
+    public static function getFactoryObjects(Container $container): array
     {
         return $container->factoryObjects;
     }

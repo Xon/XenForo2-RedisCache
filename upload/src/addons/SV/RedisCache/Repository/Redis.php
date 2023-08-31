@@ -13,11 +13,9 @@ use function microtime;
 
 class Redis extends Repository
 {
-    /**
-     * @return Redis|Repository
-     */
-    public static function instance()
+    public static function instance(): self
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return \XF::repository('SV\RedisCache:Redis');
     }
 
@@ -27,6 +25,7 @@ class Redis extends Repository
      * @param View        $view
      * @param string|null $context
      * @param int|null    $replicaId
+     * @throws \CredisException
      */
     public function insertRedisInfoParams(View $view, string $context = null, int $replicaId = null)
     {
@@ -222,7 +221,7 @@ class Redis extends Repository
     public function purgeCacheByPattern(string $pattern, &$cursor, float $maxRunTime, int $batch = 1000): int
     {
         $done = 0;
-        $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(\Credis_Client $credis, array $keys) use (&$done) {
+        $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(Credis_Client $credis, array $keys) use (&$done) {
             $credis->pipeline();
             /** @var array<string> $keys */
             foreach ($keys as $key)
@@ -238,7 +237,7 @@ class Redis extends Repository
     public function expireCacheByPattern(int $expiryInSeconds, string $pattern, &$cursor, float $maxRunTime, int $batch = 1000): int
     {
         $done = 0;
-        $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(\Credis_Client $credis, array $keys) use (&$done, $expiryInSeconds) {
+        $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(Credis_Client $credis, array $keys) use (&$done, $expiryInSeconds) {
             $credis->pipeline();
             /** @var array<string> $keys */
             foreach ($keys as $key)

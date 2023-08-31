@@ -12,7 +12,7 @@ class RawResponseText extends ResponseStream
     {
         if (!\is_string($resource))
         {
-            throw new \InvalidArgumentException("Must pass valid string in");
+            throw new \InvalidArgumentException('Must pass valid string in');
         }
         $this->resource = null;
         $this->contents = $resource;

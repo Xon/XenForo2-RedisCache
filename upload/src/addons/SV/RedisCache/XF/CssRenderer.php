@@ -5,6 +5,7 @@
 
 namespace SV\RedisCache\XF;
 
+use Doctrine\Common\Cache\CacheProvider;
 use SV\RedisCache\RawResponseText;
 use SV\RedisCache\Redis;
 use XF\App;
@@ -13,15 +14,15 @@ use XF\Template\Templater;
 class CssRenderer extends XFCP_CssRenderer
 {
     /** @var int */
-    const LESS_SHORT_CACHE_TIME     = 5 * 60;
+    public const LESS_SHORT_CACHE_TIME = 5 * 60;
     /** @var int */
-    const EMPTY_TEMPLATE_SHORT_CACHE_TIME = 1;
+    public const EMPTY_TEMPLATE_SHORT_CACHE_TIME = 1;
     /** @var int */
-    const TEMPLATE_SHORT_CACHE_TIME = 5 * 60;
+    public const TEMPLATE_SHORT_CACHE_TIME = 5 * 60;
     /** @var int */
-    const EMPTY_OUTPUT_CACHE_TIME = 1;
+    public const EMPTY_OUTPUT_CACHE_TIME = 1;
     /** @var int */
-    const OUTPUT_CACHE_TIME = 60 * 60;
+    public const OUTPUT_CACHE_TIME = 60 * 60;
     /** @var bool */
     protected $echoUncompressedData = false;
     /** @var bool */
@@ -29,7 +30,7 @@ class CssRenderer extends XFCP_CssRenderer
     /** @var int|null */
     protected $inputModifiedDate = null;
 
-    public function __construct(App $app, Templater $templater, \Doctrine\Common\Cache\CacheProvider $cache = null)
+    public function __construct(App $app, Templater $templater, CacheProvider $cache = null)
     {
         if ($cache === null)
         {

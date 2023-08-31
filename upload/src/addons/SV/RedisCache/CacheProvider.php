@@ -1,5 +1,6 @@
 <?php
 /**
+ * @noinspection PhpMissingParentCallCommonInspection
  * @noinspection PhpMissingParamTypeInspection
  * @noinspection PhpMissingReturnTypeInspection
  */
@@ -40,17 +41,11 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         return $this->namespace;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fetch($id)
     {
         return $this->doFetch($this->getNamespacedId($id));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fetchMultiple(array $keys)
     {
         if (empty($keys))
@@ -76,17 +71,11 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         return $foundItems;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function contains($id)
     {
         return $this->doContains($this->getNamespacedId($id));
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function save($id, $data, $lifeTime = 0)
     {
         return $this->doSave($this->getNamespacedId($id), $data, $lifeTime);
@@ -103,17 +92,11 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         return $this->doSaveMultiple($namespacedKeysAndValues, $lifetime);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function delete($id)
     {
         return $this->doDelete($this->getNamespacedId($id));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function deleteAll()
     {
         // remove namespace versioning, and just use flush for delete

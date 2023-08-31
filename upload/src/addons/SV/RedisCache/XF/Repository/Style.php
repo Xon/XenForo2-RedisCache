@@ -22,8 +22,8 @@ class Style extends XFCP_Style
 
     public function styleCachePurge()
     {
-        $this->_svClearCache("xfCssCache_");
-        $this->_svClearCache("xfSvgCache_");
+        $this->_svClearCache('xfCssCache_');
+        $this->_svClearCache('xfSvgCache_');
     }
 
     /**

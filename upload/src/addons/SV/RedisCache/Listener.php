@@ -2,9 +2,13 @@
 
 namespace SV\RedisCache;
 
-class Listener
+use XF\App;
+use XF\Cache\RedisCache;
+use XF\Container;
+
+abstract class Listener
 {
-    public static function appSetup(\XF\App $app)
+    public static function appSetup(App $app)
     {
         $config = $app->config() ?? [];
         if (!($config['cache']['enabled'] ?? false))
@@ -13,7 +17,7 @@ class Listener
         }
         $globalNamespace = $config['cache']['namespace'] ?? '';
 
-        /** @var \XF\Container $container */
+        /** @var Container $container */
         $container = $app->container();
         $factoryObjects = ContainerExtractor::getFactoryObjects($container);
 
@@ -51,7 +55,7 @@ class Listener
         }
 
         $obj = $factoryObjects['cache'][$context] ?? null;
-        if ($obj instanceof \XF\Cache\RedisCache)
+        if ($obj instanceof RedisCache)
         {
             $cacheObj = new Redis([
                 'redis'         => $obj->getRedis(),

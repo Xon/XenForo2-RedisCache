@@ -69,7 +69,6 @@ class Redis extends Cm_Cache_Backend_Redis
 
     /**
      * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
-     * @noinspection PhpMethodParametersCountMismatchInspection
      */
     protected function redisQueryForStatDebugPhp73($stat, \Closure $callback)
     {
@@ -115,7 +114,6 @@ class Redis extends Cm_Cache_Backend_Redis
 
     /**
      * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
-     * @noinspection PhpMethodParametersCountMismatchInspection
      */
     protected function timerForStatDebugPhp73($stat, \Closure $callback)
     {
@@ -166,7 +164,7 @@ class Redis extends Cm_Cache_Backend_Redis
 
         // normalize old options to newer ones
         $options['sentinel_primary'] = $options['sentinel_primary'] ?? $options['sentinel_master'] ?? $options['sentinel_master_set'] ?? $options['sentinel_primary_set'] ?? null;
-        unset($options['sentinel_master'], $options['sentinel_master_set'], $options['sentinel_master_set']);
+        unset($options['sentinel_master'], $options['sentinel_master_set'], $options['sentinel_primary_set']);
         $options['sentinel_primary_verify'] = $options['sentinel_primary_verify'] ?? $options['sentinel_master_verify'] ?? null;
         unset($options['sentinel_master_verify']);
         $options['primary_write_only'] = $options['primary_write_only'] ?? $options['master_write_only'] ?? null;
@@ -217,7 +215,7 @@ class Redis extends Cm_Cache_Backend_Redis
             // I can't believe there isn't a better way
             try
             {
-                $output = \shell_exec("hostname --all-ip-addresses");
+                $output = \shell_exec('hostname --all-ip-addresses');
             }
             catch (\Exception $e)
             {
@@ -299,7 +297,7 @@ class Redis extends Cm_Cache_Backend_Redis
         {
             try
             {
-                $output = \shell_exec("hostname --all-ip-addresses");
+                $output = \shell_exec('hostname --all-ip-addresses');
             }
             catch (\Exception $e)
             {
@@ -412,9 +410,6 @@ class Redis extends Cm_Cache_Backend_Redis
         return $this->_useLua;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doFetch($id)
     {
         $redisQueryForStat = $this->redisQueryForStat;
@@ -454,9 +449,7 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** @noinspection PhpMissingParentCallCommonInspection */
     protected function doFetchMultiple(array $keys)
     {
         $redisQueryForStat = $this->redisQueryForStat;
@@ -464,10 +457,10 @@ class Redis extends Cm_Cache_Backend_Redis
         return $redisQueryForStat('gets', function () use ($keys) {
             $redis = $this->_replica ?? $this->_redis;
 
-            $fetchedItems = $redis->mget($keys);
+            $fetchedItems = $redis->mGet($keys);
             if (!is_array($fetchedItems))
             {
-                throw new \CredisException('Redis::mget returned an unexpected valid, the redis server is likely in a non-operational state');
+                throw new \CredisException('Redis::mGet returned an unexpected valid, the redis server is likely in a non-operational state');
             }
 
             $autoExpire = $this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad;
@@ -498,9 +491,6 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doContains($id)
     {
         $redisQueryForStat = $this->redisQueryForStat;
@@ -511,6 +501,7 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
+    /** @noinspection PhpMissingParentCallCommonInspection */
     protected function _encodeData($data, $level)
     {
         $timerForStat = $this->timerForStat;
@@ -526,6 +517,7 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
+    /** @noinspection PhpMissingParentCallCommonInspection */
     protected function _decodeData($data)
     {
         $timerForStat = $this->timerForStat;
@@ -543,6 +535,7 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
+    /** @noinspection PhpMissingParentCallCommonInspection */
     protected function doSaveMultiple(array $keysAndValues, $lifetime = 0)
     {
         $redisQueryForStat = $this->redisQueryForStat;
@@ -567,7 +560,7 @@ class Redis extends Cm_Cache_Backend_Redis
                     $perKeyLifeTime = \min($perKeyLifeTime, self::MAX_LIFETIME);
                     $this->_redis->expire($key, $perKeyLifeTime);
                 }
-                $ret = $this->_redis->exec();
+                $this->_redis->exec();
             }
             else
             {
@@ -578,9 +571,6 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doSave($id, $data, $lifeTime = 0)
     {
         $redisQueryForStat = $this->redisQueryForStat;
@@ -606,9 +596,6 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doDelete($id)
     {
         $redisQueryForStat = $this->redisQueryForStat;
@@ -618,16 +605,13 @@ class Redis extends Cm_Cache_Backend_Redis
         });
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doFlush()
     {
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('flushes', function () {
             /** @var string|bool $response */
-            $response = $this->_redis->flushdb();
+            $response = $this->_redis->flushDb();
 
             return $response === true || $response === 'OK';
         });
@@ -638,9 +622,6 @@ class Redis extends Cm_Cache_Backend_Redis
         return $this->stats;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function doGetStats()
     {
         $redisQueryForStat = $this->redisQueryForStat;

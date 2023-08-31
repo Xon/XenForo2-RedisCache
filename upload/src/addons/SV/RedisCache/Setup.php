@@ -1,4 +1,7 @@
 <?php
+/**
+ * @noinspection PhpMissingParentCallCommonInspection
+ */
 
 namespace SV\RedisCache;
 
@@ -16,12 +19,12 @@ class Setup extends AbstractSetup
     use StepRunnerUpgradeTrait;
     use StepRunnerUninstallTrait;
 
-    public function postInstall(array &$stateChanges)
+    public function postInstall(array &$stateChanges): void
     {
         $this->db()->emptyTable('xf_css_cache');
     }
 
-    public function postUpgrade($previousVersion, array &$stateChanges)
+    public function postUpgrade($previousVersion, array &$stateChanges): void
     {
         $this->db()->emptyTable('xf_css_cache');
     }

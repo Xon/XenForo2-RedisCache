@@ -9,6 +9,7 @@ use SV\RedisCache\Repository\Redis;
  */
 class Deleter extends XFCP_Deleter
 {
+    /** @noinspection PhpMissingReturnTypeInspection */
     public function delete($type, $reason = '')
     {
         $ret = parent::delete($type, $reason);

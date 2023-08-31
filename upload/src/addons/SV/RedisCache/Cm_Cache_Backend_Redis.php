@@ -37,7 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace SV\RedisCache;
 
-
 use function is_callable;
 use function min;
 
@@ -50,12 +49,12 @@ use function min;
  */
 abstract class Cm_Cache_Backend_Redis extends CacheProvider
 {
-    const PREFIX_KEY = '';
+    public const PREFIX_KEY = '';
 
-    const MAX_LIFETIME            = 2592000; /* Redis backend limit */
-    const COMPRESS_PREFIX         = ":\x1f\x8b";
-    const DEFAULT_CONNECT_TIMEOUT = 2.5;
-    const DEFAULT_CONNECT_RETRIES = 1;
+    public const MAX_LIFETIME = 2592000; /* Redis backend limit */
+    public const COMPRESS_PREFIX         = ":\x1f\x8b";
+    public const DEFAULT_CONNECT_TIMEOUT = 2.5;
+    public const DEFAULT_CONNECT_RETRIES = 1;
 
     /** @var \Credis_Client */
     protected $_redis;
@@ -78,13 +77,13 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     /** @var bool */
     protected $_useLua = true;
 
-    /** @var integer */
+    /** @var int */
     protected $_autoExpireLifetime = 0;
 
     /** @var string */
     protected $_autoExpirePattern = '/REQEST/';
 
-    /** @var boolean */
+    /** @var bool */
     protected $_autoExpireRefreshOnLoad = false;
 
     /**
@@ -100,7 +99,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
     /**
      * If 'retry_reads_on_primary' is truthy then reads will be retried against primary when replica returns "(nil)" value
      *
-     * @var boolean
+     * @var bool
      */
     protected $_retryReadsOnPrimary = false;
 
@@ -325,7 +324,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         }
 
         $this->_compressData = (int)($options['compress_data'] ?? $this->_compressData);
-        $this->_lifetimelimit = (int)\min($options['lifetimelimit'] ?? $this->_lifetimelimit , self::MAX_LIFETIME);
+        $this->_lifetimelimit = (int)min($options['lifetimelimit'] ?? $this->_lifetimelimit , self::MAX_LIFETIME);
         $this->_compressThreshold = (int)min(1, (int)($options['compress_threshold'] ?? $this->_compressThreshold));
 
         $this->_compressionLib = (string)($options['compression_lib'] ?? '');
@@ -333,8 +332,8 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         {
             if (\function_exists('lz4_compress'))
             {
-                $version = \phpversion("lz4");
-                if (\version_compare($version, "0.3.0") < 0)
+                $version = \phpversion('lz4');
+                if (\version_compare($version, '0.3.0') < 0)
                 {
                     $this->_compressData = $this->_compressData > 1;
                 }
@@ -342,8 +341,8 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             }
             else if (\function_exists('zstd_compress'))
             {
-                $version = phpversion("zstd");
-                if (\version_compare($version, "0.4.13") < 0)
+                $version = phpversion('zstd');
+                if (\version_compare($version, '0.4.13') < 0)
                 {
                     $this->_compressData = $this->_compressData > 1;
                 }
@@ -378,6 +377,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
      * @param \Credis_Client $client
      * @param bool           $forceSelect
      * @param null           $clientOptions
+     * @throws \CredisException
      */
     protected function _applyClientOptions(\Credis_Client $client, $forceSelect = false, $clientOptions = null)
     {
@@ -420,7 +420,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
         $matches = $this->_matchesAutoExpiringPattern($id);
         if ($matches)
         {
-            $this->_redis->expire(self::PREFIX_KEY . $id, \min($this->_autoExpireLifetime, $this->_lifetimelimit));
+            $this->_redis->expire(self::PREFIX_KEY . $id, min($this->_autoExpireLifetime, $this->_lifetimelimit));
         }
     }
 
@@ -499,7 +499,7 @@ abstract class Cm_Cache_Backend_Redis extends CacheProvider
             }
             if (!$data)
             {
-                throw new \CredisException("Could not compress cache data.");
+                throw new \CredisException('Could not compress cache data.');
             }
 
             return $this->_compressPrefix . $data;
