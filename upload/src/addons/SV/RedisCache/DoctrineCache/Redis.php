@@ -38,16 +38,15 @@ class Redis extends CacheProvider
     {
         $igbinaryPresent = is_callable('igbinary_serialize') && is_callable('igbinary_unserialize');
         $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || strtolower($options['serializer']) === 'igbinary');
-
-        $this->setupTimers(\XF::$debugMode);
-        $this->replicaOptions($options);
-        $this->init($options);
-
         $redisConnector = $options['redis'] ?? null;
         if ($redisConnector instanceof \Redis)
         {
             $this->_redis->setRedisConnector($redisConnector, true);
         }
+        // setup various traits
+        $this->setupTimers(\XF::$debugMode);
+        $this->replicaOptions($options);
+        $this->init($options);
     }
 
     /**
