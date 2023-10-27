@@ -219,7 +219,7 @@ class Redis extends Repository
         }
     }
 
-    public function purgeCacheByPattern(string $pattern, &$cursor, float $maxRunTime, int $batch = 1000): int
+    public function purgeCacheByPattern(string $pattern, &$cursor, float $maxRunTime, int $batch = 1000, $cache = null): int
     {
         $done = 0;
         $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(Credis_Client $credis, array $keys) use (&$done) {
@@ -231,11 +231,11 @@ class Redis extends Repository
                 $credis->del($key);
             }
             $credis->exec();
-        }, $batch);
+        }, $batch, $cache);
         return $done;
     }
 
-    public function expireCacheByPattern(int $expiryInSeconds, string $pattern, &$cursor, float $maxRunTime, int $batch = 1000): int
+    public function expireCacheByPattern(int $expiryInSeconds, string $pattern, &$cursor, float $maxRunTime, int $batch = 1000, $cache = null): int
     {
         $done = 0;
         $this->visitCacheByPattern($pattern, $cursor, $maxRunTime, function(Credis_Client $credis, array $keys) use (&$done, $expiryInSeconds) {
@@ -247,7 +247,7 @@ class Redis extends Repository
                 $credis->expire($key, $expiryInSeconds);
             }
             $credis->exec();
-        }, $batch);
+        }, $batch, $cache);
         return $done;
     }
 

@@ -21,6 +21,7 @@ class PurgeRedisCacheByPattern extends AbstractJob
     }
 
     protected $defaultData = [
+        'context' => '',
         'pattern' => null,
         'steps'   => 0,
         'cursor'  => null, // null - start new, 0 - stop, otherwise it is a blob returned from redis
@@ -39,10 +40,11 @@ class PurgeRedisCacheByPattern extends AbstractJob
         }
 
         $startTime = microtime(true);
+        $cache = \XF::app()->cache($this->data['context'] ?? '');
 
         /** @var string|int|null $cursor */
         $cursor = $this->data['cursor'];
-        $steps = Redis::instance()->purgeCacheByPattern($this->data['pattern'], $cursor, $maxRunTime, $this->data['batch']);
+        $steps = Redis::instance()->purgeCacheByPattern($this->data['pattern'], $cursor, $maxRunTime, $this->data['batch'], $cache);
         if (!$cursor)
         {
             return $this->complete();
