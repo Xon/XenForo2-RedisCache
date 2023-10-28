@@ -12,11 +12,12 @@ use function microtime;
 
 class PurgeRedisCacheByPattern extends AbstractJob
 {
-    public static function enqueue(string $key, string $patternPrefix): ?int
+    public static function enqueue(string $key, string $patternPrefix, string $context = ''): ?int
     {
         return \XF::app()->jobManager()->enqueueUnique(
             $key, PurgeRedisCacheByPattern::class, [
             'pattern' => $patternPrefix,
+            'context' => $context,
         ], false);
     }
 
