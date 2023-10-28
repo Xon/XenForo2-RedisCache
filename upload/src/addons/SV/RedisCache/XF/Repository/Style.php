@@ -5,6 +5,7 @@
 
 namespace SV\RedisCache\XF\Repository;
 
+use SV\RedisCache\Job\ExpireRedisCacheByPattern;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 
 /**
@@ -33,7 +34,6 @@ class Style extends XFCP_Style
      */
     protected function _svClearCache(string $pattern, int $styleId = null)
     {
-        $cursor = null;
-        RedisRepo::instance()->expireCacheByPattern(120, $pattern, $cursor, 0);
+        ExpireRedisCacheByPattern::enqueue($pattern, $pattern, 120, 'css');
     }
 }
