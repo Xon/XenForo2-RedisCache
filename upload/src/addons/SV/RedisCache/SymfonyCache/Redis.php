@@ -147,7 +147,7 @@ class Redis implements AdapterInterface
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () use ($keys) {
-            $redis = $this->_replica ?: $this->_redis;
+            $redis = $this->_replica ?? $this->_redis;
 
             $fetchedItems = $redis->mGet($keys);
             if (!is_array($fetchedItems))
