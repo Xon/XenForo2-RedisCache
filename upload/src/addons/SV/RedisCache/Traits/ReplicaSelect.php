@@ -27,7 +27,7 @@ trait ReplicaSelect
         unset($options['sentinel_master_verify']);
         $options['primary_write_only'] = $options['primary_write_only'] ?? $options['master_write_only'] ?? null;
         unset($options['master_write_only']);
-        $options['retry_reads_on_primary'] = $options['retry_reads_on_primary'] ?? $options['retry_reads_on_master'] ?? false;
+        $options['retry_reads_on_primary'] = $options['retry_reads_on_primary'] ?? $options['retry_reads_on_master'] ?? true;
         unset($options['retry_reads_on_master']);
 
         $options['load_from_replica'] = $options['load_from_replica'] ?? $options['load_from_slave'] ?? null;

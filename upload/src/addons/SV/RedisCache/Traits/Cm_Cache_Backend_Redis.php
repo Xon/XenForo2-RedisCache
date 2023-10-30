@@ -117,7 +117,7 @@ trait Cm_Cache_Backend_Redis
      *
      * @var bool
      */
-    protected $_retryReadsOnPrimary = false;
+    protected $_retryReadsOnPrimary = true;
 
     /**
      * @var stdClass

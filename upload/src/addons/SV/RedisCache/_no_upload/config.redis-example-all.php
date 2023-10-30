@@ -20,7 +20,7 @@ $config['cache']['config'] = [
         'compress_threshold' => 20480,
         'compression_lib' => null, // dynamically select first of; snappy,lzf,l4z,gzip IF EMPTY/null
         'serializer' => 'igbinary', // to disable set to 'php'
-        'retry_reads_on_primary' => false,
+        'retry_reads_on_primary' => true,
         // HA support
         'load_from_replica' => null, // config entry similar to $config['cache']['config'], except without HA options
         'load_from_replicas' => null, // config entry similar to $config['cache']['config'], except without HA options
