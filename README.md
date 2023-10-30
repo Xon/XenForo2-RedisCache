@@ -25,12 +25,8 @@ $config['cache']['enabled'] = true;
 $config['cache']['sessions'] = true;
 $config['cache']['provider'] = 'SV\RedisCache\Redis';
 $config['cache']['config'] = [
-        'server' => '127.0.0.1',
-        'port' => 6379,
-        'connect_retries' => 2,
-        'compress_data' => 2,
-        'read_timeout' => 1,
-        'timeout' => 1,
+    'server' => '127.0.0.1',
+    'port' => 6379,
 ];
 ```
 
@@ -57,13 +53,8 @@ Loading Data from a single replica is possible, or alternatively Redis Sentinel 
 ```php
 // Single Replica:
 $config['cache']['config']['load_from_replica'] = [
-        'server' => '127.0.0.1',
-        'port' => 6378,
-        'connect_retries' => 2,
-        'compress_data' => 2,
-        'read_timeout' => 1,
-        'timeout' => 1,
-        'retry_reads_on_primary' => true,
+    'server' => '127.0.0.1',
+    'port' => 6378,
 ];
 ```
 
