@@ -62,6 +62,12 @@ class Redis implements AdapterInterface
         $this->namespace = $namespace;
     }
 
+    public function getNamespacedId(string $id): string
+    {
+        // match Doctrine Cache key format
+        return sprintf('%s_%s', $this->namespace, $id);
+    }
+
     protected function _encodeData($data, $level)
     {
         $timerForStat = $this->timerForStat;
@@ -73,7 +79,7 @@ class Redis implements AdapterInterface
         unset($data);
 
         return $timerForStat('time_compression', function () use ($encodedData, $level) {
-            return  $this->_encodeDataTrait($encodedData, $level);
+            return $this->_encodeDataTrait($encodedData, $level);
         });
     }
 
@@ -92,13 +98,6 @@ class Redis implements AdapterInterface
         return $timerForStat('time_decoding', function () use ($decompressedData) {
             return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
         });
-    }
-
-    public function getNamespacedId(string $id): string
-    {
-        // match Doctrine Cache key format
-
-        return sprintf('%s_%s', $this->namespace, $id);
     }
 
     public function getItem($key)
@@ -143,6 +142,11 @@ class Redis implements AdapterInterface
 
     public function getItems(array $keys = [])
     {
+        if (count($keys) === 0)
+        {
+            return [];
+        }
+
         $keys = array_map([$this, 'getNamespacedId'], $keys);
         $redisQueryForStat = $this->redisQueryForStat;
 
@@ -153,10 +157,6 @@ class Redis implements AdapterInterface
             if (!is_array($fetchedItems))
             {
                 throw new CredisException('Redis::mget returned an unexpected valid, the redis server is likely in a non-operational state');
-            }
-            if (count($fetchedItems) === 0)
-            {
-                return [];
             }
 
             $autoExpire = $this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad;
@@ -189,52 +189,39 @@ class Redis implements AdapterInterface
         });
     }
 
-    public function clear(string $prefix = '')
-    {
-        $redisQueryForStat = $this->redisQueryForStat;
-
-        return $redisQueryForStat('flushes', function () {
-            /** @var string|bool $response */
-            $response = $this->_redis->flushDb();
-
-            return $response === true || $response === 'OK';
-        });
-    }
-
     public function hasItem($key)
     {
         $key = $this->getNamespacedId($key);
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () use ($key) {
-            // Don't use slave for this since `doContains`/`test` is usually used for locking
+            // Don't use replica for this since `doContains`/`test` is usually used for locking
             return $this->_redis->exists($key);
         });
     }
 
-    public function deleteItem($key)
+    protected function saveInternal(string $key, $value, int $expiry)
     {
         $key = $this->getNamespacedId($key);
         $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('deletes', function () use ($key) {
-            return $this->_redis->del($key) >= 0;
-        });
-    }
+        return $redisQueryForStat('sets', function () use ($key, $value, $expiry) {
+            $data = $this->_encodeData($key, $this->_compressData);
+            $lifetime = $this->_getAutoExpiringLifetime($expiry, $key);
+            $lifeTime = min($lifetime, Globals::MAX_LIFETIME);
 
-    public function deleteItems(array $keys)
-    {
-        $redisQueryForStat = $this->redisQueryForStat;
+            $this->stats['bytes_sent'] += strlen($data);
 
-        return $redisQueryForStat('deletes', function () use ($keys) {
-            $this->_redis->pipeline();
-            foreach ($keys as $key)
+            if ($lifeTime > 0)
             {
-                $this->_redis->del($key);
+                $response = $this->_redis->set($key, $data, $lifeTime);
             }
-            $this->_redis->exec();
+            else
+            {
+                $response = $this->_redis->set($key, $data);
+            }
 
-            return true;
+            return $response === true;
         });
     }
 
@@ -289,31 +276,6 @@ class Redis implements AdapterInterface
         return $this->saveInternal($key, $value, (int)$expiry);
     }
 
-    protected function saveInternal(string $key, $value, int $expiry)
-    {
-        $key = $this->getNamespacedId($key);
-        $redisQueryForStat = $this->redisQueryForStat;
-
-        return $redisQueryForStat('sets', function () use ($key, $value, $expiry) {
-            $data = $this->_encodeData($key, $this->_compressData);
-            $lifetime = $this->_getAutoExpiringLifetime($expiry, $key);
-            $lifeTime = min($lifetime, Globals::MAX_LIFETIME);
-
-            $this->stats['bytes_sent'] += strlen($data);
-
-            if ($lifeTime > 0)
-            {
-                $response = $this->_redis->set($key, $data, $lifeTime);
-            }
-            else
-            {
-                $response = $this->_redis->set($key, $data);
-            }
-
-            return $response === true;
-        });
-    }
-
     public function saveDeferred(CacheItemInterface $item)
     {
         // PSR-6's CacheItemPoolInterface::saveDeferred just isn't safe to use
@@ -323,5 +285,45 @@ class Redis implements AdapterInterface
     public function commit(): bool
     {
         return true;
+    }
+
+
+    public function deleteItem($key)
+    {
+        $key = $this->getNamespacedId($key);
+        $redisQueryForStat = $this->redisQueryForStat;
+
+        return $redisQueryForStat('deletes', function () use ($key) {
+            return $this->_redis->del($key) >= 0;
+        });
+    }
+
+    public function deleteItems(array $keys)
+    {
+        $redisQueryForStat = $this->redisQueryForStat;
+
+        return $redisQueryForStat('deletes', function () use ($keys) {
+            $this->_redis->pipeline();
+            foreach ($keys as $key)
+            {
+                $this->_redis->del($key);
+            }
+            $this->_redis->exec();
+
+            return true;
+        });
+    }
+
+    /** @noinspection PhpUnusedParameterInspection */
+    public function clear(string $prefix = '')
+    {
+        $redisQueryForStat = $this->redisQueryForStat;
+
+        return $redisQueryForStat('flushes', function () {
+            /** @var string|bool $response */
+            $response = $this->_redis->flushDb();
+
+            return $response === true || $response === 'OK';
+        });
     }
 }

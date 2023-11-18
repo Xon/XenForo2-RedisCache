@@ -13,6 +13,7 @@ use SV\RedisCache\Traits\CacheTiming;
 use SV\RedisCache\Traits\Cm_Cache_Backend_Redis;
 use SV\RedisCache\Traits\ReplicaSelect;
 use function array_combine;
+use function count;
 use function igbinary_serialize;
 use function igbinary_unserialize;
 use function is_array;
@@ -51,28 +52,38 @@ class Redis extends CacheProvider
         }
     }
 
-    /**
-     * @deprecated
-     */
-    public function getCompressThreshold(): int
+    /** @noinspection PhpMissingParentCallCommonInspection */
+    protected function _encodeData($data, $level)
     {
-        return $this->_compressThreshold;
+        $timerForStat = $this->timerForStat;
+
+        $encodedData = $timerForStat('time_encoding', function () use ($data) {
+            // XF stores binary data as strings which causes issues using json for serialization
+            return $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
+        });
+        unset($data);
+
+        return $timerForStat('time_compression', function () use ($encodedData, $level) {
+            return $this->_encodeDataTrait($encodedData, $level);
+        });
     }
 
-    /**
-     * @deprecated
-     */
-    public function setCompressThreshold(int $value)
+    /** @noinspection PhpMissingParentCallCommonInspection */
+    protected function _decodeData($data)
     {
-        $this->_compressThreshold = $value;
-    }
+        $timerForStat = $this->timerForStat;
 
-    /**
-     * @deprecated
-     */
-    public function DecodeData(string $data): string
-    {
-        return $this->_decodeData($data);
+        $decompressedData = $timerForStat('time_decompression', function () use ($data) {
+            return $this->_decodeDataTrait($data);
+        });
+        unset($data);
+        if ($decompressedData === false)
+        {
+            return false;
+        }
+        return $timerForStat('time_decoding', function () use ($decompressedData) {
+            return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
+        });
     }
 
     protected function doFetch($id)
@@ -117,6 +128,11 @@ class Redis extends CacheProvider
     /** @noinspection PhpMissingParentCallCommonInspection */
     protected function doFetchMultiple(array $keys)
     {
+        if (count($keys) === 0)
+        {
+            return [];
+        }
+
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('gets', function () use ($keys) {
@@ -167,73 +183,12 @@ class Redis extends CacheProvider
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function _encodeData($data, $level)
-    {
-        $timerForStat = $this->timerForStat;
-
-        $encodedData = $timerForStat('time_encoding', function () use ($data) {
-            // XF stores binary data as strings which causes issues using json for serialization
-            return $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
-        });
-        unset($data);
-
-        return $timerForStat('time_compression', function () use ($encodedData, $level) {
-            return $this->_encodeDataTrait($encodedData, $level);
-        });
-    }
-
-    /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function _decodeData($data)
-    {
-        $timerForStat = $this->timerForStat;
-
-        $decompressedData = $timerForStat('time_decompression', function () use ($data) {
-            return $this->_decodeDataTrait($data);
-        });
-        unset($data);
-        if ($decompressedData === false)
-        {
-            return false;
-        }
-        return $timerForStat('time_decoding', function () use ($decompressedData) {
-            return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
-        });
-    }
-
-    /** @noinspection PhpMissingParentCallCommonInspection */
     protected function doSaveMultiple(array $keysAndValues, $lifetime = 0)
     {
-        $redisQueryForStat = $this->redisQueryForStat;
-
-        return $redisQueryForStat('sets', function () use ($keysAndValues, $lifetime) {
-            $lifetime = (int)$lifetime;
-            foreach ($keysAndValues as &$data)
-            {
-                $data = $this->_encodeData($data, $this->_compressData);
-                $this->stats['bytes_sent'] += strlen($data);
-            }
-            unset($data);
-
-            if ($lifetime > 0)
-            {
-                $this->_redis->multi();
-                $this->_redis->mSet($keysAndValues);
-                foreach ($keysAndValues as $key => $null)
-                {
-                    $perKeyLifeTime = $lifetime;
-                    $perKeyLifeTime = $this->_getAutoExpiringLifetime($perKeyLifeTime, $key);
-                    $perKeyLifeTime = min($perKeyLifeTime, Globals::MAX_LIFETIME);
-                    $this->_redis->expire($key, $perKeyLifeTime);
-                }
-                $this->_redis->exec();
-            }
-            else
-            {
-                $this->_redis->mSet($keysAndValues);
-            }
-
-            return true;
-        });
+        foreach ($keysAndValues as $key => $value)
+        {
+            $this->doSave($key, $value, $lifetime);
+        }
     }
 
     protected function doSave($id, $data, $lifeTime = 0)

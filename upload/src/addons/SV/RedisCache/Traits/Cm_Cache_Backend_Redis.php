@@ -140,6 +140,24 @@ trait Cm_Cache_Backend_Redis
         return true;
     }
 
+    public function getCompressThreshold(): int
+    {
+        return $this->_compressThreshold;
+    }
+
+    public function setCompressThreshold(int $value)
+    {
+        $this->_compressThreshold = $value;
+    }
+
+    /**
+     * @deprecated
+     */
+    public function DecodeData(string $data): string
+    {
+        return $this->_decodeData($data);
+    }
+
     /**
      * @param array $options
      * @return stdClass
