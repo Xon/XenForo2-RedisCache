@@ -12,7 +12,9 @@ use XF\Mvc\Reply\View;
 use function explode;
 use function is_callable;
 use function microtime;
+use function phpversion;
 use function preg_match;
+use function str_replace;
 use function strlen;
 
 class Redis extends Repository
@@ -164,9 +166,31 @@ class Redis extends Repository
         $data['db'] = $db;
         $data['db_default'] = $database;
         $data['phpredis'] = phpversion('redis');
+
         $data['HasIOStats'] = isset($data['instantaneous_input_kbps']) && isset($data['instantaneous_output_kbps']);
+        $this->extractRedisVariant($data);
 
         return $data;
+    }
+
+    protected function extractRedisVariant(array &$data)
+    {
+        $executable = $data['executable'] ?? '';
+        if (preg_match('#/keydb-server$#', $executable))
+        {
+            $data['redis_type'] = 'KeyDb';
+            return;
+        }
+
+        if (isset($data['dragonfly_version']))
+        {
+            $data['redis_type'] = 'Dragonfly';
+            $data['redis_version'] = str_replace('df-v', '', $data['dragonfly_version']);
+            $data['HasIOStats'] = false;
+            return;
+        }
+
+        $data['redis_type'] = 'Redis';
     }
 
     public function visitCacheByPattern(string $pattern, &$cursor, float $maxRunTime, callable $func, int $batch = 1000, $cache = null): void

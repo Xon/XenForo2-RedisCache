@@ -1,0 +1,8 @@
+{
+    "exec": [
+        "rm -rf _build/upload/src/addons/{addon_id}/Credis/testenv",
+        "rm -rf _build/upload/src/addons/{addon_id}/Credis/tests",
+        "rm -rf _build/upload/src/addons/{addon_id}/Credis/phpunit*",
+        "rm -rf _build/upload/src/addons/{addon_id}/Credis/.github"
+    ]
+}

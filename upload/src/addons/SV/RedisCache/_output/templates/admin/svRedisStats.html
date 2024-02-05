@@ -13,7 +13,7 @@
 <div class="pairWrapper pairWrapper--spaced">
 	<dl class="pairs pairs--columns">
 		<dt>{{ phrase('redis_version') }}</dt>
-		<dd>{$redis.redis_version}</dd>
+		<dd>{$redis.redis_type} {$redis.redis_version}</dd>
 	</dl>
 	<dl class="pairs pairs--columns">
 		<dt>{{ phrase('redis_phpredis') }}</dt>
@@ -75,10 +75,12 @@
 				<dt>{{ phrase('redis_db_x_keys', {'database': $i} ) }}</dt>
 				<dd>{$db.keys|number}</dd>
 			</dl>
+            <xf:if is="$db.avg_ttl >= 0">
 			<dl class="pairs pairs--columns">
 				<dt>{{ phrase('redis_db_x_avg_ttl', {'database': $i} ) }}</dt>
 				<dd>{$db.avg_ttl|number}</dd>
 			</dl>
+            </xf:if>
 		</xf:foreach>
 
 		<dl class="pairs pairs--columns">
