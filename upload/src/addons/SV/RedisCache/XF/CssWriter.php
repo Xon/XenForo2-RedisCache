@@ -5,6 +5,8 @@
 
 namespace SV\RedisCache\XF;
 
+use XF\App;
+use XF\CssRenderer;
 use XF\Http\ResponseStream;
 use function is_numeric;
 use function is_string;
@@ -13,6 +15,16 @@ use function strpos;
 
 class CssWriter extends XFCP_CssWriter
 {
+    /** @var bool */
+    protected $svForce404OnEmptyCss;
+
+    public function __construct(App $app, CssRenderer $renderer)
+    {
+        parent::__construct($app, $renderer);
+
+        $this->svForce404OnEmptyCss = (bool)\XF::config('svForce404OnEmptyCss');
+    }
+
     public function run(array $templates, $styleId, $languageId, $validation = null)
     {
         $request = \XF::app()->request();
@@ -43,7 +55,7 @@ class CssWriter extends XFCP_CssWriter
             }
         }
 
-        /** @var CssRenderer $renderer */
+        /** @var \SV\RedisCache\XF\CssRenderer $renderer */
         $renderer = $this->renderer;
         $renderer->setInputModifiedDate($this->app->request()->filter('d','uint'));
 
@@ -65,12 +77,17 @@ class CssWriter extends XFCP_CssWriter
         if (is_string($output) && strlen($output) === 0)
         {
             $this->renderer->setAllowCached(false);
+            if ($this->svForce404OnEmptyCss)
+            {
+                return '';
+            }
         }
         return parent::finalizeOutput($output);
     }
 
     public function getResponse($output)
     {
+        $force404Output = $this->svForce404OnEmptyCss && strlen($output) === 0;
         $response = parent::getResponse($output);
         if ($output instanceof ResponseStream)
         {
@@ -82,6 +99,10 @@ class CssWriter extends XFCP_CssWriter
             catch (\Throwable $e) {}
             $response->header('content-encoding', 'gzip');
             $response->header('vary', 'Accept-Encoding');
+        }
+        if ($force404Output)
+        {
+            $response->httpCode(404);
         }
 
         return $response;
