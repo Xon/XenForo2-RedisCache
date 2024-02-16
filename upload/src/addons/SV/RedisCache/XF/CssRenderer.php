@@ -16,8 +16,6 @@ use function gzdecode;
 use function gzencode;
 use function is_array;
 use function strlen;
-use function strpos;
-use function substr;
 use function trim;
 
 class CssRenderer extends XFCP_CssRenderer
@@ -34,8 +32,6 @@ class CssRenderer extends XFCP_CssRenderer
     public const OUTPUT_CACHE_TIME = 60 * 60;
     /** @var bool */
     protected $echoUncompressedData = false;
-    /** @var bool */
-    protected $includeCharsetInOutput = false;
     /** @var int|null */
     protected $inputModifiedDate = null;
 
@@ -51,11 +47,6 @@ class CssRenderer extends XFCP_CssRenderer
     public function setForceRawCache(bool $value)
     {
         $this->echoUncompressedData = $value;
-    }
-
-    public function setIncludeCharsetInOutput(bool $value)
-    {
-        $this->includeCharsetInOutput = $value;
     }
 
     /**
@@ -123,14 +114,14 @@ class CssRenderer extends XFCP_CssRenderer
             return false;
         }
 
-        $output = $data['o'] ?? null; // gzencoded
+        $output = $data['o'] ?? null; // gz encoded data
         $length = $data['l'] ?? null;
         if ($output === null || $length === null)
         {
             return '';
         }
 
-        if (!$length || !$this->includeCharsetInOutput)
+        if (!$length)
         {
             $this->echoUncompressedData = false;
         }
@@ -141,15 +132,7 @@ class CssRenderer extends XFCP_CssRenderer
         }
 
         // client doesn't support compression, so decompress before sending it
-        $css = strlen($output) !== 0 ? @gzdecode($output) : '';
-
-        if (!$this->includeCharsetInOutput && strpos($css, static::$charsetBits) === 0)
-        {
-            // strip out the css header bits
-            $css = substr($css, strlen(static::$charsetBits));
-        }
-
-        return $css;
+        return strlen($output) !== 0 ? @gzdecode($output) : '';
     }
 
     public static $charsetBits = '@CHARSET "UTF-8";' . "\n\n";

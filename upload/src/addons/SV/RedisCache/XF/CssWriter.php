@@ -45,7 +45,6 @@ class CssWriter extends XFCP_CssWriter
 
         /** @var CssRenderer $renderer */
         $renderer = $this->renderer;
-        $renderer->setIncludeCharsetInOutput(true);
         $renderer->setInputModifiedDate($this->app->request()->filter('d','uint'));
 
         $showDebugOutput = (\XF::$debugMode && $request->get('_debug'));
