@@ -7,7 +7,7 @@ namespace SV\RedisCache\XF;
 
 use XF\Http\ResponseStream;
 use function is_numeric;
-use function stripos;
+use function is_string;
 use function strlen;
 use function strpos;
 
@@ -59,25 +59,19 @@ class CssWriter extends XFCP_CssWriter
 
     public function finalizeOutput($output)
     {
-        if ($output instanceof ResponseStream || strlen($output) === 0)
+        if ($output instanceof ResponseStream)
         {
             return $output;
         }
-        if (stripos($output, CssRenderer::$charsetBits) === 0)
+        if (is_string($output) && strlen($output) === 0)
         {
-            return $output;
+            $this->renderer->setAllowCached(false);
         }
-
         return parent::finalizeOutput($output);
     }
 
     public function getResponse($output)
     {
-        $force404Output = strlen($output) === 0;
-        if ($force404Output)
-        {
-            $this->renderer->setAllowCached(false);
-        }
         $response = parent::getResponse($output);
         if ($output instanceof ResponseStream)
         {
@@ -89,10 +83,6 @@ class CssWriter extends XFCP_CssWriter
             catch (\Throwable $e) {}
             $response->header('content-encoding', 'gzip');
             $response->header('vary', 'Accept-Encoding');
-        }
-        if ($force404Output)
-        {
-            $response->httpCode(404);
         }
 
         return $response;
