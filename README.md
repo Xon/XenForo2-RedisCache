@@ -11,9 +11,17 @@ The plugin https://plugins.jetbrains.com/plugin/14698-luanalysis can be used to 
 
 ## Igbinary Support
 
-If igbinary is usable, this add-on defaults to using it as a serialize. To supress this;
+If igbinary is usable, this add-on defaults to using it as a serialize. To suppress this;
 ```php
 $config['cache']['config']['serializer'] = 'php';
+```
+
+## 404 on invalid css/less template
+
+From v2.16.1+, css.php behaves like stock XF and now returns a stub response instead of a 404.
+For the old behaviour of returning a HTTP 404 response, set this config.php option:
+```php
+$config['svForce404OnEmptyCss'] = true;
 ```
 
 # Performance
