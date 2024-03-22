@@ -5,12 +5,16 @@ namespace SV\RedisCache\SymfonyCache;
 use CredisException;
 use LogicException;
 use Psr\Cache\CacheItemInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 use SV\RedisCache\Globals;
 use SV\RedisCache\Traits\CacheTiming;
 use SV\RedisCache\Traits\Cm_Cache_Backend_Redis;
 use SV\RedisCache\Traits\ReplicaSelect;
 use Symfony\Component\Cache\CacheItem as SymfonyCacheItem;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Cache\ResettableInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 use function array_combine;
 use function array_map;
 use function count;
@@ -26,7 +30,7 @@ use function strlen;
 use function strtolower;
 use function unserialize;
 
-class Redis implements AdapterInterface
+class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, ResettableInterface
 {
     use Cm_Cache_Backend_Redis {
         _encodeData as protected _encodeDataTrait;
@@ -314,7 +318,6 @@ class Redis implements AdapterInterface
         });
     }
 
-    /** @noinspection PhpUnusedParameterInspection */
     public function clear(string $prefix = '')
     {
         $redisQueryForStat = $this->redisQueryForStat;
@@ -325,5 +328,31 @@ class Redis implements AdapterInterface
 
             return $response === true || $response === 'OK';
         });
+    }
+
+    public function get(string $key, callable $callback, float $beta = null, array &$metadata = null)
+    {
+        $item = $this->getItem($key);
+        $metadata = $item->getMetadata();
+
+        return $item->get();
+    }
+
+    public function delete(string $key): bool
+    {
+        return $this->deleteItem($key);
+    }
+
+    public function reset(): void
+    {
+        $this->clear();
+    }
+
+    public function setLogger(LoggerInterface $logger)
+    {
+        if (\XF::$developmentMode)
+        {
+            throw new LogicException('Not supported');
+        }
     }
 }
