@@ -32,7 +32,7 @@ class Style extends XFCP_Style
      * @param int|null $styleId
      * @noinspection PhpUnusedParameterInspection
      */
-    protected function _svClearCache(string $pattern, int $styleId = null)
+    protected function _svClearCache(string $pattern, ?int $styleId = null)
     {
         ExpireRedisCacheByPattern::enqueue($pattern, $pattern, 120, 'css');
     }

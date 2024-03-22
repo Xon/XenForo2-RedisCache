@@ -33,7 +33,7 @@ class Redis extends Repository
      * @param int|null    $replicaId
      * @throws \CredisException
      */
-    public function insertRedisInfoParams(View $view, string $context = null, int $replicaId = null)
+    public function insertRedisInfoParams(View $view, ?string $context = null, ?int $replicaId = null)
     {
         $mainConfig = \XF::app()->config()['cache'];
         $redisInfo = [];

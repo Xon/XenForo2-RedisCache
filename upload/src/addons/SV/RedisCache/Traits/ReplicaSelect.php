@@ -55,7 +55,7 @@ trait ReplicaSelect
         }
     }
 
-    protected function getLocalIps(array $ips = null): array
+    protected function getLocalIps(?array $ips = null): array
     {
         if (!is_array($ips))
         {

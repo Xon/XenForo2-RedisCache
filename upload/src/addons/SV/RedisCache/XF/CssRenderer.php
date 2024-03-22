@@ -35,7 +35,7 @@ class CssRenderer extends XFCP_CssRenderer
     /** @var int|null */
     protected $inputModifiedDate = null;
 
-    public function __construct(App $app, Templater $templater, CacheProvider $cache = null)
+    public function __construct(App $app, Templater $templater, ?CacheProvider $cache = null)
     {
         if ($cache === null)
         {
@@ -57,7 +57,7 @@ class CssRenderer extends XFCP_CssRenderer
         return $this->inputModifiedDate;
     }
 
-    public function setInputModifiedDate(int $value = null)
+    public function setInputModifiedDate(?int $value = null)
     {
         $this->inputModifiedDate = $value;
     }
