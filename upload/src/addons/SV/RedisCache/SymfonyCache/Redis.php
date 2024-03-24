@@ -45,7 +45,9 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     public function __construct(array $options = [])
     {
-        $this->namespace = $options['namespace'] ?? '';
+        /** @var \XF\CacheFactory $factory */
+        $factory = \XF::app()->container('cache.factory');
+        $this->namespace = $factory->getNamespace();
         // common options
         $igbinaryPresent = is_callable('igbinary_serialize') && is_callable('igbinary_unserialize');
         $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || strtolower($options['serializer']) === 'igbinary');
