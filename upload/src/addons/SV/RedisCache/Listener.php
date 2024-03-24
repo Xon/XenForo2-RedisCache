@@ -51,7 +51,7 @@ abstract class Listener
 
         if (strcasecmp($config['provider'] ?? '', 'redis') === 0)
         {
-            $config['provider'] = 'SV\RedisCache\Redis';
+            $config['provider'] = \SV\RedisCache\Redis::class;
             $hasChanges = true;
         }
 
