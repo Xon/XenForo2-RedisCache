@@ -8,6 +8,7 @@ namespace SV\RedisCache\Repository;
 use Credis_Client;
 use Doctrine\Common\Cache\CacheProvider;
 use SV\RedisCache\Job\PurgeRedisCacheByPattern;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Mvc\Entity\Repository;
 use XF\Mvc\Reply\View;
 use function explode;
@@ -41,6 +42,16 @@ class Redis extends Repository
     {
         $cache = \XF::app()->cache($cacheContext, $fallbackToGlobal);
 
+        return $this->getRedisObj($cache);
+    }
+
+    /**
+     * @param CacheProvider|\Symfony\Component\Cache\Adapter\AbstractAdapter|\Symfony\Component\Cache\Adapter\AdapterInterface $cache
+     * @return \SV\RedisCache\Redis|null
+     * @noinspection PhpFullyQualifiedNameUsageInspection
+     */
+    public function getRedisObj($cache): ?\SV\RedisCache\Redis
+    {
         if (\XF::$versionId >= 2030000)
         {
             if ($cache instanceof CacheProvider)
@@ -92,9 +103,8 @@ class Redis extends Repository
 
         foreach ($contexts as $contextLabel => $config)
         {
-            $cache = \XF::app()->cache($contextLabel, false);
-            if (($cache instanceof \SV\RedisCache\Redis) &&
-                ($credis = $cache->getCredis()))
+            $cache = RedisRepo::get()->getRedisConnector($contextLabel, false);
+            if (($cache !== null) && ($credis = $cache->getCredis()))
             {
                 $redisInfo[$contextLabel] = $this->addRedisInfo($config, $credis->info());
                 $replicas = $redisInfo[$contextLabel]['replicas'];
@@ -236,7 +246,8 @@ class Redis extends Repository
             return;
         }
 
-        if (!($cache instanceof \SV\RedisCache\Redis))
+        $cache = $this->getRedisObj($cache);
+        if ($cache === null)
         {
             $cursor = 0;
             return;

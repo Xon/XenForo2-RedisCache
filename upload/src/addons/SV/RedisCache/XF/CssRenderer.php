@@ -8,6 +8,7 @@ namespace SV\RedisCache\XF;
 use Doctrine\Common\Cache\CacheProvider;
 use SV\RedisCache\RawResponseText;
 use SV\RedisCache\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\App;
 use XF\Template\Templater;
 use function array_values;
@@ -69,8 +70,9 @@ class CssRenderer extends XFCP_CssRenderer
 
     protected function getCredits(bool $allowReplica = false)
     {
-        $cache = $this->cache;
-        if (!$this->allowCached || !($cache instanceof Redis) || !($credis = $cache->getCredis($allowReplica)))
+        $cache = RedisRepo::get()->getRedisObj($this->cache);
+
+        if (!$this->allowCached || $cache === null || !($credis = $cache->getCredis($allowReplica)))
         {
             return null;
         }
