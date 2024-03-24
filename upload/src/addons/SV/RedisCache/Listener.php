@@ -2,8 +2,8 @@
 
 namespace SV\RedisCache;
 
+use Doctrine\Common\Cache\CacheProvider;
 use XF\App;
-use XF\Cache\RedisCache;
 use XF\Container;
 use function strcasecmp;
 
@@ -45,18 +45,41 @@ abstract class Listener
         $setterFn($factoryObjects);
     }
 
+    /**
+     * @noinspection PhpUndefinedClassInspection
+     * @noinspection PhpFullyQualifiedNameUsageInspection
+     * @noinspection PhpUndefinedNamespaceInspection
+     */
     protected static function patchConfigBlock(array &$factoryObjects, string $globalNamespace, array &$config, $context): bool
     {
         $hasChanges = false;
 
         if (strcasecmp($config['provider'] ?? '', 'redis') === 0)
         {
-            $config['provider'] = \SV\RedisCache\Redis::class;
+            $config['provider'] = Redis::class;
             $hasChanges = true;
         }
 
         $obj = $factoryObjects['cache'][$context] ?? null;
-        if ($obj instanceof RedisCache)
+        $doPatch = false;
+        if (\XF::$versionId < 2030000)
+        {
+            $doPatch = $obj instanceof \XF\Cache\RedisCache;
+        }
+        else
+        {
+            if ($obj instanceof \Symfony\Component\Cache\Adapter\RedisAdapter)
+            {
+                $doPatch = true;
+            }
+            else if ($obj instanceof CacheProvider)
+            {
+                $obj = $obj->getAdapter();
+                $doPatch = $obj instanceof \Symfony\Component\Cache\Adapter\RedisAdapter;
+            }
+        }
+
+        if ($doPatch)
         {
             $cacheObj = new Redis([
                 'redis'         => $obj->getRedis(),
