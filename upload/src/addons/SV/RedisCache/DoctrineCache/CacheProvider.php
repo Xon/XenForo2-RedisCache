@@ -81,6 +81,11 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         return $this->doContains($this->getNamespacedId($id));
     }
 
+    public function store(string $id, $data, int $lifeTime = 0): bool
+    {
+        return $this->save($id, $data, $lifeTime);
+    }
+
     public function save($id, $data, $lifeTime = 0): bool
     {
         return $this->doSave($this->getNamespacedId($id), $data, $lifeTime);
