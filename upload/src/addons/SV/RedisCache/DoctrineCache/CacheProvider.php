@@ -51,7 +51,7 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         return $this->doFetch($this->getNamespacedId($id));
     }
 
-    public function fetchMultiple(array $keys)
+    public function fetchMultiple(array $keys): array
     {
         if (empty($keys))
         {
@@ -76,17 +76,17 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         return $foundItems;
     }
 
-    public function contains($id)
+    public function contains($id): bool
     {
         return $this->doContains($this->getNamespacedId($id));
     }
 
-    public function save($id, $data, $lifeTime = 0)
+    public function save($id, $data, $lifeTime = 0): bool
     {
         return $this->doSave($this->getNamespacedId($id), $data, $lifeTime);
     }
 
-    public function saveMultiple(array $keysAndValues, $lifetime = 0)
+    public function saveMultiple(array $keysAndValues, $lifetime = 0): bool
     {
         $namespacedKeysAndValues = [];
         foreach ($keysAndValues as $key => $value)

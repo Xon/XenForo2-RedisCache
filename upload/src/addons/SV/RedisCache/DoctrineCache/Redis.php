@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection RedundantSuppression */
 
 namespace SV\RedisCache\DoctrineCache;
 
@@ -7,7 +7,6 @@ namespace SV\RedisCache\DoctrineCache;
  */
 
 use CredisException;
-use Doctrine\Common\Cache\Cache;
 use SV\RedisCache\Globals;
 use SV\RedisCache\Traits\CacheTiming;
 use SV\RedisCache\Traits\Cm_Cache_Backend_Redis;
@@ -35,6 +34,7 @@ class Redis extends CacheProvider
 
     protected $useIgbinary = false;
 
+    /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $options = [])
     {
         $igbinaryPresent = is_callable('igbinary_serialize') && is_callable('igbinary_unserialize');
@@ -126,7 +126,7 @@ class Redis extends CacheProvider
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function doFetchMultiple(array $keys)
+    protected function doFetchMultiple(array $keys): array
     {
         if (count($keys) === 0)
         {
@@ -172,7 +172,7 @@ class Redis extends CacheProvider
         });
     }
 
-    protected function doContains($id)
+    protected function doContains($id): bool
     {
         $redisQueryForStat = $this->redisQueryForStat;
 
@@ -183,15 +183,17 @@ class Redis extends CacheProvider
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
-    protected function doSaveMultiple(array $keysAndValues, $lifetime = 0)
+    protected function doSaveMultiple(array $keysAndValues, $lifetime = 0): bool
     {
         foreach ($keysAndValues as $key => $value)
         {
             $this->doSave($key, $value, $lifetime);
         }
+
+        return true;
     }
 
-    protected function doSave($id, $data, $lifeTime = 0)
+    protected function doSave($id, $data, $lifeTime = 0): bool
     {
         $redisQueryForStat = $this->redisQueryForStat;
 
@@ -216,7 +218,7 @@ class Redis extends CacheProvider
         });
     }
 
-    protected function doDelete($id)
+    protected function doDelete($id): bool
     {
         $redisQueryForStat = $this->redisQueryForStat;
 
@@ -225,7 +227,7 @@ class Redis extends CacheProvider
         });
     }
 
-    protected function doFlush()
+    protected function doFlush(): bool
     {
         $redisQueryForStat = $this->redisQueryForStat;
 
@@ -237,21 +239,8 @@ class Redis extends CacheProvider
         });
     }
 
-    protected function doGetStats()
+    protected function doGetStats(): array
     {
-        $redisQueryForStat = $this->redisQueryForStat;
-
-        return $redisQueryForStat('gets', function () {
-            //$redis = $this->_replica ?? $this->_redis;
-            $info = $this->_redis->info();
-
-            return [
-                Cache::STATS_HITS             => $info['Stats']['keyspace_hits'],
-                Cache::STATS_MISSES           => $info['Stats']['keyspace_misses'],
-                Cache::STATS_UPTIME           => $info['Server']['uptime_in_seconds'],
-                Cache::STATS_MEMORY_USAGE     => $info['Memory']['used_memory'],
-                Cache::STATS_MEMORY_AVAILABLE => false,
-            ];
-        });
+        return [];
     }
 }
