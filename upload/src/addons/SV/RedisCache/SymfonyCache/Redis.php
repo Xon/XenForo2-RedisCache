@@ -163,13 +163,13 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
             return [];
         }
 
-        $keys = array_map([$this, 'getNamespacedId'], $keys);
+        $ids = array_map([$this, 'getNamespacedId'], $keys);
         $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('gets', function () use ($keys) {
+        return $redisQueryForStat('gets', function () use ($keys, $ids) {
             $redis = $this->_replica ?? $this->_redis;
 
-            $fetchedItems = $redis->mGet($keys);
+            $fetchedItems = $redis->mGet($ids);
             if (!is_array($fetchedItems))
             {
                 throw new CredisException('Redis::mget returned an unexpected valid, the redis server is likely in a non-operational state');
@@ -193,7 +193,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
                     $decoded[$key] = new CacheItem($key, false, null);
                     continue;
                 }
-                $decoded[$key] = new CacheItem($key, true, $decoded);
+                $decoded[$key] = new CacheItem($key, true, $decodedData);
 
                 if ($autoExpire)
                 {
@@ -218,11 +218,10 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     protected function saveInternal(string $key, $value, int $expiry)
     {
-        $key = $this->getNamespacedId($key);
         $redisQueryForStat = $this->redisQueryForStat;
 
         return $redisQueryForStat('sets', function () use ($key, $value, $expiry) {
-            $data = $this->_encodeData($key, $this->_compressData);
+            $data = $this->_encodeData($value, $this->_compressData);
             $lifetime = $this->_getAutoExpiringLifetime($expiry, $key);
             $lifeTime = min($lifetime, Globals::MAX_LIFETIME);
 
