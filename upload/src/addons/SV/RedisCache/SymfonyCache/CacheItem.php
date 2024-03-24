@@ -1,4 +1,7 @@
 <?php
+/**
+ * @noinspection PhpMissingReturnTypeInspection
+ */
 
 namespace SV\RedisCache\SymfonyCache;
 
@@ -15,8 +18,8 @@ class CacheItem implements CacheItemInterface
     public $key;
     /** @var mixed */
     public $value;
-    /** @var bool */
-    public $isHit;
+    /** @var bool|null */
+    public $isHit = null;
     /** @var int|null */
     public $expiry = 0;
 
@@ -39,7 +42,7 @@ class CacheItem implements CacheItemInterface
 
     public function isHit(): bool
     {
-        return $this->isHit;
+        return (bool)$this->isHit;
     }
 
     public function set($value): self

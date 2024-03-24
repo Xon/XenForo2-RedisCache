@@ -39,6 +39,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
     use CacheTiming;
     use ReplicaSelect;
 
+    protected $deferGet = true;
     protected $useIgbinary = false;
     protected $namespace = '';
 
@@ -107,41 +108,50 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
     public function getItem($key)
     {
         $key = $this->getNamespacedId($key);
-        $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('gets', function () use ($key) {
-            if ($this->_replica !== null)
-            {
-                $data = $this->_replica->get($key);
+        $getter = function () use ($key): CacheItem {
+            $redisQueryForStat = $this->redisQueryForStat;
+            return $redisQueryForStat('gets', function () use ($key) {
+                if ($this->_replica !== null)
+                {
+                    $data = $this->_replica->get($key);
 
-                // Prevent compounded effect of cache flood on asynchronously replicating master/slave setup
-                if ($this->_retryReadsOnPrimary && $data === false)
+                    // Prevent compounded effect of cache flood on asynchronously replicating master/slave setup
+                    if ($this->_retryReadsOnPrimary && $data === false)
+                    {
+                        $data = $this->_redis->get($key);
+                    }
+                }
+                else
                 {
                     $data = $this->_redis->get($key);
                 }
-            }
-            else
-            {
-                $data = $this->_redis->get($key);
-            }
 
-            if ($data === null || $data === false)
-            {
-                return new CacheItem($key, false, null);
-            }
+                if ($data === null || $data === false)
+                {
+                    return new CacheItem($key, false, null);
+                }
 
-            $this->stats['bytes_received'] += strlen($data);
-            $decoded = $this->_decodeData($data);
+                $this->stats['bytes_received'] += strlen($data);
+                $decoded = $this->_decodeData($data);
 
-            if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad)
-            {
+                if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad)
+                {
+                    return new CacheItem($key, true, $decoded);
+                }
+
+                $this->_applyAutoExpire($key);
+
                 return new CacheItem($key, true, $decoded);
-            }
+            });
+        };
 
-            $this->_applyAutoExpire($key);
+        if ($this->deferGet)
+        {
+            return new DeferredCacheItem($key, $getter);
+        }
 
-            return new CacheItem($key, true, $decoded);
-        });
+        return $getter();
     }
 
     public function getItems(array $keys = [])
@@ -262,6 +272,13 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
         }
         else if ($item instanceof CacheItem)
         {
+            if ($item instanceof DeferredCacheItem)
+            {
+                if ($item->resolver !== null)
+                {
+                    throw new LogicException('Require an explicit expiry to be set');
+                }
+            }
             $key = $item->key;
             $value = $item->value;
             $expiry = $item->expiry;
