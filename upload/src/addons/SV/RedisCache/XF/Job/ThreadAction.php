@@ -2,7 +2,7 @@
 
 namespace SV\RedisCache\XF\Job;
 
-use SV\RedisCache\Repository\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Entity\Thread as ThreadEntity;
 
 /**
@@ -16,7 +16,7 @@ class ThreadAction extends XFCP_ThreadAction
 
         if ($thread->isChanged(['node_id', 'discussion_state']))
         {
-            Redis::instance()->purgeThreadCountByForumDeferred($thread->node_id);
+            RedisRepo::get()->purgeThreadCountByForumDeferred($thread->node_id);
         }
     }
 }

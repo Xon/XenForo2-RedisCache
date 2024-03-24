@@ -2,7 +2,7 @@
 
 namespace SV\RedisCache\XF\Service\Thread;
 
-use SV\RedisCache\Repository\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 
 /**
  * Extends \XF\Service\Thread\Deleter
@@ -15,7 +15,7 @@ class Deleter extends XFCP_Deleter
         $ret = parent::delete($type, $reason);
         if ($ret)
         {
-            Redis::instance()->purgeThreadCountByForumDeferred($this->thread->node_id);
+            RedisRepo::get()->purgeThreadCountByForumDeferred($this->thread->node_id);
         }
         return $ret;
     }

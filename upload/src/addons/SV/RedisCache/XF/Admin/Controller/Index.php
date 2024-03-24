@@ -5,7 +5,7 @@
 
 namespace SV\RedisCache\XF\Admin\Controller;
 
-use SV\RedisCache\Repository\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 
 class Index extends XFCP_Index
 {
@@ -13,7 +13,7 @@ class Index extends XFCP_Index
     {
         $reply = parent::actionIndex();
 
-        Redis::instance()->insertRedisInfoParams($reply);
+        RedisRepo::get()->insertRedisInfoParams($reply);
 
         return $reply;
     }

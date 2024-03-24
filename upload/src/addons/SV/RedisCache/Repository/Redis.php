@@ -6,6 +6,7 @@
 namespace SV\RedisCache\Repository;
 
 use Credis_Client;
+use Doctrine\Common\Cache\CacheProvider;
 use SV\RedisCache\Job\PurgeRedisCacheByPattern;
 use XF\Mvc\Entity\Repository;
 use XF\Mvc\Reply\View;
@@ -19,10 +20,41 @@ use function strlen;
 
 class Redis extends Repository
 {
+    /**
+     * @deprecated
+     */
     public static function instance(): self
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return self::get();
+    }
+
+    /**
+     * @noinspection RedundantSuppression
+     * @noinspection PhpIncompatibleReturnTypeInspection
+     */
+    public static function get(): self
+    {
         return \XF::repository('SV\RedisCache:Redis');
+    }
+
+    public function getRedisConnector(string $cacheContext = '', bool $fallbackToGlobal = true): ?\SV\RedisCache\Redis
+    {
+        $cache = \XF::app()->cache($cacheContext, $fallbackToGlobal);
+
+        if (\XF::$versionId >= 2030000)
+        {
+            if ($cache instanceof CacheProvider)
+            {
+                $cache = $cache->getAdapter();
+            }
+        }
+
+        if ($cache instanceof \SV\RedisCache\Redis)
+        {
+            return $cache;
+        }
+
+        return null;
     }
 
     /**

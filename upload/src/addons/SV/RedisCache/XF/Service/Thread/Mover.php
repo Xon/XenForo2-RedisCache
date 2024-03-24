@@ -2,7 +2,7 @@
 
 namespace SV\RedisCache\XF\Service\Thread;
 
-use SV\RedisCache\Repository\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Entity\Forum as ForumEntity;
 
 /**
@@ -16,7 +16,7 @@ class Mover extends XFCP_Mover
         $ret = parent::move($forum);
         if ($ret)
         {
-            Redis::instance()->purgeThreadCountByForumDeferred($forum->node_id);
+            RedisRepo::get()->purgeThreadCountByForumDeferred($forum->node_id);
         }
 
         return $ret;

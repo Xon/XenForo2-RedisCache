@@ -5,7 +5,7 @@
 
 namespace SV\RedisCache\XF;
 
-use SV\RedisCache\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use function htmlspecialchars;
 use function microtime;
 use function number_format;
@@ -34,8 +34,8 @@ class Debugger extends XFCP_Debugger
         $count = 0;
         foreach ($contexts as $contextLabel => $config)
         {
-            $cache = \XF::app()->cache($contextLabel, false);
-            if ($cache instanceof Redis)
+            $cache = RedisRepo::get()->getRedisConnector($contextLabel, false);
+            if ($cache != null)
             {
                 $statsHtml = "<table>\n";
 

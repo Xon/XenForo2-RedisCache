@@ -5,7 +5,7 @@
 
 namespace SV\RedisCache\Job;
 
-use SV\RedisCache\Repository\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Job\AbstractJob;
 use XF\Job\JobResult;
 use function microtime;
@@ -45,7 +45,7 @@ class PurgeRedisCacheByPattern extends AbstractJob
 
         /** @var string|int|null $cursor */
         $cursor = $this->data['cursor'];
-        $steps = Redis::instance()->purgeCacheByPattern($this->data['pattern'], $cursor, $maxRunTime, $this->data['batch'], $cache);
+        $steps = RedisRepo::get()->purgeCacheByPattern($this->data['pattern'], $cursor, $maxRunTime, $this->data['batch'], $cache);
         if (!$cursor)
         {
             return $this->complete();

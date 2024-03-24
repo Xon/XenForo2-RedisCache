@@ -2,7 +2,7 @@
 
 namespace SV\RedisCache\XF\Service\Thread;
 
-use SV\RedisCache\Repository\Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Entity\Thread;
 use XF\Mvc\Entity\AbstractCollection;
 
@@ -28,7 +28,7 @@ class Merger extends XFCP_Merger
             /** @var Thread $sourceThread */
             foreach ($sourceThreadsRaw AS $sourceThread)
             {
-                Redis::instance()->purgeThreadCountByForumDeferred($sourceThread->node_id);
+                RedisRepo::get()->purgeThreadCountByForumDeferred($sourceThread->node_id);
             }
         }
 
