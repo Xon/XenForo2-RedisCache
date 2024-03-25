@@ -274,7 +274,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
         {
             $fetcher = \Closure::bind(
                 static function (SymfonyCacheItem $item) {
-                    return [$item->key, $item->value, $item->expiry];
+                    return [$item->key, $item->value, $item->expiry, $item->isHit];
                 },
                 null,
                 SymfonyCacheItem::class
@@ -291,7 +291,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
         // Worse, the expiry must be explicitly set every time the load/save cycle occurs
         if ($item instanceof SymfonyCacheItem)
         {
-            [$key, $value, $expiry] = $this->decomposeSymfonyCacheItem($item);
+            [$key, $value, $expiry, $isHit] = $this->decomposeSymfonyCacheItem($item);
             if ($expiry !== null)
             {
                 $expiry = min(0, \XF::$time - (int)$expiry);
@@ -309,13 +309,14 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
             $key = $item->key;
             $value = $item->value;
             $expiry = $item->expiry;
+            $isHit = $item->isHit;
         }
         else
         {
             throw new LogicException('Unknown CacheItemInterface subclass'.get_class($item));
         }
 
-        if ($expiry === null && $item->isHit())
+        if ($expiry === null && $isHit)
         {
             // no explicit expiry set. probably an error
             throw new LogicException('Require an explicit expiry to be set');
