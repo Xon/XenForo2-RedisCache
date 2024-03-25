@@ -62,23 +62,19 @@ class CacheItem implements CacheItemInterface
         return $this->expiresAfter($expiration !== null ? (int)min(1, \XF::$time - (int)$expiration->format('U')) : null);
     }
 
+    /**
+     * @param \DateInterval|int|null $time
+     * @return $this
+     */
     public function expiresAfter($time): self
     {
-        if (null === $time)
-        {
-            $this->expiry = null;
-        }
-        else if ($time instanceof \DateInterval)
+        if ($time instanceof \DateInterval)
         {
             $this->expiry = (int)\DateTime::createFromFormat('U', 0)->add($time)->format('U');
         }
-        else if (is_int($time))
-        {
-            $this->expiry = $time;
-        }
         else
         {
-            throw new InvalidArgumentException(sprintf('Expiration date must be an int, a DateInterval or null, "%s" given.', gettype($time)));
+            $this->expiry = (int)$time;
         }
 
         return $this;
