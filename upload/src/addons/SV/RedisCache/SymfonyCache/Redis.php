@@ -303,7 +303,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
             {
                 if ($item->resolver !== null)
                 {
-                    throw new LogicException('Require an explicit expiry to be set');
+                    throw new LogicException('Require an explicit value to be set');
                 }
             }
             $key = $item->key;
@@ -316,7 +316,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
             throw new LogicException('Unknown CacheItemInterface subclass'.get_class($item));
         }
 
-        if ($expiry === null && $isHit)
+        if (\XF::$developmentMode && $isHit && $expiry === null)
         {
             // no explicit expiry set. probably an error
             throw new LogicException('Require an explicit expiry to be set');
