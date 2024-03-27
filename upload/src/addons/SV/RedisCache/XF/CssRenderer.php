@@ -7,7 +7,7 @@ namespace SV\RedisCache\XF;
 
 use Doctrine\Common\Cache\CacheProvider;
 use SV\RedisCache\RawResponseText;
-use SV\RedisCache\Redis;
+use SV\RedisCache\Redis as RedisCache;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\App;
 use XF\Template\Templater;
@@ -68,7 +68,11 @@ class CssRenderer extends XFCP_CssRenderer
         return new RawResponseText($output, $length);
     }
 
-    protected function getCredits(bool $allowReplica = false)
+    /**
+     * @param bool $allowReplica
+     * @return array{0:RedisCache, 1: \Credis_Client}|null
+     */
+    protected function getCredis(bool $allowReplica = false): ?array
     {
         $cache = RedisRepo::get()->getRedisObj($this->cache);
 
@@ -77,7 +81,7 @@ class CssRenderer extends XFCP_CssRenderer
             return null;
         }
 
-        return $credis;
+        return [$cache, $credis];
     }
 
     protected function filterValidTemplates(array $templates)
@@ -102,13 +106,12 @@ class CssRenderer extends XFCP_CssRenderer
 
     protected function getFinalCachedOutput(array $templates)
     {
-        $credis = $this->getCredits(true);
-        if (!$credis)
+        [$cache, $credis] = $this->getCredis(true);
+        if ($credis === null)
         {
             return parent::getFinalCachedOutput($templates);
         }
-        /** @var Redis $cache */
-        $cache = $this->cache;
+
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $data = $credis->hGetAll($key);
         if (!is_array($data))
@@ -141,15 +144,13 @@ class CssRenderer extends XFCP_CssRenderer
 
     protected function cacheFinalOutput(array $templates, $output)
     {
-        $credis = $this->getCredits();
-        if (!$credis)
+        [$cache, $credis] = $this->getCredis(true);
+        if ($credis === null)
         {
             parent::cacheFinalOutput($templates, $output);
 
             return;
         }
-        /** @var Redis $cache */
-        $cache = $this->cache;
 
         $output = trim($output);
         $len = strlen($output);
