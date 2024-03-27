@@ -144,7 +144,7 @@ class CssRenderer extends XFCP_CssRenderer
 
     protected function cacheFinalOutput(array $templates, $output)
     {
-        [$cache, $credis] = $this->getCredis(true);
+        [$cache, $credis] = $this->getCredis(false);
         if ($credis === null)
         {
             parent::cacheFinalOutput($templates, $output);
