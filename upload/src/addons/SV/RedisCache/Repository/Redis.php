@@ -1,7 +1,4 @@
 <?php
-/**
- * @noinspection DuplicatedCode
- */
 
 namespace SV\RedisCache\Repository;
 

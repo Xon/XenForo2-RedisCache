@@ -2,7 +2,7 @@
 
 namespace SV\RedisCache\Admin\Controller;
 
-use SV\RedisCache\Repository\Redis as Redis;
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Admin\Controller\AbstractController;
 use XF\Mvc\ParameterBag;
 use XF\Mvc\Reply\AbstractReply;
@@ -16,7 +16,7 @@ class Index extends AbstractController
 
         $view = $this->view('SV\RedisCache:Index\Index', 'svRedisInfo', []);
 
-        Redis::instance()->insertRedisInfoParams($view, $context, $replicaId);
+        RedisRepo::get()->insertRedisInfoParams($view, $context, $replicaId);
 
         return $view;
     }

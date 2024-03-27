@@ -1,16 +1,9 @@
 <?php
-/**
- * @noinspection PhpMissingReturnTypeInspection
- */
 
 namespace SV\RedisCache\SymfonyCache;
 
-use InvalidArgumentException;
 use Psr\Cache\CacheItemInterface;
-use function gettype;
-use function is_int;
 use function min;
-use function sprintf;
 
 class CacheItem implements CacheItemInterface
 {

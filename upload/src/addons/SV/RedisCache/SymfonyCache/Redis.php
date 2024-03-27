@@ -15,6 +15,7 @@ use Symfony\Component\Cache\CacheItem as SymfonyCacheItem;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\ResettableInterface;
 use Symfony\Contracts\Cache\CacheInterface;
+use XF\CacheFactory;
 use function array_combine;
 use function array_map;
 use function count;
@@ -45,7 +46,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     public function __construct(array $options = [])
     {
-        /** @var \XF\CacheFactory $factory */
+        /** @var CacheFactory $factory */
         $factory = \XF::app()->container('cache.factory');
         $this->namespace = $factory->getNamespace();
         // common options
