@@ -8,7 +8,7 @@ namespace SV\RedisCache\XenAddons\RMS\Finder;
 use SV\RedisCache\Finder\CachableFinderTotalTrait;
 
 /**
- * Extends \XenAddons\RMS\Finder\Item
+ * @Extends \XenAddons\RMS\Finder\Item
  */
 class Item extends XFCP_Item
 {

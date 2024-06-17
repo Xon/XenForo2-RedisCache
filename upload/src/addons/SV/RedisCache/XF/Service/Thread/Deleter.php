@@ -5,7 +5,7 @@ namespace SV\RedisCache\XF\Service\Thread;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 
 /**
- * Extends \XF\Service\Thread\Deleter
+ * @Extends \XF\Service\Thread\Deleter
  */
 class Deleter extends XFCP_Deleter
 {

@@ -12,7 +12,7 @@ use function number_format;
 use function preg_match;
 
 /**
- * Extends \XF\Debugger
+ * @Extends \XF\Debugger
  */
 class Debugger extends XFCP_Debugger
 {

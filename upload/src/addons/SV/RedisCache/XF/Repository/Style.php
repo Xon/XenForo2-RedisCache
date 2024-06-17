@@ -8,7 +8,7 @@ namespace SV\RedisCache\XF\Repository;
 use SV\RedisCache\Job\ExpireRedisCacheByPattern;
 
 /**
- * Extends \XF\Repository\Style
+ * @Extends \XF\Repository\Style
  */
 class Style extends XFCP_Style
 {

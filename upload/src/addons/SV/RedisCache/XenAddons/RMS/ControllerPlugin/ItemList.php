@@ -6,7 +6,7 @@ use XenAddons\RMS\Finder\Item as ItemFinder;
 use function is_callable;
 
 /**
- * Extends \XenAddons\RMS\ControllerPlugin\ItemList
+ * @Extends \XenAddons\RMS\ControllerPlugin\ItemList
  */
 class ItemList extends XFCP_ItemList
 {

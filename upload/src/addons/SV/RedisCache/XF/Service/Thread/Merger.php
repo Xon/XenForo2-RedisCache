@@ -7,7 +7,7 @@ use XF\Entity\Thread;
 use XF\Mvc\Entity\AbstractCollection;
 
 /**
- * Extends \XF\Service\Thread\Merger
+ * @Extends \XF\Service\Thread\Merger
  */
 class Merger extends XFCP_Merger
 {

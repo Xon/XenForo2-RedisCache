@@ -5,7 +5,7 @@ namespace SV\RedisCache\XF\Service\Thread;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 
 /**
- * Extends \XF\Service\Thread\Approver
+ * @Extends \XF\Service\Thread\Approver
  */
 class Approver extends XFCP_Approver
 {

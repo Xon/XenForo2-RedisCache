@@ -6,7 +6,7 @@ use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Entity\Forum as ForumEntity;
 
 /**
- * Extends \XF\Service\Thread\Mover
+ * @Extends \XF\Service\Thread\Mover
  */
 class Mover extends XFCP_Mover
 {

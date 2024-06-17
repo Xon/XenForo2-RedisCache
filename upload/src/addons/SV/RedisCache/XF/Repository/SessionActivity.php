@@ -14,7 +14,7 @@ use function md5;
 use function strval;
 
 /**
- * Extends \XF\Repository\SessionActivity
+ * @Extends \XF\Repository\SessionActivity
  */
 class SessionActivity extends XFCP_SessionActivity
 {
