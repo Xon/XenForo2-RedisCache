@@ -110,7 +110,8 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     public function fetch(string $key)
     {
-        return $this->getItem($key);
+        $result = $this->getItem($key);
+        return $result->isHit() ? $result->get() : false;
     }
 
     public function getItem($key)
@@ -171,7 +172,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
         {
             if ($value->isHit())
             {
-                $results[$key] = $value;
+                $results[$key] = $value->get();
             }
         }
 
@@ -180,7 +181,9 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     public function store(string $id, $data, int $lifeTime = 0): bool
     {
-        return $this->saveInternal($id, $data, $lifeTime);
+        $key = $this->getNamespacedId($id);
+
+        return $this->saveInternal($key, $data, $lifeTime);
     }
 
     public function getItems(array $keys = [])
