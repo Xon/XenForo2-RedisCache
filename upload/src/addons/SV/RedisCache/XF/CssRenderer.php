@@ -35,6 +35,8 @@ class CssRenderer extends XFCP_CssRenderer
     protected $echoUncompressedData = false;
     /** @var int|null */
     protected $inputModifiedDate = null;
+    /** @var bool */
+    protected $skipSingleTemplateCaching = false;
 
     public function __construct(App $app, Templater $templater, ?CacheProvider $cache = null)
     {
@@ -111,6 +113,9 @@ class CssRenderer extends XFCP_CssRenderer
         {
             return parent::getFinalCachedOutput($templates);
         }
+
+        // if a single template, then prevent individual template caching as the request caching will just work as-is
+        $this->skipSingleTemplateCaching = count($templates) === 1;
 
         $key = $cache->getNamespacedId($this->getFinalCacheKey($templates) . '_gz');
         $data = $credis->hGetAll($key);
@@ -248,6 +253,11 @@ class CssRenderer extends XFCP_CssRenderer
      */
     protected function getIndividualCachedTemplates(array $templates)
     {
+        if ($this->skipSingleTemplateCaching)
+        {
+            return [];
+        }
+
         $cache = $this->cache;
         if (!$cache)
         {
@@ -286,6 +296,11 @@ class CssRenderer extends XFCP_CssRenderer
      */
     public function cacheTemplate($title, $output)
     {
+        if ($this->skipSingleTemplateCaching)
+        {
+            return;
+        }
+
         $cache = $this->cache;
         if (!$cache)
         {
