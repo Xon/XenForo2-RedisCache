@@ -7,6 +7,7 @@ use XF\Finder\Thread as ThreadFinder;
 
 class Forum extends XFCP_Forum
 {
+    /** @noinspection PhpCastIsUnnecessaryInspection */
     protected function applyDateLimitFilters(\XF\Entity\Forum $forum, ThreadFinder $threadFinder, array $filters)
     {
         parent::applyDateLimitFilters($forum, $threadFinder, $filters);

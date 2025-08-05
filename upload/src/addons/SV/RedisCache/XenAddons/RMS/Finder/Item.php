@@ -16,6 +16,7 @@ class Item extends XFCP_Item
 
     /**
      * @return int
+     * @noinspection PhpCastIsUnnecessaryInspection
      */
     public function total()
     {

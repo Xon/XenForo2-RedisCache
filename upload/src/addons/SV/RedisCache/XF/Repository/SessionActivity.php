@@ -18,6 +18,7 @@ use function strval;
  */
 class SessionActivity extends XFCP_SessionActivity
 {
+    /** @noinspection PhpCastIsUnnecessaryInspection */
     public function getOnlineStatsBlockData($forceIncludeVisitor, $userLimit, $staffQuery = false)
     {
         $app = $this->app();

@@ -14,6 +14,7 @@ class Thread extends XFCP_Thread
 
     /**
      * @return int
+     * @noinspection PhpCastIsUnnecessaryInspection
      */
     public function total()
     {
