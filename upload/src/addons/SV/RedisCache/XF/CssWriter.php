@@ -8,6 +8,7 @@ namespace SV\RedisCache\XF;
 use XF\App;
 use XF\CssRenderer;
 use XF\Http\ResponseStream;
+use function ini_set;
 use function is_numeric;
 use function is_string;
 use function strlen;

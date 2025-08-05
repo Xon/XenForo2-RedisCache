@@ -91,7 +91,7 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
         return $this->doSave($this->getNamespacedId($id), $data, $lifeTime);
     }
 
-    public function saveMultiple(array $keysAndValues, $lifetime = 0): bool
+    public function saveMultiple(array $keysAndValues, $lifeTime = 0): bool
     {
         $namespacedKeysAndValues = [];
         foreach ($keysAndValues as $key => $value)
@@ -99,7 +99,7 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
             $namespacedKeysAndValues[$this->getNamespacedId($key)] = $value;
         }
 
-        return $this->doSaveMultiple($namespacedKeysAndValues, $lifetime);
+        return $this->doSaveMultiple($namespacedKeysAndValues, $lifeTime);
     }
 
     public function delete($id)

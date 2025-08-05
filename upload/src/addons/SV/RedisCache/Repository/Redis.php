@@ -7,7 +7,8 @@ use Doctrine\Common\Cache\CacheProvider;
 use SV\RedisCache\Job\PurgeRedisCacheByPattern;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Mvc\Entity\Repository;
-use XF\Mvc\Reply\View;
+use XF\Mvc\Reply\View as ViewReply;
+use function ceil;
 use function explode;
 use function is_callable;
 use function microtime;
@@ -68,12 +69,12 @@ class Redis extends Repository
     /**
      * Inserts redis info parameters into a view.
      *
-     * @param View        $view
+     * @param ViewReply   $view
      * @param string|null $context
      * @param int|null    $replicaId
      * @throws \CredisException
      */
-    public function insertRedisInfoParams(View $view, ?string $context = null, ?int $replicaId = null)
+    public function insertRedisInfoParams(ViewReply $view, ?string $context = null, ?int $replicaId = null)
     {
         $mainConfig = \XF::app()->config()['cache'];
         $redisInfo = [];

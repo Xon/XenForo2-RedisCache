@@ -9,7 +9,7 @@ use function strcasecmp;
 
 abstract class Listener
 {
-    public static function appSetup(App $app)
+    public static function appSetup(App $app): void
     {
         $config = $app->config() ?? [];
         if (!($config['cache']['enabled'] ?? false))

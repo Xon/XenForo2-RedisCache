@@ -49,6 +49,7 @@ use function array_rand;
 use function count;
 use function floatval;
 use function function_exists;
+use function gzcompress;
 use function gzuncompress;
 use function is_array;
 use function is_callable;
