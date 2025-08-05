@@ -70,10 +70,10 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
         $this->namespace = $namespace;
     }
 
-    public function getNamespacedId(string $id): string
+    public function getNamespacedId(string $key): string
     {
         // match Doctrine Cache key format
-        return sprintf('%s_%s', $this->namespace, $id);
+        return sprintf('%s_%s', $this->namespace, $key);
     }
 
     protected function _encodeData($data, $level)
@@ -116,29 +116,29 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     public function getItem($key)
     {
-        $key = $this->getNamespacedId($key);
+        $prefixedKey = $this->getNamespacedId($key);
 
-        $getter = function () use ($key): CacheItem {
+        $getter = function () use ($prefixedKey): CacheItem {
             $redisQueryForStat = $this->redisQueryForStat;
-            return $redisQueryForStat('gets', function () use ($key) {
+            return $redisQueryForStat('gets', function () use ($prefixedKey) {
                 if ($this->_replica !== null)
                 {
-                    $data = $this->_replica->get($key);
+                    $data = $this->_replica->get($prefixedKey);
 
                     // Prevent compounded effect of cache flood on asynchronously replicating master/slave setup
                     if ($this->_retryReadsOnPrimary && $data === false)
                     {
-                        $data = $this->_redis->get($key);
+                        $data = $this->_redis->get($prefixedKey);
                     }
                 }
                 else
                 {
-                    $data = $this->_redis->get($key);
+                    $data = $this->_redis->get($prefixedKey);
                 }
 
                 if ($data === null || $data === false)
                 {
-                    return new CacheItem($key, false, null);
+                    return new CacheItem($prefixedKey, false, null);
                 }
 
                 $this->stats['bytes_received'] += strlen($data);
@@ -146,18 +146,18 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
                 if ($this->_autoExpireLifetime === 0 || !$this->_autoExpireRefreshOnLoad)
                 {
-                    return new CacheItem($key, true, $decoded);
+                    return new CacheItem($prefixedKey, true, $decoded);
                 }
 
-                $this->_applyAutoExpire($key);
+                $this->_applyAutoExpire($prefixedKey);
 
-                return new CacheItem($key, true, $decoded);
+                return new CacheItem($prefixedKey, true, $decoded);
             });
         };
 
         if ($this->deferGet)
         {
-            return new DeferredCacheItem($key, $getter);
+            return new DeferredCacheItem($prefixedKey, $getter);
         }
 
         return $getter();
@@ -179,11 +179,11 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
         return $results;
     }
 
-    public function store(string $id, $data, int $lifeTime = 0): bool
+    public function store(string $key, $data, int $lifeTime = 0): bool
     {
-        $key = $this->getNamespacedId($id);
+        $prefixedKey = $this->getNamespacedId($key);
 
-        return $this->saveInternal($key, $data, $lifeTime);
+        return $this->saveInternal($prefixedKey, $data, $lifeTime);
     }
 
     public function getItems(array $keys = [])
@@ -193,13 +193,13 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
             return [];
         }
 
-        $ids = array_map([$this, 'getNamespacedId'], $keys);
+        $prefixedKeys = array_map([$this, 'getNamespacedId'], $keys);
         $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('gets', function () use ($keys, $ids) {
+        return $redisQueryForStat('gets', function () use ($keys, $prefixedKeys) {
             $redis = $this->_replica ?? $this->_redis;
 
-            $fetchedItems = $redis->mGet($ids);
+            $fetchedItems = $redis->mGet($prefixedKeys);
             if (!is_array($fetchedItems))
             {
                 throw new CredisException('Redis::mget returned an unexpected valid, the redis server is likely in a non-operational state');
@@ -237,33 +237,33 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     public function hasItem($key)
     {
-        $key = $this->getNamespacedId($key);
+        $prefixedKey = $this->getNamespacedId($key);
         $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('gets', function () use ($key) {
+        return $redisQueryForStat('gets', function () use ($prefixedKey) {
             // Don't use replica for this since `doContains`/`test` is usually used for locking
-            return $this->_redis->exists($key);
+            return $this->_redis->exists($prefixedKey);
         });
     }
 
-    protected function saveInternal(string $key, $value, int $expiry)
+    protected function saveInternal(string $prefixedKey, $value, int $expiry)
     {
         $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('sets', function () use ($key, $value, $expiry) {
+        return $redisQueryForStat('sets', function () use ($prefixedKey, $value, $expiry) {
             $data = $this->_encodeData($value, $this->_compressData);
-            $lifetime = $this->_getAutoExpiringLifetime($expiry, $key);
+            $lifetime = $this->_getAutoExpiringLifetime($expiry, $prefixedKey);
             $lifeTime = min($lifetime, Globals::MAX_LIFETIME);
 
             $this->stats['bytes_sent'] += strlen($data);
 
             if ($lifeTime > 0)
             {
-                $response = $this->_redis->set($key, $data, $lifeTime);
+                $response = $this->_redis->set($prefixedKey, $data, $lifeTime);
             }
             else
             {
-                $response = $this->_redis->set($key, $data);
+                $response = $this->_redis->set($prefixedKey, $data);
             }
 
             return $response === true;
@@ -295,7 +295,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
         // Worse, the expiry must be explicitly set every time the load/save cycle occurs
         if ($item instanceof SymfonyCacheItem)
         {
-            [$key, $value, $expiry, $isHit] = $this->decomposeSymfonyCacheItem($item);
+            [$prefixedKey, $value, $expiry, $isHit] = $this->decomposeSymfonyCacheItem($item);
             if ($expiry !== null)
             {
                 $expiry = min(0, \XF::$time - (int)$expiry);
@@ -310,7 +310,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
                     throw new LogicException('Require an explicit value to be set');
                 }
             }
-            $key = $item->key;
+            $prefixedKey = $item->key;
             $value = $item->value;
             $expiry = $item->expiry;
             $isHit = $item->isHit;
@@ -326,7 +326,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
             throw new LogicException('Require an explicit expiry to be set');
         }
 
-        return $this->saveInternal($key, $value, (int)$expiry);
+        return $this->saveInternal($prefixedKey, $value, (int)$expiry);
     }
 
     public function saveDeferred(CacheItemInterface $item)
@@ -343,24 +343,24 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     public function deleteItem($key)
     {
-        $key = $this->getNamespacedId($key);
+        $prefixedKey = $this->getNamespacedId($key);
         $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('deletes', function () use ($key) {
-            return $this->_redis->del($key) >= 0;
+        return $redisQueryForStat('deletes', function () use ($prefixedKey) {
+            return $this->_redis->del($prefixedKey) >= 0;
         });
     }
 
     public function deleteItems(array $keys)
     {
-        $ids = array_map([$this, 'getNamespacedId'], $keys);
+        $prefixedKeys = array_map([$this, 'getNamespacedId'], $keys);
         $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('deletes', function () use ($ids) {
+        return $redisQueryForStat('deletes', function () use ($prefixedKeys) {
             $this->_redis->pipeline();
-            foreach ($ids as $id)
+            foreach ($prefixedKeys as $prefixedKey)
             {
-                $this->_redis->del($id);
+                $this->_redis->del($prefixedKey);
             }
             $this->_redis->exec();
 
