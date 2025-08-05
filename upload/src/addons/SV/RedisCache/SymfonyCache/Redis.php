@@ -353,13 +353,14 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
 
     public function deleteItems(array $keys)
     {
+        $ids = array_map([$this, 'getNamespacedId'], $keys);
         $redisQueryForStat = $this->redisQueryForStat;
 
-        return $redisQueryForStat('deletes', function () use ($keys) {
+        return $redisQueryForStat('deletes', function () use ($ids) {
             $this->_redis->pipeline();
-            foreach ($keys as $key)
+            foreach ($ids as $id)
             {
-                $this->_redis->del($key);
+                $this->_redis->del($id);
             }
             $this->_redis->exec();
 
