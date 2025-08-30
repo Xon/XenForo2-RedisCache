@@ -2,7 +2,7 @@
     "legacy_addon_id": "sv_rediscache",
     "title": "Redis Cache",
     "description": "XenForo + Redis",
-    "version_id": 1756561347,
+    "version_id": 1756561661,
     "version_string": "2.18.3",
     "dev": "Xon",
     "dev_url": "https://atelieraphelion.com/",

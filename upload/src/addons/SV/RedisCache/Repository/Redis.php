@@ -343,13 +343,13 @@ class Redis extends Repository
     public function shimAdminNavigation(): void
     {
         /** @var AdminNavigationEntity|null $redisInfo */
-        $redisInfo = \XF::app()->find('XF:Admin', 'redisInfo');
+        $redisInfo = \XF::app()->find('XF:AdminNavigation', 'redisInfo');
         if ($redisInfo === null)
         {
             return;
         }
 
-        $redisInfo->admin_permission_id = \XF::$versionId < 2030470 ? 'serverInfo' : '';
+        $redisInfo->admin_permission_id = \XF::$versionId >= 2030470 ? 'serverInfo' : '';
         $redisInfo->saveIfChanged();
     }
 }
