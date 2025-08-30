@@ -31,7 +31,7 @@ class SessionActivity extends XFCP_SessionActivity
             $keyParts = [$forceIncludeVisitor, $userLimit, $staffQuery];
             // must be pre-user or otherwise the followed user list breaks :(
             $keyParts[] = \XF::visitor()->user_id;
-            $cacheKey = 'onlineList.' . $cacheUsersOnline . '.' . md5(json_encode($keyParts));
+            $cacheKey = 'onlineList.' . $cacheUsersOnline . '.' . hash('md5', json_encode($keyParts));
             $result = $cache->fetch($cacheKey);
             if (is_array($result))
             {

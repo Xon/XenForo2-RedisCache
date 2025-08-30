@@ -52,7 +52,7 @@ trait CachableFinderTotalTrait
             });
         }
         ksort($joins);
-        $key = $prefix . md5(serialize($conditions) . serialize($joins) . serialize($this->order));
+        $key = $prefix . hash('md5', serialize($conditions) . serialize($joins) . serialize($this->order));
 
         /** @var int|bool $total */
         $total = $cache->fetch($key);

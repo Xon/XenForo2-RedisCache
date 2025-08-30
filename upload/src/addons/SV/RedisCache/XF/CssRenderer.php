@@ -193,7 +193,7 @@ class CssRenderer extends XFCP_CssRenderer
     {
         $elements = $this->getCacheKeyElements();
 
-        return $prefix . 'Cache_' . \md5(
+        return $prefix . 'Cache_' . \hash('md5',
                 'text=' . $value
                 . 'style=' . $elements['style_id']
                 . 'modified=' . $elements['style_last_modified']
