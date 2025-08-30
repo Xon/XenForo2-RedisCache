@@ -16,7 +16,11 @@ class Index extends XFCP_Index
 
         if ($reply instanceof ViewReply)
         {
-            RedisRepo::get()->insertRedisInfoParams($reply);
+            $redisRepo = RedisRepo::get();
+            if ($redisRepo->canViewServerInfo())
+            {
+                $redisRepo->insertRedisInfoParams($reply);
+            }
         }
 
         return $reply;

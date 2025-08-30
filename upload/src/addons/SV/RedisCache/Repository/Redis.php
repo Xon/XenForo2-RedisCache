@@ -6,6 +6,7 @@ use Credis_Client;
 use Doctrine\Common\Cache\CacheProvider;
 use SV\RedisCache\Job\PurgeRedisCacheByPattern;
 use SV\RedisCache\Repository\Redis as RedisRepo;
+use XF\Entity\AdminNavigation as AdminNavigationEntity;
 use XF\Mvc\Entity\Repository;
 use XF\Mvc\Reply\View as ViewReply;
 use function ceil;
@@ -327,5 +328,28 @@ class Redis extends Repository
         \XF::runOnce($key, function () use ($key, $nodeId) {
             PurgeRedisCacheByPattern::enqueue($key, 'forum_' . $nodeId . '_threadcount_');
         });
+    }
+
+    public function canViewServerInfo(): bool
+    {
+        if (\XF::$versionId < 2030470)
+        {
+            return true;
+        }
+
+        return \XF::visitor()->hasAdminPermission('serverInfo');
+    }
+
+    public function shimAdminNavigation(): void
+    {
+        /** @var AdminNavigationEntity|null $redisInfo */
+        $redisInfo = \XF::app()->find('XF:Admin', 'redisInfo');
+        if ($redisInfo === null)
+        {
+            return;
+        }
+
+        $redisInfo->admin_permission_id = \XF::$versionId < 2030470 ? 'serverInfo' : '';
+        $redisInfo->saveIfChanged();
     }
 }

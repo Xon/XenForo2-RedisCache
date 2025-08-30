@@ -5,6 +5,7 @@
 
 namespace SV\RedisCache;
 
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\AddOn\AbstractSetup;
 use XF\AddOn\StepRunnerInstallTrait;
 use XF\AddOn\StepRunnerUninstallTrait;
@@ -22,11 +23,19 @@ class Setup extends AbstractSetup
     public function postInstall(array &$stateChanges): void
     {
         $this->db()->emptyTable('xf_css_cache');
+        RedisRepo::get()->shimAdminNavigation();
     }
 
     public function postUpgrade($previousVersion, array &$stateChanges): void
     {
         $this->db()->emptyTable('xf_css_cache');
+        RedisRepo::get()->shimAdminNavigation();
+    }
+
+    public function postRebuild(): void
+    {
+        parent::postRebuild();
+        RedisRepo::get()->shimAdminNavigation();
     }
 }
 

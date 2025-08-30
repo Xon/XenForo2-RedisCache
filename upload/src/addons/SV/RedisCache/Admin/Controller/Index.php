@@ -11,12 +11,18 @@ class Index extends AbstractController
 {
     public function actionIndex(ParameterBag $params): AbstractReply
     {
+        $redisRepo = RedisRepo::get();
+        if (!$redisRepo->canViewServerInfo())
+        {
+            return $this->noPermission();
+        }
+
         $context = $params->get('context') ?: '';
         $replicaId = $params->get('replica_id');
 
         $view = $this->view('SV\RedisCache:Index\Index', 'svRedisInfo', []);
 
-        RedisRepo::get()->insertRedisInfoParams($view, $context, $replicaId);
+        $redisRepo->insertRedisInfoParams($view, $context, $replicaId);
 
         return $view;
     }
