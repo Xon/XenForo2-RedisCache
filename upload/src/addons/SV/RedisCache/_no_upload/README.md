@@ -7,11 +7,11 @@ Supports compression algos; gzip, lzf, lz4 (as l4z), snappy and zstd
 
 ## Phpstorm Lua support
 
-The plugin https://plugins.jetbrains.com/plugin/14698-luanalysis can be used to provide syntax highlighting and inspector support for lua
+The plugin https://plugins.jetbrains.com/plugin/25076-emmylua2 can be used to provide syntax highlighting and inspector support for lua
 
 ## Igbinary Support
 
-If igbinary is usable, this add-on defaults to using it as a serialize. To suppress this;
+If igbinary is usable, this add-on defaults to using it as the serializer. To suppress this;
 ```php
 $config['cache']['config']['serializer'] = 'php';
 ```
