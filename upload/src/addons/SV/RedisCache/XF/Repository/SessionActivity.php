@@ -1,4 +1,7 @@
 <?php
+/**
+ * @noinspection PhpCastIsUnnecessaryInspection
+ */
 
 namespace SV\RedisCache\XF\Repository;
 
@@ -18,6 +21,32 @@ use function strval;
  */
 class SessionActivity extends XFCP_SessionActivity
 {
+    public function getOnlineCounts($onlineCutOff = null)
+    {
+        $cache = $this->app()->cache();
+        $cacheUsersOnline = (int)(\XF::options()->svCacheUsersOnline ?? 0);
+
+        $cacheKey = null;
+        if ($cacheUsersOnline > 0 && $cache !== null)
+        {
+            $cacheKey = 'onlineCounts';
+            $counts = $cache->fetch($cacheKey);
+            if (is_array($counts))
+            {
+                return $counts;
+            }
+        }
+
+        $counts = parent::getOnlineCounts($onlineCutOff);
+
+        if ($cacheKey !== null)
+        {
+            $cache->save($cacheKey, $counts, $cacheUsersOnline);
+        }
+
+        return $counts;
+    }
+
     /** @noinspection PhpCastIsUnnecessaryInspection */
     public function getOnlineStatsBlockData($forceIncludeVisitor, $userLimit, $staffQuery = false)
     {
