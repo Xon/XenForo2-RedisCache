@@ -6,6 +6,8 @@ use function array_filter;
 use function is_object;
 use function ksort;
 use function md5;
+use function preg_match;
+use function preg_quote;
 use function serialize;
 use function sort;
 
@@ -26,6 +28,27 @@ trait CachableFinderTotalTrait
         $this->svCacheExtra = $extra;
 
         return $this;
+    }
+
+    public function patchTimeConditionForCaching(string $column, int $expiryToRound)
+    {
+        $regex = '/'.preg_quote($this->columnSqlName($column)).' >= (\d+)/i';
+        foreach ($this->conditions as &$condition)
+        {
+            if (is_string($condition) && preg_match($regex, $condition, $match))
+            {
+                $timestamp = (int)$match[1];
+                if ($timestamp === 0)
+                {
+                    continue;
+                }
+
+                $timestamp = $timestamp - ($timestamp % $expiryToRound);
+
+                $condition = $column . ' >= '. $timestamp;
+                break;
+            }
+        }
     }
 
     protected function cachableTotal(string $prefix, int $longExpiry, int $shortExpiry, int $shortExpiryThreshold): ?int

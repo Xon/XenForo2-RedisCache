@@ -17,6 +17,12 @@ class Forum extends XFCP_Forum
         {
             /** @var ExtendedThreadFinder $threadFinder */
             $threadFinder->cacheTotals(true, $forum);
+            // patch 'last_post_date >= ?' condition so caching can work on more than 1 second granularity
+            $options = \XF::options();
+            $longExpiry = (int)($options->sv_threadcountcache_long ?? 0);
+            $shortExpiry = (int)($options->sv_threadcountcache_short ?? 0);
+            $minimumRounding = min($shortExpiry, $longExpiry);
+            $threadFinder->patchTimeConditionForCaching('last_post_date', $minimumRounding);
         }
     }
 }
