@@ -5,7 +5,6 @@ namespace SV\RedisCache\Finder;
 use function array_filter;
 use function is_object;
 use function ksort;
-use function md5;
 use function preg_match;
 use function preg_quote;
 use function serialize;
@@ -33,12 +32,12 @@ trait CachableFinderTotalTrait
     public function patchTimeConditionForCaching(string $column, int $expiryToRound)
     {
         $sqlColumn = $this->columnSqlName($column);
-        $regex = '/'.preg_quote($sqlColumn).' >= (\d+)/i';
+        $regex = '/('.preg_quote($sqlColumn).'\s*>=\s*(\d+))/i';
         foreach ($this->conditions as &$condition)
         {
             if (is_string($condition) && preg_match($regex, $condition, $match))
             {
-                $timestamp = (int)$match[1];
+                $timestamp = (int)$match[2];
                 if ($timestamp === 0)
                 {
                     continue;
@@ -46,7 +45,7 @@ trait CachableFinderTotalTrait
 
                 $timestamp = $timestamp - ($timestamp % $expiryToRound);
 
-                $condition = $sqlColumn . ' >= '. $timestamp;
+                $condition = str_replace($match[1], $sqlColumn . ' >= '. $timestamp, $condition);
                 break;
             }
         }
