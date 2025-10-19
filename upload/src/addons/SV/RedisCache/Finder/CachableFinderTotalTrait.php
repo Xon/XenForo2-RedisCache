@@ -32,7 +32,8 @@ trait CachableFinderTotalTrait
 
     public function patchTimeConditionForCaching(string $column, int $expiryToRound)
     {
-        $regex = '/'.preg_quote($this->columnSqlName($column)).' >= (\d+)/i';
+        $sqlColumn = $this->columnSqlName($column);
+        $regex = '/'.preg_quote($sqlColumn).' >= (\d+)/i';
         foreach ($this->conditions as &$condition)
         {
             if (is_string($condition) && preg_match($regex, $condition, $match))
@@ -45,7 +46,7 @@ trait CachableFinderTotalTrait
 
                 $timestamp = $timestamp - ($timestamp % $expiryToRound);
 
-                $condition = $column . ' >= '. $timestamp;
+                $condition = $sqlColumn . ' >= '. $timestamp;
                 break;
             }
         }
