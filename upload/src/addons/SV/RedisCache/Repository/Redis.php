@@ -17,6 +17,8 @@ use function phpversion;
 use function preg_match;
 use function str_replace;
 use function strlen;
+use function strtoupper;
+use function trim;
 
 class Redis extends Repository
 {
@@ -138,11 +140,73 @@ class Redis extends Repository
 
         if ($redisInfo)
         {
+            $redisInfo = $this->shimRedisInfo($redisInfo);
+
             $view->setParam('cacheContextSingle', $context !== null);
             $view->setParam('cacheContext', $context);
             $view->setParam('redisReplicaId', $replicaId);
             $view->setParam('redis', $redisInfo);
         }
+    }
+
+    /** @noinspection SpellCheckingInspection */
+    protected function shimRedisInfo(array $redisInfo): array
+    {
+        $redisInfo['maxmemory'] = $this->parseMemoryValue($redisInfo['maxmemory'] ?? 0);
+
+        return $redisInfo;
+    }
+
+    protected $decimalUnits = [
+        'KB' => 1000 ** 1,
+        'MB' => 1000 ** 2,
+        'GB' => 1000 ** 3,
+        'TB' => 1000 ** 4,
+        'PB' => 1000 ** 5,
+    ];
+
+    protected $binaryUnits = [
+        'B'   => 1024 ** 0,
+        'K'   => 1024 ** 1,
+        'KIB' => 1024 ** 1,
+        'M'   => 1024 ** 2,
+        'MIB' => 1024 ** 2,
+        'G'   => 1024 ** 3,
+        'GIB' => 1024 ** 3,
+        'T'   => 1024 ** 4,
+        'TIB' => 1024 ** 4,
+        'P'   => 1024 ** 5,
+        'PIB' => 1024 ** 5,
+    ];
+
+    /**
+     * @param float|int|string|null $memValue
+     * @return int
+     */
+    public function parseMemoryValue($memValue): int
+    {
+        if (!is_string($memValue))
+        {
+            return (int)$memValue;
+        }
+
+        $memValue = trim($memValue);
+        if ($memValue === '' || !preg_match('/^(\d+(?:\.\d+)?)\s*([a-z])?$/i', $memValue, $matches))
+        {
+            return 0;
+        }
+
+        /** @var int|float $value */
+        $value = $matches[1];
+
+        $multiplier = strtoupper($matches[2] ?? 'B');
+        $multiplier = $this->decimalUnits[$multiplier] ?? null;
+        if ($multiplier === null)
+        {
+            $multiplier = $this->binaryUnits[$multiplier] ?? 1;
+        }
+
+        return (int)($value * $multiplier);
     }
 
     /**
