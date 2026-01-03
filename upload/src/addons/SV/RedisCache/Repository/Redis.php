@@ -196,8 +196,7 @@ class Redis extends Repository
             return 0;
         }
 
-        /** @var int|float $value */
-        $value = $matches[1];
+        $value = $this->stringToFloatInt($matches[1]);
 
         $multiplier = strtoupper($matches[2] ?? 'B');
         $multiplier = $this->decimalUnits[$multiplier] ?? null;
@@ -207,6 +206,34 @@ class Redis extends Repository
         }
 
         return (int)($value * $multiplier);
+    }
+
+    /**
+     * @param string|int|float $value
+     * @param int|float $default
+     * @return int|float
+     */
+    public function stringToFloatInt($value, $default = 0)//: int|float
+    {
+        if (is_int($value) || is_float($value))
+        {
+            return $value;
+        }
+
+        if (!is_numeric($value))
+        {
+            return $default;
+        }
+
+        try
+        {
+            /** @noinspection PhpWrongStringConcatenationInspection */
+            return strval(floatval($value)) + 0;
+        }
+        catch (\Throwable $e)
+        {
+            return $default;
+        }
     }
 
     /**

@@ -5,6 +5,7 @@
 
 namespace SV\RedisCache\XF\Repository;
 
+use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Mvc\Entity\AbstractCollection;
 use XF\Mvc\Entity\ArrayCollection;
 use function array_keys;
@@ -125,24 +126,11 @@ class SessionActivity extends XFCP_SessionActivity
                 'userIds' => $userIds,
             ];
 
+            $repo = RedisRepo::get();
+
             foreach ($onlineStats['counts'] as &$value)
             {
-                if (is_numeric($value))
-                {
-                    try
-                    {
-                        /** @noinspection PhpWrongStringConcatenationInspection */
-                        $value = strval(floatval($value)) + 0;
-                    }
-                    catch (\Throwable $e)
-                    {
-                        $value = 0;
-                    }
-                }
-                else
-                {
-                    $value = 0;
-                }
+                $value = $repo->stringToFloatInt($value);
             }
 
             $cache->save($cacheKey, $onlineStats, $cacheUsersOnline);
