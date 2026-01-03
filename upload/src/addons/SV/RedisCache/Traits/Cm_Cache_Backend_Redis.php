@@ -435,14 +435,14 @@ trait Cm_Cache_Backend_Redis
             $client->setReadTimeout($clientOptions->readTimeout);
         }
 
-        if ($clientOptions->password)
-        {
-            $client->auth($clientOptions->password, $clientOptions->username ?? null) or $this->throwException('Unable to authenticate with the redis server.');
-        }
-
         if ($clientOptions->tlsOptions)
         {
             $client->setTlsOptions($clientOptions->tlsOptions);
+        }
+
+        if ($clientOptions->password)
+        {
+            $client->auth($clientOptions->password, $clientOptions->username ?? null) or $this->throwException('Unable to authenticate with the redis server.');
         }
 
         // Always select database when persistent is used in case connection is re-used by other clients
