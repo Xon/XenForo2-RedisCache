@@ -10,12 +10,8 @@ use XF\Mvc\Entity\AbstractCollection;
 use XF\Mvc\Entity\ArrayCollection;
 use function array_keys;
 use function count;
-use function floatval;
 use function is_array;
-use function is_numeric;
 use function json_encode;
-use function md5;
-use function strval;
 
 /**
  * @Extends \XF\Repository\SessionActivity
