@@ -9,6 +9,7 @@ use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Entity\AdminNavigation as AdminNavigationEntity;
 use XF\Mvc\Entity\Repository;
 use XF\Mvc\Reply\View as ViewReply;
+use function array_key_exists;
 use function ceil;
 use function explode;
 use function is_callable;
@@ -149,11 +150,8 @@ class Redis extends Repository
         }
     }
 
-    /** @noinspection SpellCheckingInspection */
     protected function shimRedisInfo(array $redisInfo): array
     {
-        $redisInfo['maxmemory'] = $this->parseMemoryValue($redisInfo['maxmemory'] ?? 0);
-
         return $redisInfo;
     }
 
@@ -305,8 +303,21 @@ class Redis extends Repository
         return $data;
     }
 
+    /** @noinspection SpellCheckingInspection */
+    protected $memorySizeFields = [
+        'maxmemory',
+    ];
+
     protected function extractRedisVariant(array &$data)
     {
+        foreach ($this->memorySizeFields as $field)
+        {
+            if (array_key_exists($field, $data))
+            {
+                $data[$field] = $this->parseMemoryValue($data[$field]);
+            }
+        }
+
         $executable = $data['executable'] ?? '';
         if (preg_match('#/keydb-server$#', $executable))
         {
@@ -322,6 +333,7 @@ class Redis extends Repository
             return;
         }
 
+        $data = $this->shimRedisInfo($data);
         $data['redis_type'] = 'Redis';
     }
 
