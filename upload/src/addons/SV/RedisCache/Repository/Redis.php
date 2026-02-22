@@ -308,8 +308,10 @@ class Redis extends Repository
         'maxmemory',
     ];
 
+    /** @noinspection SpellCheckingInspection */
     protected function extractRedisVariant(array &$data)
     {
+        // just extract memory field differences for all varaints
         foreach ($this->memorySizeFields as $field)
         {
             if (array_key_exists($field, $data))
@@ -318,31 +320,51 @@ class Redis extends Repository
             }
         }
 
-        $executable = $data['executable'] ?? '';
-        if (preg_match('#/keydb-server$#', $executable))
-        {
-            $data['redis_type'] = 'KeyDb';
-            return;
-        }
+        $type = $this->getRedisVariantType($data) ?? 'Redis';
+        $data = $this->applyRedisVariantToData($type, $data);
+    }
 
+    public const Redis_Variant_KeyDb = 'KeyDb';
+    public const Redis_Variant_Dragonfly = 'Dragonfly';
+    /** @noinspection SpellCheckingInspection */
+    public const Redis_Variant_Valkey = 'Valkey';
+
+    protected function getRedisVariantType(array $data): ?string
+    {
+        if (preg_match('#/keydb-server$#', $data['executable'] ?? ''))
+        {
+            return self::Redis_Variant_KeyDb;
+        }
         if (isset($data['dragonfly_version']))
         {
-            $data['redis_type'] = 'Dragonfly';
-            $data['redis_version'] = str_replace('df-v', '', $data['dragonfly_version']);
-            $data['HasIOStats'] = ($data['instantaneous_input_kbps'] ?? -1) !== -1 && ($data['instantaneous_output_kbps'] ?? -1) !== -1;
-            return;
+            return self::Redis_Variant_Dragonfly;
         }
-
         if (isset($data['valkey_version']))
         {
-            $data['redis_type'] = 'Valkey';
-            $releaseStage = $data['valkey_release_stage'] ?? null;
-            $data['redis_version'] = $data['valkey_version'] . ($releaseStage !== null ? '-' . $releaseStage : '');
-            return;
+            return self::Redis_Variant_Valkey;
         }
 
-        $data = $this->shimRedisInfo($data);
-        $data['redis_type'] = 'Redis';
+        return null;
+    }
+
+    /** @noinspection SpellCheckingInspection */
+    protected function applyRedisVariantToData(string $type, array $data): array
+    {
+        $data['type'] = $type;
+
+        switch ($type)
+        {
+            case self::Redis_Variant_Dragonfly:
+                $data['redis_version'] = str_replace('df-v', '', $data['dragonfly_version']);
+                $data['HasIOStats'] = ($data['instantaneous_input_kbps'] ?? -1) !== -1 && ($data['instantaneous_output_kbps'] ?? -1) !== -1;
+                return $data;
+            case self::Redis_Variant_Valkey:
+                $releaseStage = $data['valkey_release_stage'] ?? null;
+                $data['redis_version'] = $data['valkey_version'] . ($releaseStage !== null ? '-' . $releaseStage : '');
+                return $data;
+            default:
+                return $data;
+        }
     }
 
     public function visitCacheByPattern(string $pattern, &$cursor, float $maxRunTime, callable $func, int $batch = 1000, $cache = null): void
