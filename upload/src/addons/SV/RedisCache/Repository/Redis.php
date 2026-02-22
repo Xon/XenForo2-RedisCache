@@ -328,6 +328,8 @@ class Redis extends Repository
     public const Redis_Variant_Dragonfly = 'Dragonfly';
     /** @noinspection SpellCheckingInspection */
     public const Redis_Variant_Valkey = 'Valkey';
+    public const Redis_Variant_Garnet = 'Garnet';
+
 
     protected function getRedisVariantType(array $data): ?string
     {
@@ -342,6 +344,10 @@ class Redis extends Repository
         if (isset($data['valkey_version']))
         {
             return self::Redis_Variant_Valkey;
+        }
+        if (isset($data['garnet_version']))
+        {
+            return self::Redis_Variant_Garnet;
         }
 
         return null;
@@ -361,6 +367,9 @@ class Redis extends Repository
             case self::Redis_Variant_Valkey:
                 $releaseStage = $data['valkey_release_stage'] ?? null;
                 $data['redis_version'] = $data['valkey_version'] . ($releaseStage !== null ? '-' . $releaseStage : '');
+                return $data;
+            case self::Redis_Variant_Garnet:
+                $data['redis_version'] = $data['garnet_version'];
                 return $data;
             default:
                 return $data;
