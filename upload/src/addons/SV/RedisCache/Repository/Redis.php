@@ -329,7 +329,7 @@ class Redis extends Repository
         {
             $data['redis_type'] = 'Dragonfly';
             $data['redis_version'] = str_replace('df-v', '', $data['dragonfly_version']);
-            $data['HasIOStats'] = false;
+            $data['HasIOStats'] = ($data['instantaneous_input_kbps'] ?? -1) !== -1 && ($data['instantaneous_output_kbps'] ?? -1) !== -1;
             return;
         }
 
