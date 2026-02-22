@@ -333,6 +333,14 @@ class Redis extends Repository
             return;
         }
 
+        if (isset($data['valkey_version']))
+        {
+            $data['redis_type'] = 'Valkey';
+            $releaseStage = $data['valkey_release_stage'] ?? null;
+            $data['redis_version'] = $data['valkey_version'] . ($releaseStage !== null ? '-' . $releaseStage : '');
+            return;
+        }
+
         $data = $this->shimRedisInfo($data);
         $data['redis_type'] = 'Redis';
     }
