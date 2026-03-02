@@ -311,6 +311,8 @@ class Redis extends Repository
     /** @noinspection SpellCheckingInspection */
     protected function extractRedisVariant(array &$data)
     {
+        // assume lua support
+        $data['lua'] = true;
         // just extract memory field differences for all varaints
         foreach ($this->memorySizeFields as $field)
         {
@@ -370,6 +372,8 @@ class Redis extends Repository
                 return $data;
             case self::Redis_Variant_Garnet:
                 $data['redis_version'] = $data['garnet_version'];
+                // does not support lua!
+                $data['lua'] = false;
                 return $data;
             default:
                 return $data;
