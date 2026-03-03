@@ -2,10 +2,6 @@
 
 namespace SV\RedisCache\DoctrineCache;
 
-/**
- * Redis adapter for XenForo2 & Doctrine
- */
-
 use CredisException;
 use SV\RedisCache\Globals;
 use SV\RedisCache\Traits\CacheSerializerTrait;
@@ -22,6 +18,9 @@ use function serialize;
 use function strlen;
 use function unserialize;
 
+/**
+ * Redis adapter for XenForo2 & Doctrine
+ */
 class Redis extends CacheProvider
 {
     use Cm_Cache_Backend_Redis {
