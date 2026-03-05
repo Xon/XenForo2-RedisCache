@@ -62,6 +62,7 @@ abstract class Listener
 
         $obj = $factoryObjects['cache'][$context] ?? null;
         $phpRedis = null;
+        $wrapCacheObj = false;
         if (\XF::$versionId < 2030000)
         {
             if ($obj instanceof \XF\Cache\RedisCache)
@@ -73,6 +74,7 @@ abstract class Listener
         {
             if ($obj instanceof CacheProvider)
             {
+                $wrapCacheObj = true;
                 $obj = $obj->getAdapter();
             }
             if ($obj instanceof \Symfony\Component\Cache\Adapter\RedisAdapter)
@@ -98,6 +100,11 @@ abstract class Listener
                 'serializer'    => 'igbinary', // \XF\Cache\RedisCache tries to use igbinary and then php serialization
             ]);
             $cacheObj->setNamespace($config['config']['namespace'] ?? $globalNamespace);
+            if ($wrapCacheObj)
+            {
+                $cacheObj = new CacheProvider($cacheObj);
+            }
+
             $factoryObjects['cache'][$context] = $cacheObj;
             $hasChanges = true;
         }
