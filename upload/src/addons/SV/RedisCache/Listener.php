@@ -61,28 +61,39 @@ abstract class Listener
         }
 
         $obj = $factoryObjects['cache'][$context] ?? null;
-        $doPatch = false;
+        $phpRedis = null;
         if (\XF::$versionId < 2030000)
         {
-            $doPatch = $obj instanceof \XF\Cache\RedisCache;
+            if ($obj instanceof \XF\Cache\RedisCache)
+            {
+                $phpRedis = $obj->getRedis();
+            }
         }
         else
         {
-            if ($obj instanceof \Symfony\Component\Cache\Adapter\RedisAdapter)
-            {
-                $doPatch = true;
-            }
-            else if ($obj instanceof CacheProvider)
+            if ($obj instanceof CacheProvider)
             {
                 $obj = $obj->getAdapter();
-                $doPatch = $obj instanceof \Symfony\Component\Cache\Adapter\RedisAdapter;
+            }
+            if ($obj instanceof \Symfony\Component\Cache\Adapter\RedisAdapter)
+            {
+                // extract the phpredis backing object
+                $phpRedis = \Closure::bind(function(): ?\Redis {
+                    $redisObj = $this->redis ?? null;
+                    if ($redisObj instanceof \Redis)
+                    {
+                        return $redisObj;
+                    }
+
+                    return null;
+                }, $obj, $obj)();
             }
         }
 
-        if ($doPatch)
+        if ($phpRedis !== null)
         {
             $cacheObj = new Redis([
-                'redis'         => $obj->getRedis(),
+                'redis'         => $phpRedis,
                 'compress_data' => 0, // for compatibility; do not use compression
                 'serializer'    => 'igbinary', // \XF\Cache\RedisCache tries to use igbinary and then php serialization
             ]);
