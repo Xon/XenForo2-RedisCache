@@ -363,7 +363,7 @@ trait Cm_Cache_Backend_Redis
 
         $this->_compressData = (int)($options['compress_data'] ?? $this->_compressData);
         $this->_lifetimelimit = (int)min($options['lifetimelimit'] ?? $this->_lifetimelimit , Globals::MAX_LIFETIME);
-        $this->_compressThreshold = (int)min(1, (int)($options['compress_threshold'] ?? $this->_compressThreshold));
+        $this->_compressThreshold = (int)max(0, (int)($options['compress_threshold'] ?? $this->_compressThreshold));
 
         $this->_compressionLib = (string)($options['compression_lib'] ?? '');
         if ($this->_compressionLib === '')
