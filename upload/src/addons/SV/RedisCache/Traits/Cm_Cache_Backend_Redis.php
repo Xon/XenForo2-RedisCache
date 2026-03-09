@@ -541,7 +541,9 @@ trait Cm_Cache_Backend_Redis
                 throw new CredisException('Could not compress cache data.');
             }
 
-            return $this->_compressPrefix . $data;
+            $compressedData = $this->_compressPrefix . $data;
+
+            return strlen($compressedData) < strlen($data) ? $compressedData : $data;
         }
 
         return $data;
