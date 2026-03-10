@@ -398,7 +398,7 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
         $this->clear();
     }
 
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         if (\XF::$developmentMode)
         {
