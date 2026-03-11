@@ -5,8 +5,6 @@ namespace SV\RedisCache\SymfonyCache;
 use CredisException;
 use LogicException;
 use Psr\Cache\CacheItemInterface;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
 use SV\RedisCache\Globals;
 use SV\RedisCache\Traits\CacheTiming;
 use SV\RedisCache\Traits\Cm_Cache_Backend_Redis;
@@ -31,7 +29,7 @@ use function strlen;
 use function strtolower;
 use function unserialize;
 
-class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, ResettableInterface
+class Redis implements AdapterInterface, CacheInterface, ResettableInterface
 {
     use Cm_Cache_Backend_Redis {
         _encodeData as protected _encodeDataTrait;
@@ -396,13 +394,5 @@ class Redis implements AdapterInterface, CacheInterface, LoggerAwareInterface, R
     public function reset(): void
     {
         $this->clear();
-    }
-
-    public function setLogger(LoggerInterface $logger)
-    {
-        if (\XF::$developmentMode)
-        {
-            throw new LogicException('Not supported');
-        }
     }
 }
