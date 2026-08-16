@@ -30,6 +30,11 @@ namespace SV\RedisCache\XF
 	class XFCP_Debugger extends \XF\Debugger {}
 }
 
+namespace SV\RedisCache\XF\Entity
+{
+	class XFCP_AddOn extends \XF\Entity\AddOn {}
+}
+
 namespace SV\RedisCache\XF\Finder
 {
 	class XFCP_Thread extends \XF\Finder\Thread {}
