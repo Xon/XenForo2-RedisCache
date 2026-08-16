@@ -1,7 +1,4 @@
 <?php
-/**
- * @noinspection PhpMissingParentCallCommonInspection
- */
 
 namespace SV\RedisCache;
 
@@ -22,19 +19,26 @@ class Setup extends AbstractSetup
 
     public function postInstall(array &$stateChanges): void
     {
-        $this->db()->emptyTable('xf_css_cache');
-        RedisRepo::get()->shimAdminNavigation();
+        parent::postInstall($stateChanges);
+        $this->syncActions();
     }
 
     public function postUpgrade($previousVersion, array &$stateChanges): void
     {
-        $this->db()->emptyTable('xf_css_cache');
-        RedisRepo::get()->shimAdminNavigation();
+        $previousVersion = (int)$previousVersion;
+        parent::postUpgrade($previousVersion, $stateChanges);
+        $this->syncActions();
     }
 
     public function postRebuild(): void
     {
         parent::postRebuild();
+        $this->syncActions();
+    }
+
+    protected function syncActions(): void
+    {
+        $this->db()->emptyTable('xf_css_cache');
         RedisRepo::get()->shimAdminNavigation();
     }
 }
