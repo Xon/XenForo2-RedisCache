@@ -2,6 +2,7 @@
 
 namespace SV\RedisCache;
 
+use SV\InstallerAppHelper\InstallAppBootstrap;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\AddOn\AbstractSetup;
 use XF\AddOn\StepRunnerInstallTrait;
@@ -40,6 +41,17 @@ class Setup extends AbstractSetup
     {
         $this->db()->emptyTable('xf_css_cache');
         RedisRepo::get()->shimAdminNavigation();
+    }
+
+    public function markAsCriticalAddon(): void
+    {
+        // XF2.1 compatible code, can't use \XF::isAddonActive
+        // using SV\StandardLib\Helper::hasDesiredAddOnVersion() would pull in another dependency
+        $addOns = \XF::app()->container('addon.cache');
+        if (isset($addOns['SV/InstallerAppHelper']))
+        {
+            InstallAppBootstrap::markAddonCritical('SV/RedisCache');
+        }
     }
 }
 
