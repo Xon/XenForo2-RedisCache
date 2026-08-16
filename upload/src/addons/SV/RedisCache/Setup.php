@@ -3,6 +3,7 @@
 namespace SV\RedisCache;
 
 use SV\InstallerAppHelper\InstallAppBootstrap;
+use SV\RedisCache\Job\ExpireRedisCacheByPattern;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\AddOn\AbstractSetup;
 use XF\AddOn\StepRunnerInstallTrait;
@@ -17,6 +18,12 @@ class Setup extends AbstractSetup
     use StepRunnerInstallTrait;
     use StepRunnerUpgradeTrait;
     use StepRunnerUninstallTrait;
+
+    public function uninstallStep1(): void
+    {
+        $this->db()->emptyTable('xf_css_cache');
+        RedisRepo::get()->clearCssCache();
+    }
 
     public function postInstall(array &$stateChanges): void
     {
@@ -41,6 +48,7 @@ class Setup extends AbstractSetup
     {
         $this->db()->emptyTable('xf_css_cache');
         RedisRepo::get()->shimAdminNavigation();
+        RedisRepo::get()->clearCssCache();
     }
 
     public function markAsCriticalAddon(): void

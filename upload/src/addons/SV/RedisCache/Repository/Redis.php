@@ -4,6 +4,7 @@ namespace SV\RedisCache\Repository;
 
 use Credis_Client;
 use Doctrine\Common\Cache\CacheProvider;
+use SV\RedisCache\Job\ExpireRedisCacheByPattern;
 use SV\RedisCache\Job\PurgeRedisCacheByPattern;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Entity\AdminNavigation as AdminNavigationEntity;
@@ -497,5 +498,21 @@ class Redis extends Repository
 
         $redisInfo->admin_permission_id = \XF::$versionId >= 2030470 ? 'serverInfo' : '';
         $redisInfo->saveIfChanged();
+    }
+
+    public function clearCssCache(): void
+    {
+        $this->clearCssCacheByPattern('xfCssCache_');
+        $this->clearCssCacheByPattern('xfSvgCache_');
+    }
+
+    /**
+     * @param string   $pattern
+     * @param int|null $styleId
+     * @noinspection PhpUnusedParameterInspection
+     */
+    public function clearCssCacheByPattern(string $pattern, ?int $styleId = null): void
+    {
+        ExpireRedisCacheByPattern::enqueue($pattern, $pattern, 120, 'css');
     }
 }
