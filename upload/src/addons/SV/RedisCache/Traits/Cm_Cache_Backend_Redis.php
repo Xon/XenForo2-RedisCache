@@ -514,6 +514,11 @@ trait Cm_Cache_Backend_Redis
      */
     protected function _encodeData($data, $level)
     {
+        if ($data === '')
+        {
+            return '';
+        }
+
         if ($this->_compressionLib && $level !== 0 && strlen($data) >= $this->_compressThreshold)
         {
             switch ($this->_compressionLib)
@@ -557,6 +562,11 @@ trait Cm_Cache_Backend_Redis
      */
     protected function _decodeData($data)
     {
+        if ($data === '')
+        {
+            return '';
+        }
+
         try
         {
             if (substr($data, 2, 3) === Globals::COMPRESS_PREFIX)
