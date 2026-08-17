@@ -519,31 +519,31 @@ trait Cm_Cache_Backend_Redis
             switch ($this->_compressionLib)
             {
                 case 'snappy':
-                    /** @noinspection PhpUndefinedFunctionInspection */ $data = \snappy_compress($data);
+                    /** @noinspection PhpUndefinedFunctionInspection */ $compressedData = \snappy_compress($data);
                     break;
                 case 'lzf':
-                    /** @noinspection PhpUndefinedFunctionInspection */ $data = \lzf_compress($data);
+                    /** @noinspection PhpUndefinedFunctionInspection */ $compressedData = \lzf_compress($data);
                     break;
                 case 'l4z':
-                    /** @noinspection PhpUndefinedFunctionInspection */ $data = \lz4_compress($data, $level);
+                    /** @noinspection PhpUndefinedFunctionInspection */ $compressedData = \lz4_compress($data, $level);
                     break;
                 case 'zstd':
-                    /** @noinspection PhpUndefinedFunctionInspection */ $data = \zstd_compress($data, $level);
+                    /** @noinspection PhpUndefinedFunctionInspection */ $compressedData = \zstd_compress($data, $level);
                     break;
                 case 'gzip':
-                    $data = gzcompress($data, $level);
+                    $compressedData = gzcompress($data, $level);
                     break;
                 default:
                     throw new CredisException("Unrecognized 'compression_lib'.");
             }
-            if (!$data)
+            if ($compressedData === false || $compressedData === '')
             {
                 throw new CredisException('Could not compress cache data.');
             }
 
-            $compressedData = $this->_compressPrefix . $data;
-
-            return strlen($compressedData) < strlen($data) ? $compressedData : $data;
+            return strlen($compressedData) + strlen($this->_compressPrefix) < strlen($data)
+                ? $this->_compressPrefix . $compressedData
+                : $data;
         }
 
         return $data;
