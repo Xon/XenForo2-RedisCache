@@ -165,14 +165,14 @@ trait Cm_Cache_Backend_Redis
     protected function getClientOptions($options = [])
     {
         $clientOptions = new stdClass();
-        $clientOptions->forceStandalone = isset($options['force_standalone']) && $options['force_standalone'];
+        $clientOptions->forceStandalone = (bool)($options['force_standalone'] ?? false);
         $clientOptions->connectRetries = (int)($options['connect_retries'] ?? Globals::DEFAULT_CONNECT_RETRIES);
-        $clientOptions->readTimeout = isset($options['read_timeout']) ? Globals::stringToFloatInt($options['read_timeout']) : null;
+        $clientOptions->readTimeout = Globals::stringToFloatInt($options['read_timeout'] ?? null, null);
         $clientOptions->password = isset($options['password']) ? strval($options['password']) : null;
         $clientOptions->username = isset($options['username']) ? strval($options['username']) : null;
         $clientOptions->database = (int)($options['database'] ?? 0);
         $clientOptions->persistent = isset($options['persistent']) ? $options['persistent'] . '_' . $clientOptions->database : '';
-        $clientOptions->timeout =  isset($options['timeout']) ? Globals::stringToFloatInt($options['timeout']) : Globals::DEFAULT_CONNECT_TIMEOUT;
+        $clientOptions->timeout = Globals::stringToFloatInt( $options['timeout'] ?? Globals::DEFAULT_CONNECT_TIMEOUT, Globals::DEFAULT_CONNECT_TIMEOUT);
         $clientOptions->tlsOptions = (array)($options['tlsOptions'] ?? []);
 
         return $clientOptions;
