@@ -2,6 +2,7 @@
 
 namespace SV\RedisCache\Traits;
 
+use Closure;
 use function function_exists;
 use function microtime;
 
@@ -29,19 +30,19 @@ trait CacheTiming
      */
     protected $debug = false;
 
-    /** @var \Closure|null */
+    /** @var Closure|null */
     protected $redisQueryForStat = null;
-    /** @var \Closure|null */
+    /** @var Closure|null */
     protected $timerForStat = null;
 
-    protected function redisQueryForStat($stat, \Closure $callback)
+    protected function redisQueryForStat($stat, Closure $callback)
     {
         $this->stats[$stat]++;
 
         return $callback();
     }
 
-    protected function redisQueryForStatDebug($stat, \Closure $callback)
+    protected function redisQueryForStatDebug($stat, Closure $callback)
     {
         $this->stats[$stat]++;
         $startTime = microtime(true);
@@ -61,7 +62,7 @@ trait CacheTiming
      * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
      * @noinspection RedundantSuppression
      */
-    protected function redisQueryForStatDebugPhp73($stat, \Closure $callback)
+    protected function redisQueryForStatDebugPhp73($stat, Closure $callback)
     {
         $this->stats[$stat]++;
 
@@ -81,12 +82,12 @@ trait CacheTiming
     }
 
     /** @noinspection PhpUnusedParameterInspection */
-    protected function timerForStat($stat, \Closure $callback)
+    protected function timerForStat($stat, Closure $callback)
     {
         return $callback();
     }
 
-    protected function timerForStatDebug($stat, \Closure $callback)
+    protected function timerForStatDebug($stat, Closure $callback)
     {
         $startTime = microtime(true);
         try
@@ -105,7 +106,7 @@ trait CacheTiming
      * @noinspection PhpElementIsNotAvailableInCurrentPhpVersionInspection
      * @noinspection RedundantSuppression
      */
-    protected function timerForStatDebugPhp73($stat, \Closure $callback)
+    protected function timerForStatDebugPhp73($stat, Closure $callback)
     {
         /** @var float $startTime */
         $startTime = \hrtime(true);
@@ -144,8 +145,8 @@ trait CacheTiming
             $this->redisQueryForStat = [$this, 'redisQueryForStat'];
         }
 
-        $this->redisQueryForStat = \Closure::fromCallable($this->redisQueryForStat);
-        $this->timerForStat = \Closure::fromCallable($this->timerForStat);
+        $this->redisQueryForStat = Closure::fromCallable($this->redisQueryForStat);
+        $this->timerForStat = Closure::fromCallable($this->timerForStat);
     }
 
     public function getRedisStats(): array

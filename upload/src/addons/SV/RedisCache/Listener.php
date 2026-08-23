@@ -2,6 +2,7 @@
 
 namespace SV\RedisCache;
 
+use Closure;
 use Doctrine\Common\Cache\CacheProvider;
 use XF\App;
 use XF\Container;
@@ -41,7 +42,7 @@ abstract class Listener
         $setter = function ($value) {
             $this->factoryObjects = $value;
         };
-        $setterFn = \Closure::bind($setter, $container, $container);
+        $setterFn = Closure::bind($setter, $container, $container);
         $setterFn($factoryObjects);
     }
 
@@ -80,7 +81,7 @@ abstract class Listener
             if ($obj instanceof \Symfony\Component\Cache\Adapter\RedisAdapter)
             {
                 // extract the phpredis backing object
-                $phpRedis = \Closure::bind(function(): ?\Redis {
+                $phpRedis = Closure::bind(function(): ?\Redis {
                     $redisObj = $this->redis ?? null;
                     if ($redisObj instanceof \Redis)
                     {

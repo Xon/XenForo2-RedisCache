@@ -2,6 +2,7 @@
 
 namespace SV\RedisCache\SymfonyCache;
 
+use Closure;
 use CredisException;
 use LogicException;
 use Psr\Cache\CacheItemInterface;
@@ -266,7 +267,7 @@ class Redis implements AdapterInterface, CacheInterface, ResettableInterface
         static $fetcher = null;
         if ($fetcher == null)
         {
-            $fetcher = \Closure::bind(
+            $fetcher = Closure::bind(
                 static function (SymfonyCacheItem $item) {
                     return [$item->key, $item->value, $item->expiry, $item->isHit];
                 },
