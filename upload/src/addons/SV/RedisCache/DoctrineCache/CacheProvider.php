@@ -10,7 +10,6 @@ namespace SV\RedisCache\DoctrineCache;
 use function array_combine;
 use function array_key_exists;
 use function array_map;
-use function sprintf;
 
 /**
  * Workaround for Doctrine namespace mangling making working with Redis harder ([ and ] are glob characters, require escaping on the commandline, and are just anoying to deal with.
@@ -121,8 +120,10 @@ abstract class CacheProvider extends \Doctrine\Common\Cache\CacheProvider
      */
     public function getNamespacedId($id)
     {
-        // remove namespace versioning
+        // $namespaceVersion  = $this->getNamespaceVersion();
+        // return sprintf('%s[%s][%s]', $this->namespace, $id, $namespaceVersion);
+        // remove namespace versioning & use of [], as it makes scan() hilariously harder to escape properly
 
-        return sprintf('%s_%s', $this->namespace, $id);
+        return $this->namespace . '_' . $id;
     }
 }

@@ -21,7 +21,6 @@ use function count;
 use function get_class;
 use function is_array;
 use function min;
-use function sprintf;
 use function strlen;
 
 class Redis implements AdapterInterface, CacheInterface, ResettableInterface
@@ -42,7 +41,7 @@ class Redis implements AdapterInterface, CacheInterface, ResettableInterface
     {
         /** @var CacheFactory $factory */
         $factory = \XF::app()->container('cache.factory');
-        $this->namespace = $factory->getNamespace();
+        $this->setNamespace($factory->getNamespace());
 
         // setup various traits
         $this->setupSerializer($options);
@@ -65,7 +64,7 @@ class Redis implements AdapterInterface, CacheInterface, ResettableInterface
     public function getNamespacedId(string $key): string
     {
         // match Doctrine Cache key format
-        return sprintf('%s_%s', $this->namespace, $key);
+        return $this->namespace . '_' . $key;
     }
 
     protected function _encodeData($data, $level)
