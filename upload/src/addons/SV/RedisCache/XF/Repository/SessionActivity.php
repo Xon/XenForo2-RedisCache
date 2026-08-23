@@ -5,6 +5,7 @@
 
 namespace SV\RedisCache\XF\Repository;
 
+use SV\RedisCache\Globals;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Mvc\Entity\AbstractCollection;
 use XF\Mvc\Entity\ArrayCollection;
@@ -122,11 +123,9 @@ class SessionActivity extends XFCP_SessionActivity
                 'userIds' => $userIds,
             ];
 
-            $repo = RedisRepo::get();
-
             foreach ($onlineStats['counts'] as &$value)
             {
-                $value = $repo->stringToFloatInt($value);
+                $value = Globals::stringToFloatInt($value);
             }
 
             $cache->save($cacheKey, $onlineStats, $cacheUsersOnline);

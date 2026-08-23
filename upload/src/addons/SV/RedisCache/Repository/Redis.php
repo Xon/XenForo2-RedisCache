@@ -4,6 +4,7 @@ namespace SV\RedisCache\Repository;
 
 use Credis_Client;
 use Doctrine\Common\Cache\CacheProvider;
+use SV\RedisCache\Globals;
 use SV\RedisCache\Job\ExpireRedisCacheByPattern;
 use SV\RedisCache\Job\PurgeRedisCacheByPattern;
 use SV\RedisCache\Repository\Redis as RedisRepo;
@@ -196,7 +197,7 @@ class Redis extends Repository
             return 0;
         }
 
-        $value = $this->stringToFloatInt($matches[1]);
+        $value = Globals::stringToFloatInt($matches[1]);
 
         $multiplier = strtoupper($matches[2] ?? 'B');
         $multiplier = $this->decimalUnits[$multiplier] ?? null;
@@ -209,31 +210,12 @@ class Redis extends Repository
     }
 
     /**
-     * @param string|int|float $value
-     * @param int|float $default
-     * @return int|float
+     * @deprecated
+     * @see Globals::stringToFloatInt()
      */
     public function stringToFloatInt($value, $default = 0)//: int|float
     {
-        if (is_int($value) || is_float($value))
-        {
-            return $value;
-        }
-
-        if (!is_numeric($value))
-        {
-            return $default;
-        }
-
-        try
-        {
-            /** @noinspection PhpWrongStringConcatenationInspection */
-            return strval(floatval($value)) + 0;
-        }
-        catch (\Throwable $e)
-        {
-            return $default;
-        }
+        return Globals::stringToFloatInt($value, $default);
     }
 
     /**

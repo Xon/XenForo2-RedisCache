@@ -47,7 +47,6 @@ use stdClass;
 use SV\RedisCache\Globals;
 use function array_rand;
 use function count;
-use function floatval;
 use function function_exists;
 use function gzcompress;
 use function gzuncompress;
@@ -168,12 +167,12 @@ trait Cm_Cache_Backend_Redis
         $clientOptions = new stdClass();
         $clientOptions->forceStandalone = isset($options['force_standalone']) && $options['force_standalone'];
         $clientOptions->connectRetries = (int)($options['connect_retries'] ?? Globals::DEFAULT_CONNECT_RETRIES);
-        $clientOptions->readTimeout = isset($options['read_timeout']) ? floatval($options['read_timeout']) : null;
+        $clientOptions->readTimeout = isset($options['read_timeout']) ? Globals::stringToFloatInt($options['read_timeout']) : null;
         $clientOptions->password = isset($options['password']) ? strval($options['password']) : null;
         $clientOptions->username = isset($options['username']) ? strval($options['username']) : null;
         $clientOptions->database = (int)($options['database'] ?? 0);
         $clientOptions->persistent = isset($options['persistent']) ? $options['persistent'] . '_' . $clientOptions->database : '';
-        $clientOptions->timeout =  isset($options['timeout']) ? floatval($options['timeout']) : Globals::DEFAULT_CONNECT_TIMEOUT;
+        $clientOptions->timeout =  isset($options['timeout']) ? Globals::stringToFloatInt($options['timeout']) : Globals::DEFAULT_CONNECT_TIMEOUT;
         $clientOptions->tlsOptions = (array)($options['tlsOptions'] ?? []);
 
         return $clientOptions;
