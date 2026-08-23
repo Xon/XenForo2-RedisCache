@@ -15,6 +15,7 @@ use function array_key_exists;
 use function ceil;
 use function explode;
 use function is_callable;
+use function is_string;
 use function microtime;
 use function phpversion;
 use function preg_match;

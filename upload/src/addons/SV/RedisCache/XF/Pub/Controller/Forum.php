@@ -4,6 +4,7 @@ namespace SV\RedisCache\XF\Pub\Controller;
 
 use SV\RedisCache\XF\Finder\Thread as ExtendedThreadFinder;
 use XF\Finder\Thread as ThreadFinder;
+use function min;
 
 class Forum extends XFCP_Forum
 {

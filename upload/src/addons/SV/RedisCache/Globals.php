@@ -2,6 +2,12 @@
 
 namespace SV\RedisCache;
 
+use function floatval;
+use function is_float;
+use function is_int;
+use function is_numeric;
+use function strval;
+
 abstract class Globals
 {
     public const PREFIX_KEY = '';

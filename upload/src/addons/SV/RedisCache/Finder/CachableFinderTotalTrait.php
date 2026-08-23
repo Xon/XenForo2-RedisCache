@@ -3,12 +3,15 @@
 namespace SV\RedisCache\Finder;
 
 use function array_filter;
+use function hash;
 use function is_object;
+use function is_string;
 use function json_encode;
 use function ksort;
 use function preg_match;
 use function preg_quote;
 use function sort;
+use function str_replace;
 
 trait CachableFinderTotalTrait
 {

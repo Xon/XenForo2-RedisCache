@@ -10,6 +10,7 @@ use XF\Mvc\Entity\AbstractCollection;
 use XF\Mvc\Entity\ArrayCollection;
 use function array_keys;
 use function count;
+use function hash;
 use function is_array;
 use function json_encode;
 

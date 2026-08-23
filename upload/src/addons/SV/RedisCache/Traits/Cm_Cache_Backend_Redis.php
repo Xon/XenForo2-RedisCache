@@ -53,6 +53,7 @@ use function gzuncompress;
 use function is_array;
 use function is_callable;
 use function is_string;
+use function max;
 use function min;
 use function phpversion;
 use function preg_match;
