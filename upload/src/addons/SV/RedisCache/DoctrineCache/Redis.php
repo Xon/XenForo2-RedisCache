@@ -8,6 +8,7 @@ namespace SV\RedisCache\DoctrineCache;
 
 use CredisException;
 use SV\RedisCache\Globals;
+use SV\RedisCache\Traits\CacheSerializerTrait;
 use SV\RedisCache\Traits\CacheTiming;
 use SV\RedisCache\Traits\Cm_Cache_Backend_Redis;
 use SV\RedisCache\Traits\ReplicaSelect;
@@ -16,11 +17,9 @@ use function count;
 use function igbinary_serialize;
 use function igbinary_unserialize;
 use function is_array;
-use function is_callable;
 use function min;
 use function serialize;
 use function strlen;
-use function strtolower;
 use function unserialize;
 
 class Redis extends CacheProvider
@@ -29,18 +28,15 @@ class Redis extends CacheProvider
         _encodeData as protected _encodeDataTrait;
         _decodeData as protected _decodeDataTrait;
     }
+    use CacheSerializerTrait;
     use CacheTiming;
     use ReplicaSelect;
-
-    protected $useIgbinary = false;
 
     /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(array $options = [])
     {
-        $igbinaryPresent = is_callable('igbinary_serialize') && is_callable('igbinary_unserialize');
-        $this->useIgbinary = $igbinaryPresent && (empty($options['serializer']) || strtolower($options['serializer']) === 'igbinary');
-
         // setup various traits
+        $this->setupSerializer($options);
         $this->setupTimers(\XF::$debugMode);
         $this->replicaOptions($options);
         $this->init($options);
@@ -58,8 +54,7 @@ class Redis extends CacheProvider
         $timerForStat = $this->timerForStat;
 
         $encodedData = $timerForStat('time_encoding', function () use ($data) {
-            // XF stores binary data as strings which causes issues using json for serialization
-            return $this->useIgbinary ? @igbinary_serialize($data) : @serialize($data);
+            return $this->serialize($data);
         });
         unset($data);
 
@@ -82,7 +77,7 @@ class Redis extends CacheProvider
             return false;
         }
         return $timerForStat('time_decoding', function () use ($decompressedData) {
-            return $this->useIgbinary ? @igbinary_unserialize($decompressedData) : @unserialize($decompressedData);
+            return $this->deserialize($decompressedData);
         });
     }
 
