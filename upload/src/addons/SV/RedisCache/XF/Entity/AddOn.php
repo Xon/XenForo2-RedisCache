@@ -2,9 +2,6 @@
 
 namespace SV\RedisCache\XF\Entity;
 
-use XF\Mvc\Entity\Entity;
-use XF\Mvc\Entity\Structure;
-
 /**
  * @extends \XF\Entity\AddOn
  */

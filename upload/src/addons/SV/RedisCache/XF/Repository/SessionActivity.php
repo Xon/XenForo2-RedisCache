@@ -6,7 +6,6 @@
 namespace SV\RedisCache\XF\Repository;
 
 use SV\RedisCache\Globals;
-use SV\RedisCache\Repository\Redis as RedisRepo;
 use XF\Mvc\Entity\AbstractCollection;
 use XF\Mvc\Entity\ArrayCollection;
 use function array_keys;

@@ -19,14 +19,10 @@ use function array_combine;
 use function array_map;
 use function count;
 use function get_class;
-use function igbinary_serialize;
-use function igbinary_unserialize;
 use function is_array;
 use function min;
-use function serialize;
 use function sprintf;
 use function strlen;
-use function unserialize;
 
 class Redis implements AdapterInterface, CacheInterface, ResettableInterface
 {

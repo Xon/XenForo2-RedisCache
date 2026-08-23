@@ -10,13 +10,9 @@ use SV\RedisCache\Traits\Cm_Cache_Backend_Redis;
 use SV\RedisCache\Traits\ReplicaSelect;
 use function array_combine;
 use function count;
-use function igbinary_serialize;
-use function igbinary_unserialize;
 use function is_array;
 use function min;
-use function serialize;
 use function strlen;
-use function unserialize;
 
 /**
  * Redis adapter for XenForo2 & Doctrine

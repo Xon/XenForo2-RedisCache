@@ -5,7 +5,6 @@
 
 namespace SV\RedisCache\XF\Repository;
 
-use SV\RedisCache\Job\ExpireRedisCacheByPattern;
 use SV\RedisCache\Repository\Redis as RedisRepo;
 
 /**
