@@ -38,6 +38,7 @@ class Redis extends Repository
      */
     public static function get(): self
     {
+        // todo when this add-on only supports XF2.3+ replace magic string with self::class
         return \XF::repository('SV\RedisCache:Redis');
     }
 
