@@ -4,10 +4,10 @@ namespace SV\RedisCache\Finder;
 
 use function array_filter;
 use function is_object;
+use function json_encode;
 use function ksort;
 use function preg_match;
 use function preg_quote;
-use function serialize;
 use function sort;
 
 trait CachableFinderTotalTrait
@@ -75,7 +75,7 @@ trait CachableFinderTotalTrait
             });
         }
         ksort($joins);
-        $key = $prefix . hash('md5', serialize($conditions) . serialize($joins) . serialize($this->order));
+        $key = $prefix . hash('md5', json_encode([$conditions, $joins, $this->order]));
 
         /** @var int|bool $total */
         $total = $cache->fetch($key);
