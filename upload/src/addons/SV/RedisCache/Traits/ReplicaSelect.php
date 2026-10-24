@@ -64,7 +64,7 @@ trait ReplicaSelect
             {
                 $output = shell_exec('hostname --all-ip-addresses');
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $output = '';
             }
