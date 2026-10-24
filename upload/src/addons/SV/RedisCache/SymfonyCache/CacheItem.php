@@ -47,12 +47,12 @@ class CacheItem implements CacheItemInterface
 
     public function expiresAt($expiration): self
     {
-        return $this->expiresAtWithType($expiration);
+        return $this->expiresAtWithType($expiration ?? \XF::$time + 300);
     }
 
     protected function expiresAtWithType(?\DateTimeInterface $expiration): self
     {
-        return $this->expiresAfter($expiration !== null ? (int)min(1, \XF::$time - (int)$expiration->format('U')) : null);
+        return $this->expiresAfter($expiration !== null ? (int)max(1, (int)$expiration->format('U') - \XF::$time) : null);
     }
 
     /**
